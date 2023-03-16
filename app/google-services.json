@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "333542289615",
+    "project_id": "tbilisi-bussy",
+    "storage_bucket": "tbilisi-bussy.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333542289615:android:12482527dfb2d4f33347ba",
+        "android_client_info": {
+          "package_name": "ge.tbilisipublictransport"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "333542289615-4dq39ks66ds4guormh4mogstln42n0d9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwdiIyECzZyJX8x2CFMrc5wWHphbn2Hz8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "333542289615-4dq39ks66ds4guormh4mogstln42n0d9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
