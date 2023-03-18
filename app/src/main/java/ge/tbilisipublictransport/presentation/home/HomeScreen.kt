@@ -1,18 +1,27 @@
 package ge.tbilisipublictransport.presentation.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.Style
+import ge.tbilisipublictransport.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,12 +37,16 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
 @Composable
 fun Map() {
-    AsyncImage(
-        model = "https://assets.website-files.com/5e832e12eb7ca02ee9064d42/5f7db426b676b95755fb2844_Group%20805.jpg",
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize(),
-    )
+    val isDarkMode = isSystemInDarkTheme()
+
+    AndroidView(factory = {
+        MapView(it).apply {
+            getMapAsync {
+                it.setStyle(if (isDarkMode) Style.DARK else Style.TRAFFIC_DAY)
+            }
+            onResume()
+        }
+    }, modifier = Modifier.fillMaxSize())
 }
 
 @Composable
@@ -42,13 +55,16 @@ fun TopBar() {
         modifier = Modifier
             .fillMaxWidth()
             .height(54.dp)
-            .background(MaterialTheme.colorScheme.primary)
+            .background(colorScheme.surfaceColorAtElevation(3.dp))
             .padding(horizontal = 16.dp)
     ) {
         Text(
             text = "მთავარი",
-            color = Color.White,
+            color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
+            fontFamily = FontFamily(Font(R.font.bpg_nino_mtavruli_bold)),
             fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             modifier = Modifier.align(Alignment.CenterStart)
         )
     }
