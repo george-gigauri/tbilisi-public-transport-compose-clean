@@ -1,6 +1,6 @@
 package ge.tbilisipublictransport.data.repository
 
-import ge.tbilisipublictransport.data.other.mapper.toDomain
+import ge.tbilisipublictransport.common.other.mapper.toDomain
 import ge.tbilisipublictransport.data.remote.api.TransportApi
 import ge.tbilisipublictransport.domain.model.*
 import ge.tbilisipublictransport.domain.repository.ITransportRepository

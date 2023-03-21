@@ -1,4 +1,4 @@
-package ge.tbilisipublictransport.data.other.mapper
+package ge.tbilisipublictransport.common.other.mapper
 
 import ge.tbilisipublictransport.data.remote.dto.RouteDto
 import ge.tbilisipublictransport.data.remote.dto.RouteInfoDto

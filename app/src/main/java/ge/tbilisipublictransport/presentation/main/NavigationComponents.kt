@@ -21,7 +21,7 @@ import ge.tbilisipublictransport.presentation.home.HomeScreen
 fun BottomNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = MainNavigationScreen.Home.screenName
+        startDestination = MainNavigationScreen.Home.screenName,
     ) {
         composable(MainNavigationScreen.Home.screenName) {
             HomeScreen()

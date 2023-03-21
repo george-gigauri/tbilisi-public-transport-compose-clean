@@ -17,7 +17,7 @@ interface TransportApi {
         @Query("forward") forward: Int = 0
     ): Response<RouteInfoDto>
 
-    @GET("stops")
+    @GET("routers/ttc/index/stops")
     suspend fun getBusStops(): Response<List<BusStopDto>>
 
     @GET("routeStops")

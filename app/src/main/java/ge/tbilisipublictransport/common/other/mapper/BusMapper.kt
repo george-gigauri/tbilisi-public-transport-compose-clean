@@ -1,4 +1,4 @@
-package ge.tbilisipublictransport.data.other.mapper
+package ge.tbilisipublictransport.common.other.mapper
 
 import ge.tbilisipublictransport.data.remote.dto.BusDto
 import ge.tbilisipublictransport.data.remote.dto.BusStopDto
@@ -17,10 +17,10 @@ fun BusDto.toDomain(): Bus {
 
 fun BusStopDto.toDomain(): BusStop {
     return BusStop(
-        this.id,
-        this.code,
-        this.name,
-        this.lat,
-        this.lng
+        this.id ?: "",
+        this.code ?: "",
+        this.name ?: "",
+        this.lat ?: 0.0,
+        this.lng ?: 0.0
     )
 }

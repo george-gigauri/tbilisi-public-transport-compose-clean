@@ -104,6 +104,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-inappmessaging-ktx'
     implementation 'com.google.firebase:firebase-inappmessaging-display-ktx'
 
+    debugImplementation "com.github.chuckerteam.chucker:library:3.5.0"
+    releaseImplementation "com.github.chuckerteam.chucker:library-no-op:3.5.0"
+
     // Maps
     // https://mvnrepository.com/artifact/com.mapbox.mapboxsdk/mapbox-android-sdk
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1'
