@@ -23,10 +23,12 @@ fun RouteInfoDto.toDomain(): RouteInfo {
         "#${this.color}",
         this.routeNumber.toIntOrNull() ?: -1,
         this.title,
-        this.shape.replace(" ", "").split(",").map {
-            val latLng = it.trim().split(":")
-            LatLng(latLng[1].toDoubleOrNull() ?: 0.0, latLng[0].toDoubleOrNull() ?: 0.0)
-        },
+        if (this.shape.isNotEmpty()) {
+            this.shape.replace(" ", "").split(",").map {
+                val latLng = it.trim().split(":")
+                LatLng(latLng[1].toDoubleOrNull() ?: 0.0, latLng[0].toDoubleOrNull() ?: 0.0)
+            }
+        } else emptyList(),
         this.stops.map { it.toDomain() }
     )
 }

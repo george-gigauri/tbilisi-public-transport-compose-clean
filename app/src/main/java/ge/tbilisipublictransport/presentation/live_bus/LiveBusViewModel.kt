@@ -1,5 +1,6 @@
 package ge.tbilisipublictransport.presentation.live_bus
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,6 +43,8 @@ class LiveBusViewModel @Inject constructor(
                     route2.value = _route2
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
+                Log.d("LiveBusViewModel", e.message ?: "Error while parsing data")
                 error.value = e.message
             } finally {
                 error.value = null

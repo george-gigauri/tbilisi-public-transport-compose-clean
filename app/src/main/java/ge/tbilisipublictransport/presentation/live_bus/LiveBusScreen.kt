@@ -21,7 +21,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.annotations.PolylineOptions
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import ge.tbilisipublictransport.R
@@ -29,6 +31,7 @@ import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.math.ln
 
 @Composable
 fun LiveBusScreen(
@@ -62,12 +65,25 @@ fun LiveBusScreen(
                                 }
                             )
 
-                            map.addMarkers(
-                                ri.stops.map {
-                                    MarkerOptions().apply {
-                                        this.position(LatLng(it.lat, it.lng))
-                                    }
-                                }
+                            ri.stops.firstOrNull()?.let {
+                                map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                            }
+
+                            ri.stops.lastOrNull()?.let {
+                                map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                            }
+
+                            val firstStop = ri.stops.firstOrNull()
+                            val lastStop = ri.stops.lastOrNull()
+                            val firstLatLng = LatLng(firstStop?.lat ?: 0.0, firstStop?.lng ?: 0.0)
+                            val lastLatLng = LatLng(lastStop?.lat ?: 0.0, lastStop?.lng ?: 0.0)
+                            val latLngBounds = LatLngBounds.Builder()
+                                .include(firstLatLng)
+                                .include(lastLatLng)
+                                .build()
+
+                            map.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(latLngBounds.center, 11.2)
                             )
                         }
                     }
@@ -82,13 +98,13 @@ fun LiveBusScreen(
                                 }
                             )
 
-                            map.addMarkers(
-                                ri.stops.map {
-                                    MarkerOptions().apply {
-                                        this.position(LatLng(it.lat, it.lng))
-                                    }
-                                }
-                            )
+                            ri.stops.firstOrNull()?.let {
+                                map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                            }
+
+                            ri.stops.lastOrNull()?.let {
+                                map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                            }
                         }
                     }
                 }
@@ -119,4 +135,9 @@ fun LiveBusScreen(
                 .align(Alignment.TopStart)
         )
     }
+}
+
+private fun getZoomLevel(radius: Double): Int {
+    val scale = radius / 500
+    return (16 - ln(scale) / ln(2.0)).toInt()
 }
