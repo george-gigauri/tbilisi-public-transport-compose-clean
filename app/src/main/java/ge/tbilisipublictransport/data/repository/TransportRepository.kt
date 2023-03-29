@@ -16,8 +16,11 @@ class TransportRepository @Inject constructor(
         return api.getRoutes().body()?.routes?.map { it.toDomain() }.orEmpty()
     }
 
-    override suspend fun getRouteByBus(busNumber: Int): RouteInfo {
-        return api.getBusInfo(busNumber).body()?.toDomain() ?: throw Exception("Error occurred")
+    override suspend fun getRouteByBus(busNumber: Int, isForward: Boolean): RouteInfo {
+        return api.getBusInfo(
+            busNumber,
+            forward = if (isForward) 1 else 0
+        ).body()?.toDomain() ?: throw Exception("Error occurred")
     }
 
     override suspend fun getBusStopsByBusNumber(busNumber: Int): List<RouteStop> {

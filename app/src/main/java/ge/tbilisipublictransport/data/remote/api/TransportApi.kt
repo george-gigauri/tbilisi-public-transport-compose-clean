@@ -14,7 +14,7 @@ interface TransportApi {
         @Query("type") type: Int = 3,
     ): Response<RouteResponse>
 
-    @GET("routeInfo")
+    @GET("routers/ttc/routeInfo")
     suspend fun getBusInfo(
         @Query("routeNumber") number: Int,
         @Query("type") type: String = "bus",

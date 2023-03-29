@@ -55,7 +55,6 @@ fun Map(viewModel: HomeViewModel) {
     val stops: StateFlow<List<BusStop>> = viewModel.busStops
     val coroutine = rememberCoroutineScope()
     val lifecycleCoroutine = rememberCoroutineScope()
-    var lastZoom = remember { 0.0 }
 
     ComposableLifecycle(onEvent = { s, event ->
         lifecycleEvent.value = event
