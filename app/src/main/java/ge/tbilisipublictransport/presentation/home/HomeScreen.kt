@@ -1,5 +1,7 @@
 package ge.tbilisipublictransport.presentation.home
 
+import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -18,12 +20,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mapbox.mapboxsdk.annotations.IconFactory
+import androidx.lifecycle.Lifecycle
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.expressions.Expression.*
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
+import ge.tbilisipublictransport.R
+import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.domain.model.BusStop
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,9 +42,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
     Scaffold(topBar = {
         TopBar()
-    }) {
+    }) { _ ->
         Map(viewModel)
-        it.calculateBottomPadding()
     }
 }
 
@@ -42,23 +51,83 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 fun Map(viewModel: HomeViewModel) {
     val isDarkMode = isSystemInDarkTheme()
     val context = LocalContext.current
-    val stops: List<BusStop> = viewModel.busStops
+    val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_CREATE) }
+    val stops: StateFlow<List<BusStop>> = viewModel.busStops
+    val coroutine = rememberCoroutineScope()
+    val lifecycleCoroutine = rememberCoroutineScope()
+    var lastZoom = remember { 0.0 }
+
+    ComposableLifecycle(onEvent = { s, event ->
+        lifecycleEvent.value = event
+    })
 
     AndroidView(factory = {
         MapView(it).apply {
             getMapAsync { map ->
-                map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT)
-                map.addMarkers(
-                    stops.map { s ->
-                        MarkerOptions().apply {
-                            position(LatLng(s.lat, s.lng))
-                            icon(IconFactory.getInstance(context).defaultMarker())
+                map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
+                    map.uiSettings.isLogoEnabled = true
+                    addClusteredGeoJsonSource(context, it)
+                }
+
+                map.moveCamera(
+                    CameraUpdateFactory.newLatLngZoom(
+                        LatLng(41.716667, 44.783333),
+                        10.5
+                    )
+                )
+
+                map.setOnMarkerClickListener {
+                    return@setOnMarkerClickListener true
+                }
+
+                coroutine.launch {
+                    stops.collectLatest { s ->
+                        s.forEach { i ->
+                            val marker = marker(context, 85, 85, i.lat, i.lng)
+                            map.addMarker(marker)
                         }
                     }
-                )
+                }
+            }
+
+            lifecycleCoroutine.launch {
+                lifecycleEvent.collectLatest {
+                    when (it) {
+                        Lifecycle.Event.ON_CREATE -> onCreate(null)
+                        Lifecycle.Event.ON_START -> onStart()
+                        Lifecycle.Event.ON_RESUME -> onResume()
+                        Lifecycle.Event.ON_PAUSE -> onPause()
+                        Lifecycle.Event.ON_STOP -> onStop()
+                        Lifecycle.Event.ON_DESTROY -> onDestroy()
+                        Lifecycle.Event.ON_ANY -> onLowMemory()
+                    }
+                }
             }
         }
     }, modifier = Modifier.fillMaxSize())
+}
+
+fun marker(
+    context: Context,
+    width: Int,
+    height: Int,
+    lat: Double,
+    lng: Double,
+    @DrawableRes iconRes: Int = R.drawable.marker_bus_stop
+): MarkerOptions {
+    return MarkerOptions().apply {
+        //    val b = BitmapFactory.decodeResource(context.resources, iconRes)
+        //      val smallMarker = Bitmap.createScaledBitmap(b, width, height, false)
+        //       val smallMarkerIcon = IconFactory.getInstance(context).fromBitmap(smallMarker)
+
+        this.position(LatLng(lat, lng))
+        //  this.icon(smallMarkerIcon)
+    }
+}
+
+
+private fun addClusteredGeoJsonSource(context: Context, loadedMapStyle: Style) {
+
 }
 
 @Composable

@@ -1,8 +1,6 @@
 package ge.tbilisipublictransport.presentation.main
 
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import ge.tbilisipublictransport.presentation.bus_routes.BusRoutesScreen
 import ge.tbilisipublictransport.presentation.home.HomeScreen
 
 @Composable
@@ -22,13 +21,14 @@ fun BottomNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = MainNavigationScreen.Home.screenName,
+        modifier = Modifier.windowInsetsPadding(WindowInsets(bottom = 54.dp))
     ) {
         composable(MainNavigationScreen.Home.screenName) {
             HomeScreen()
         }
 
         composable(MainNavigationScreen.Stops.screenName) {
-
+            BusRoutesScreen()
         }
 
         composable(MainNavigationScreen.Favorites.screenName) {

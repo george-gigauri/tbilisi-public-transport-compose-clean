@@ -3,12 +3,16 @@ package ge.tbilisipublictransport.data.remote.api
 import ge.tbilisipublictransport.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface TransportApi {
 
-    @GET("routes")
-    suspend fun getRoutes(@Query("type") type: Int = 3): Response<RouteResponse>
+    @GET("routers/ttc/routes")
+    @Headers("Content-Type: application/json", "Accept: application/json")
+    suspend fun getRoutes(
+        @Query("type") type: Int = 3,
+    ): Response<RouteResponse>
 
     @GET("routeInfo")
     suspend fun getBusInfo(
