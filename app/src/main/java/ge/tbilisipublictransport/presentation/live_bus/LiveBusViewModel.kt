@@ -64,7 +64,7 @@ class LiveBusViewModel @Inject constructor(
 
             while (true) {
                 val forwardBuses = try {
-                    repository.getBusPositions(routeNumber!!)
+                    repository.getBusPositions(routeNumber!!, true)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     emptyList()
@@ -81,7 +81,7 @@ class LiveBusViewModel @Inject constructor(
                     arrayListOf<Bus>().apply { addAll(forwardBuses); addAll(backwardBuses) }
                 availableBuses.value = bothBuses
 
-                delay(4500)
+                delay(4000)
             }
         }
     }

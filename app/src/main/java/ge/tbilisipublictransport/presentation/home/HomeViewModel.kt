@@ -19,7 +19,7 @@ class HomeViewModel @Inject constructor(
     val busStops: MutableStateFlow<List<BusStop>> = MutableStateFlow(emptyList())
 
     init {
-        fetchBusStops()
+      //  fetchBusStops()
     }
 
     private fun fetchBusStops() = viewModelScope.launch {

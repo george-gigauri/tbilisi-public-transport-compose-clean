@@ -1,13 +1,20 @@
 package ge.tbilisipublictransport.presentation.home
 
+import android.Manifest
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,28 +28,38 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.expressions.Expression.*
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
 import ge.tbilisipublictransport.R
 import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.domain.model.BusStop
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 
+    val locationPermissionState =
+        rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+
     Scaffold(topBar = {
         TopBar()
     }) { _ ->
+
+        LaunchedEffect(Unit) {
+            locationPermissionState.launchPermissionRequest()
+        }
+
         Map(viewModel)
     }
 }

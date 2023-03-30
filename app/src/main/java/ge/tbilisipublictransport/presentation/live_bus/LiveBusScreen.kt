@@ -1,5 +1,7 @@
 package ge.tbilisipublictransport.presentation.live_bus
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -8,8 +10,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,17 +28,20 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.annotations.PolylineOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.tbilisipublictransport.R
-import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.domain.model.RouteStop
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
@@ -44,7 +49,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LiveBusScreen(
     viewModel: LiveBusViewModel = hiltViewModel()
@@ -62,13 +68,18 @@ fun LiveBusScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.error.collectAsStateWithLifecycle()
 
-    ComposableLifecycle(onEvent = { s, event ->
-        lifecycleEvent.value = event
-    })
+    val locationPermissionState =
+        rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
+    val coarseLocationPermissionState =
+        rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
+
+//    ComposableLifecycle(onEvent = { s, event ->
+//        lifecycleEvent.value = event
+//    })
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (isLoading && errorMessage.isNullOrEmpty()) {
-            LinearProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else if (!isLoading && !errorMessage.isNullOrEmpty()) {
             Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
             currentActivity?.finish()
@@ -76,7 +87,17 @@ fun LiveBusScreen(
             AndroidView(factory = {
                 MapView(it).apply {
                     getMapAsync { map ->
-                        map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT)
+                        map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
+                            if (locationPermissionState.status == PermissionStatus.Granted) {
+                                map.locationComponent.activateLocationComponent(
+                                    LocationComponentActivationOptions.builder(context, it)
+                                        .build()
+                                )
+                                map.locationComponent.isLocationComponentEnabled = true
+                            } else {
+                                locationPermissionState.launchPermissionRequest()
+                            }
+                        }
 
                         map.addOnCameraMoveListener {
                             mapZoomScope.coroutineContext.cancelChildren()
@@ -139,7 +160,7 @@ fun LiveBusScreen(
                                 map.addPolyline(
                                     PolylineOptions().apply {
                                         this.color(Color.Green.toArgb())
-                                        this.width(5f)
+                                        this.width(4f)
                                         addAll(ri.polyline)
                                     }
                                 )
@@ -173,7 +194,7 @@ fun LiveBusScreen(
                                 map.addPolyline(
                                     PolylineOptions().apply {
                                         this.color(Color.Red.toArgb())
-                                        this.width(5f)
+                                        this.width(4f)
                                         addAll(ri.polyline)
                                     }
                                 )
@@ -190,10 +211,7 @@ fun LiveBusScreen(
 
                         availableBusesScope.launch {
                             viewModel.availableBuses.collectLatest { buses ->
-
-                                map.markers.filter { it.snippet == "bus" }.forEach {
-                                    it.remove()
-                                }
+                                map.markers.filter { it.snippet == "bus" }.forEach { it.remove() }
 
                                 map.addMarkers(
                                     buses.map { b ->
@@ -205,7 +223,7 @@ fun LiveBusScreen(
                                                 )
                                             )?.let { bit ->
                                                 val smallMarker =
-                                                    Bitmap.createScaledBitmap(bit, 85, 85, false)
+                                                    Bitmap.createScaledBitmap(bit, 100,100, false)
                                                 val smallMarkerIcon =
                                                     IconFactory.getInstance(context)
                                                         .fromBitmap(smallMarker)

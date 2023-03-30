@@ -9,19 +9,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.tbilisipublictransport.R
@@ -34,11 +34,11 @@ import ge.tbilisipublictransport.presentation.live_bus.LiveBusActivity
 fun BusRoutesScreen(
     viewModel: BusRoutesViewModel = hiltViewModel()
 ) {
-    val routes by viewModel.data.collectAsStateWithLifecycle()
-    val searchKeyword by remember { mutableStateOf("") }
+    val routes by viewModel.routes.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(
-        topBar = { TopBar(searchKeyword) }
+        topBar = { TopBar(viewModel::searchRoute)}
     ) {
         Box(modifier = Modifier.padding(top = 54.dp)) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -84,7 +84,9 @@ fun RouteItem(index: Int, item: Route) {
 }
 
 @Composable
-fun TopBar(searchKeyword: String) {
+fun TopBar(onSearchKeywordChange: (String) -> Unit) {
+    var searchKeywordValue by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -96,12 +98,7 @@ fun TopBar(searchKeyword: String) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "მარშრუტის ძიება...",
-                maxLines = 1,
-                color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
-                else Color.DarkGray.copy(alpha = 0.5f),
-                overflow = TextOverflow.Ellipsis,
+            Box(
                 modifier = Modifier
                     .background(
                         if (isSystemInDarkTheme()) Color.DarkGray.copy(alpha = 0.5f)
@@ -109,8 +106,32 @@ fun TopBar(searchKeyword: String) {
                         RoundedCornerShape(100)
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .wrapContentHeight()
                     .weight(1f)
-            )
+            ) {
+                BasicTextField(
+                    value = searchKeywordValue,
+                    onValueChange = {
+                        searchKeywordValue = it
+                        onSearchKeywordChange.invoke(it)
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontSize = 15.sp,
+                        color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (searchKeywordValue.isEmpty()) {
+                    Text(
+                        text = "მარშრუტის ძიება...",
+                        color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
+                        else Color.DarkGray.copy(alpha = 0.5f)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 painter = painterResource(id = R.drawable.search_normal_1),

@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import ge.tbilisipublictransport.domain.model.Route
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,7 +16,10 @@ class BusRoutesViewModel @Inject constructor(
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val data: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
+    val routes: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
+
+    private var searchJob: Job? = null
 
     init {
         fetchRoutes()
@@ -32,11 +33,25 @@ class BusRoutesViewModel @Inject constructor(
             try {
                 val result = repository.getRoutes()
                 data.value = result
+                routes.value = result
                 error.value = null
             } catch (e: java.lang.Exception) {
                 error.value = e.message
             } finally {
                 isLoading.value = false
+            }
+        }
+    }
+
+    fun searchRoute(keyword: String) {
+        searchJob?.cancelChildren()
+        searchJob = viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                routes.value = if (keyword.isNotEmpty()) {
+                    data.value.filter {
+                        it.number.startsWith(keyword) || it.longName.contains(keyword)
+                    }
+                } else data.value
             }
         }
     }
