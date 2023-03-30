@@ -6,11 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.tbilisipublictransport.data.repository.TransportRepository
+import ge.tbilisipublictransport.domain.model.Bus
 import ge.tbilisipublictransport.domain.model.RouteInfo
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,11 +22,17 @@ class LiveBusViewModel @Inject constructor(
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
+    val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
 
     private val routeNumber: Int? get() = savedStateHandle["route_number"]
 
     init {
-        fetchRoutes()
+        viewModelScope.launch {
+            awaitAll(
+                async { fetchRoutes() },
+                async { fetchAvailableBuses() }
+            )
+        }
     }
 
     private fun fetchRoutes() = viewModelScope.launch {
@@ -49,6 +54,34 @@ class LiveBusViewModel @Inject constructor(
             } finally {
                 error.value = null
                 isLoading.value = false
+            }
+        }
+    }
+
+    private fun fetchAvailableBuses() = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            if (routeNumber == null) throw NullPointerException("Route number is MUST!")
+
+            while (true) {
+                val forwardBuses = try {
+                    repository.getBusPositions(routeNumber!!)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    emptyList()
+                }
+
+                val backwardBuses = try {
+                    repository.getBusPositions(routeNumber!!, false)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    emptyList()
+                }
+
+                val bothBuses =
+                    arrayListOf<Bus>().apply { addAll(forwardBuses); addAll(backwardBuses) }
+                availableBuses.value = bothBuses
+
+                delay(4500)
             }
         }
     }

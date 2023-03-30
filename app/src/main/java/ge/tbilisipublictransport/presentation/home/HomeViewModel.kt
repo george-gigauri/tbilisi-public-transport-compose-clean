@@ -24,8 +24,10 @@ class HomeViewModel @Inject constructor(
 
     private fun fetchBusStops() = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            busRepository.getStops().let {
-                busStops.value = it
+            try {
+                busRepository.getStops().let { busStops.value = it }
+            } catch (e: Exception) {
+
             }
         }
     }

@@ -30,9 +30,9 @@ interface TransportApi {
         @Query("forward") forward: Int = 0
     ): Response<RouteStopsResponse>
 
-    @GET("buses")
+    @GET("routers/ttc/buses")
     suspend fun getBusPositions(
         @Query("routeNumber") number: Int,
         @Query("forward") forward: Int = 0
-    ): Response<List<BusDto>>
+    ): Response<BusesResponseDto>
 }

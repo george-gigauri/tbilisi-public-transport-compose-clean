@@ -27,8 +27,11 @@ class TransportRepository @Inject constructor(
         return api.getRouteByBusNumber(busNumber).body()?.stops?.map { it.toDomain() }.orEmpty()
     }
 
-    override suspend fun getBusPositions(busNumber: Int): List<Bus> {
-        return api.getBusPositions(busNumber).body()?.map { it.toDomain() }.orEmpty()
+    override suspend fun getBusPositions(busNumber: Int, isForward: Boolean): List<Bus> {
+        return api.getBusPositions(
+            busNumber,
+            if (isForward) 1 else 0
+        ).body()?.buses?.map { it.toDomain() }.orEmpty()
     }
 
     override suspend fun getStops(): List<BusStop> {
