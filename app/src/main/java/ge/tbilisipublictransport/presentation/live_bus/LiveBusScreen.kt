@@ -12,10 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +39,7 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.tbilisipublictransport.R
+import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.domain.model.RouteStop
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
@@ -73,10 +71,6 @@ fun LiveBusScreen(
     val coarseLocationPermissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
 
-//    ComposableLifecycle(onEvent = { s, event ->
-//        lifecycleEvent.value = event
-//    })
-
     Box(modifier = Modifier.fillMaxSize()) {
         if (isLoading && errorMessage.isNullOrEmpty()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -88,41 +82,52 @@ fun LiveBusScreen(
                 MapView(it).apply {
                     getMapAsync { map ->
                         map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
-                            if (locationPermissionState.status == PermissionStatus.Granted) {
-                                map.locationComponent.activateLocationComponent(
-                                    LocationComponentActivationOptions.builder(context, it)
-                                        .build()
-                                )
-                                map.locationComponent.isLocationComponentEnabled = true
+                            if (coarseLocationPermissionState.status == PermissionStatus.Granted) {
+                                currentActivity?.let { c ->
+                                    if (LocationUtil.isLocationTurnedOn(c)) {
+                                        map.locationComponent.activateLocationComponent(
+                                            LocationComponentActivationOptions
+                                                .builder(context, it)
+                                                .build()
+                                        )
+                                        map.locationComponent.isLocationComponentEnabled = true
+                                    } else {
+                                        LocationUtil.requestLocation(c) {
+                                            map.locationComponent.activateLocationComponent(
+                                                LocationComponentActivationOptions
+                                                    .builder(context, it)
+                                                    .build()
+                                            )
+                                            map.locationComponent.isLocationComponentEnabled = true
+                                        }
+                                    }
+                                }
                             } else {
                                 locationPermissionState.launchPermissionRequest()
+                                coarseLocationPermissionState.launchPermissionRequest()
                             }
                         }
 
                         map.addOnCameraMoveListener {
                             mapZoomScope.coroutineContext.cancelChildren()
                             mapZoomScope.launch {
-                                delay(350)
-                                if (map.cameraPosition.zoom >= 13.5) {
+                                delay(300)
+                                if (map.cameraPosition.zoom >= 13.2) {
                                     map.markers.filter { it.snippet == "stop" }
                                         .forEach { it.remove() }
                                     val route1Stops = viewModel.route1.value.stops
                                     val route2Stops = viewModel.route2.value.stops
                                     val visibleBounds = map.projection.visibleRegion.latLngBounds
                                     val visibleStops = arrayListOf<RouteStop>().apply {
-                                        addAll(
-                                            route1Stops.filter {
-                                                val latLng = LatLng(it.lat, it.lng)
-                                                visibleBounds.contains(latLng)
-                                            }
-                                        )
+                                        addAll(route1Stops.filter {
+                                            val latLng = LatLng(it.lat, it.lng)
+                                            visibleBounds.contains(latLng)
+                                        })
 
-                                        addAll(
-                                            route2Stops.filter {
-                                                val latLng = LatLng(it.lat, it.lng)
-                                                visibleBounds.contains(latLng)
-                                            }
-                                        )
+                                        addAll(route2Stops.filter {
+                                            val latLng = LatLng(it.lat, it.lng)
+                                            visibleBounds.contains(latLng)
+                                        })
                                     }
 
                                     visibleStops.forEach {
@@ -132,11 +137,11 @@ fun LiveBusScreen(
                                             BitmapUtils.getBitmapFromDrawable(
                                                 ContextCompat.getDrawable(
                                                     context,
-                                                    if (it.isForward) R.drawable.ic_marker_route_stop_forward else R.drawable.ic_marker_route_stop_backward
+                                                    R.drawable.ic_marker_route_stop_backward
                                                 )
                                             )?.let { bit ->
                                                 val smallMarker =
-                                                    Bitmap.createScaledBitmap(bit, 50, 50, false)
+                                                    Bitmap.createScaledBitmap(bit, 55, 55, false)
                                                 val smallMarkerIcon =
                                                     IconFactory.getInstance(context)
                                                         .fromBitmap(smallMarker)
@@ -157,13 +162,11 @@ fun LiveBusScreen(
 
                         route1Scope.launch {
                             viewModel.route1.collectLatest { ri ->
-                                map.addPolyline(
-                                    PolylineOptions().apply {
-                                        this.color(Color.Green.toArgb())
-                                        this.width(4f)
-                                        addAll(ri.polyline)
-                                    }
-                                )
+                                map.addPolyline(PolylineOptions().apply {
+                                    this.color(Color.Green.toArgb())
+                                    this.width(4f)
+                                    addAll(ri.polyline)
+                                })
 
                                 ri.stops.firstOrNull()?.let {
                                     map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
@@ -178,10 +181,9 @@ fun LiveBusScreen(
                                 val firstLatLng =
                                     LatLng(firstStop?.lat ?: 0.0, firstStop?.lng ?: 0.0)
                                 val lastLatLng = LatLng(lastStop?.lat ?: 0.0, lastStop?.lng ?: 0.0)
-                                val latLngBounds = LatLngBounds.Builder()
-                                    .include(firstLatLng)
-                                    .include(lastLatLng)
-                                    .build()
+                                val latLngBounds =
+                                    LatLngBounds.Builder().include(firstLatLng).include(lastLatLng)
+                                        .build()
 
                                 map.animateCamera(
                                     CameraUpdateFactory.newLatLngZoom(latLngBounds.center, 11.15)
@@ -191,13 +193,11 @@ fun LiveBusScreen(
 
                         route2Scope.launch {
                             viewModel.route2.collectLatest { ri ->
-                                map.addPolyline(
-                                    PolylineOptions().apply {
-                                        this.color(Color.Red.toArgb())
-                                        this.width(4f)
-                                        addAll(ri.polyline)
-                                    }
-                                )
+                                map.addPolyline(PolylineOptions().apply {
+                                    this.color(Color.Red.toArgb())
+                                    this.width(4f)
+                                    addAll(ri.polyline)
+                                })
 
                                 ri.stops.firstOrNull()?.let {
                                     map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
@@ -213,29 +213,26 @@ fun LiveBusScreen(
                             viewModel.availableBuses.collectLatest { buses ->
                                 map.markers.filter { it.snippet == "bus" }.forEach { it.remove() }
 
-                                map.addMarkers(
-                                    buses.map { b ->
-                                        MarkerOptions().apply {
-                                            BitmapUtils.getBitmapFromDrawable(
-                                                ContextCompat.getDrawable(
-                                                    context,
-                                                    if (b.isForward) R.drawable.ic_marker_bus_forward else R.drawable.ic_marker_bus_backwards
-                                                )
-                                            )?.let { bit ->
-                                                val smallMarker =
-                                                    Bitmap.createScaledBitmap(bit, 100,100, false)
-                                                val smallMarkerIcon =
-                                                    IconFactory.getInstance(context)
-                                                        .fromBitmap(smallMarker)
+                                map.addMarkers(buses.map { b ->
+                                    MarkerOptions().apply {
+                                        BitmapUtils.getBitmapFromDrawable(
+                                            ContextCompat.getDrawable(
+                                                context,
+                                                if (b.isForward) R.drawable.ic_marker_bus_forward else R.drawable.ic_marker_bus_backwards
+                                            )
+                                        )?.let { bit ->
+                                            val smallMarker =
+                                                Bitmap.createScaledBitmap(bit, 100, 100, false)
+                                            val smallMarkerIcon = IconFactory.getInstance(context)
+                                                .fromBitmap(smallMarker)
 
-                                                icon(smallMarkerIcon)
-                                                snippet("bus")
-                                            }
-
-                                            position(LatLng(b.lat, b.lng))
+                                            icon(smallMarkerIcon)
+                                            snippet("bus")
                                         }
+
+                                        position(LatLng(b.lat, b.lng))
                                     }
-                                )
+                                })
                             }
                         }
                     }
@@ -257,15 +254,13 @@ fun LiveBusScreen(
             })
         }
 
-        Icon(
-            painter = painterResource(id = R.drawable.ic_arrow_square_left),
+        Icon(painter = painterResource(id = R.drawable.ic_arrow_square_left),
             contentDescription = null,
             modifier = Modifier
-                .padding(8.dp)
+                .padding(5.dp)
                 .size(54.dp)
                 .padding(8.dp)
                 .clickable { currentActivity?.finish() }
-                .align(Alignment.TopStart)
-        )
+                .align(Alignment.TopStart))
     }
 }

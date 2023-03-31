@@ -3,15 +3,14 @@ package ge.tbilisipublictransport.presentation.main
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.mapbox.mapboxsdk.Mapbox
 import dagger.hilt.android.AndroidEntryPoint
+import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.ui.theme.TbilisiPublicTransportTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -24,6 +23,13 @@ class MainActivity : ComponentActivity() {
             TbilisiPublicTransportTheme {
                 MainScreenContent()
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!LocationUtil.isLocationTurnedOn(this)) {
+            LocationUtil.requestLocation(this) { }
         }
     }
 }
