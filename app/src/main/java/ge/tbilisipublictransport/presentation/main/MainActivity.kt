@@ -26,8 +26,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
+
         if (!LocationUtil.isLocationTurnedOn(this)) {
             LocationUtil.requestLocation(this) { }
         }

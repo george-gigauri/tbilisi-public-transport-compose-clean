@@ -127,7 +127,8 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
                     Text(
                         text = "მარშრუტის ძიება...",
                         color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
-                        else Color.DarkGray.copy(alpha = 0.5f)
+                        else Color.DarkGray.copy(alpha = 0.5f),
+                        maxLines = 1
                     )
                 }
             }

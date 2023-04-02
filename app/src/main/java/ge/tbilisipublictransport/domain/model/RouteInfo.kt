@@ -12,7 +12,7 @@ data class RouteInfo(
 
     companion object {
         fun empty(): RouteInfo {
-            return RouteInfo("", -1, "", emptyList(), emptyList())
+            return RouteInfo("#ffffff", -1, "", emptyList(), emptyList())
         }
     }
 }

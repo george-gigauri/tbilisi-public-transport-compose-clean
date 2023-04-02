@@ -81,7 +81,7 @@ class LiveBusViewModel @Inject constructor(
                     arrayListOf<Bus>().apply { addAll(forwardBuses); addAll(backwardBuses) }
                 availableBuses.value = bothBuses
 
-                delay(4000)
+                delay(5000)
             }
         }
     }

@@ -4,21 +4,17 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -48,7 +44,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LiveBusScreen(
     viewModel: LiveBusViewModel = hiltViewModel()
@@ -71,196 +67,239 @@ fun LiveBusScreen(
     val coarseLocationPermissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (isLoading && errorMessage.isNullOrEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (!isLoading && !errorMessage.isNullOrEmpty()) {
-            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-            currentActivity?.finish()
-        } else {
-            AndroidView(factory = {
-                MapView(it).apply {
-                    getMapAsync { map ->
-                        map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
-                            if (coarseLocationPermissionState.status == PermissionStatus.Granted) {
-                                currentActivity?.let { c ->
-                                    if (LocationUtil.isLocationTurnedOn(c)) {
-                                        map.locationComponent.activateLocationComponent(
-                                            LocationComponentActivationOptions
-                                                .builder(context, it)
-                                                .build()
-                                        )
-                                        map.locationComponent.isLocationComponentEnabled = true
-                                    } else {
-                                        LocationUtil.requestLocation(c) {
+    Scaffold(
+        topBar = {
+            LiveBusTopBar(
+                route = viewModel.route1.collectAsState().value,
+                onBackButtonClick = { currentActivity?.finish() }
+            )
+        }
+    ) {
+        it.calculateBottomPadding()
+        Box(modifier = Modifier.fillMaxSize().padding(top = 54.dp)) {
+            if (isLoading && errorMessage.isNullOrEmpty()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else if (!isLoading && !errorMessage.isNullOrEmpty()) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                currentActivity?.finish()
+            } else {
+                AndroidView(factory = {
+                    MapView(it).apply {
+                        getMapAsync { map ->
+                            map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
+                                if (coarseLocationPermissionState.status == PermissionStatus.Granted) {
+                                    currentActivity?.let { c ->
+                                        if (LocationUtil.isLocationTurnedOn(c)) {
                                             map.locationComponent.activateLocationComponent(
                                                 LocationComponentActivationOptions
                                                     .builder(context, it)
                                                     .build()
                                             )
                                             map.locationComponent.isLocationComponentEnabled = true
+                                        } else {
+                                            LocationUtil.requestLocation(c) {
+                                                map.locationComponent.activateLocationComponent(
+                                                    LocationComponentActivationOptions
+                                                        .builder(context, it)
+                                                        .build()
+                                                )
+                                                map.locationComponent.isLocationComponentEnabled =
+                                                    true
+                                            }
                                         }
                                     }
+                                } else {
+                                    locationPermissionState.launchPermissionRequest()
+                                    coarseLocationPermissionState.launchPermissionRequest()
                                 }
-                            } else {
-                                locationPermissionState.launchPermissionRequest()
-                                coarseLocationPermissionState.launchPermissionRequest()
                             }
-                        }
 
-                        map.addOnCameraMoveListener {
-                            mapZoomScope.coroutineContext.cancelChildren()
-                            mapZoomScope.launch {
-                                delay(300)
-                                if (map.cameraPosition.zoom >= 13.2) {
-                                    map.markers.filter { it.snippet == "stop" }
-                                        .forEach { it.remove() }
-                                    val route1Stops = viewModel.route1.value.stops
-                                    val route2Stops = viewModel.route2.value.stops
-                                    val visibleBounds = map.projection.visibleRegion.latLngBounds
-                                    val visibleStops = arrayListOf<RouteStop>().apply {
-                                        addAll(route1Stops.filter {
-                                            val latLng = LatLng(it.lat, it.lng)
-                                            visibleBounds.contains(latLng)
-                                        })
+                            map.addOnCameraMoveListener {
+                                mapZoomScope.coroutineContext.cancelChildren()
+                                mapZoomScope.launch {
+                                    delay(300)
+                                    if (map.cameraPosition.zoom >= 13.2) {
+                                        map.markers.filter { it.snippet == "stop" }
+                                            .forEach { it.remove() }
+                                        val route1Stops = viewModel.route1.value.stops
+                                        val route2Stops = viewModel.route2.value.stops
+                                        val visibleBounds =
+                                            map.projection.visibleRegion.latLngBounds
+                                        val visibleStops = arrayListOf<RouteStop>().apply {
+                                            addAll(route1Stops.filter {
+                                                val latLng = LatLng(it.lat, it.lng)
+                                                visibleBounds.contains(latLng)
+                                            })
 
-                                        addAll(route2Stops.filter {
-                                            val latLng = LatLng(it.lat, it.lng)
-                                            visibleBounds.contains(latLng)
-                                        })
+                                            addAll(route2Stops.filter {
+                                                val latLng = LatLng(it.lat, it.lng)
+                                                visibleBounds.contains(latLng)
+                                            })
+                                        }
+
+                                        visibleStops.forEach {
+                                            MarkerOptions().apply {
+                                                position(LatLng(it.lat, it.lng))
+                                                snippet("stop")
+                                                BitmapUtils.getBitmapFromDrawable(
+                                                    ContextCompat.getDrawable(
+                                                        context,
+                                                        R.drawable.ic_marker_route_stop_backward
+                                                    )
+                                                )?.let { bit ->
+                                                    val smallMarker =
+                                                        Bitmap.createScaledBitmap(
+                                                            bit,
+                                                            55,
+                                                            55,
+                                                            false
+                                                        )
+                                                    val smallMarkerIcon =
+                                                        IconFactory.getInstance(context)
+                                                            .fromBitmap(smallMarker)
+
+                                                    icon(smallMarkerIcon)
+                                                }
+
+                                                map.addMarker(`this`)
+                                            }
+                                        }
+
+                                    } else {
+                                        map.markers.filter { it.snippet == "stop" }
+                                            .forEach { it.remove() }
+                                    }
+                                }.start()
+                            }
+
+                            route1Scope.launch {
+                                viewModel.route1.collectLatest { ri ->
+                                    map.addPolyline(PolylineOptions().apply {
+                                        this.color(Color.Green.toArgb())
+                                        this.width(4f)
+                                        addAll(ri.polyline)
+                                    })
+
+                                    ri.stops.firstOrNull()?.let {
+                                        map.addMarker(
+                                            MarkerOptions().position(
+                                                LatLng(
+                                                    it.lat,
+                                                    it.lng
+                                                )
+                                            )
+                                        )
                                     }
 
-                                    visibleStops.forEach {
+                                    ri.stops.lastOrNull()?.let {
+                                        map.addMarker(
+                                            MarkerOptions().position(
+                                                LatLng(
+                                                    it.lat,
+                                                    it.lng
+                                                )
+                                            )
+                                        )
+                                    }
+
+                                    val firstStop = ri.stops.firstOrNull()
+                                    val lastStop = ri.stops.lastOrNull()
+                                    val firstLatLng =
+                                        LatLng(firstStop?.lat ?: 0.0, firstStop?.lng ?: 0.0)
+                                    val lastLatLng =
+                                        LatLng(lastStop?.lat ?: 0.0, lastStop?.lng ?: 0.0)
+                                    val latLngBounds =
+                                        LatLngBounds.Builder().include(firstLatLng)
+                                            .include(lastLatLng)
+                                            .build()
+
+                                    map.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                            latLngBounds.center,
+                                            11.15
+                                        )
+                                    )
+                                }
+                            }
+
+                            route2Scope.launch {
+                                viewModel.route2.collectLatest { ri ->
+                                    map.addPolyline(PolylineOptions().apply {
+                                        this.color(Color.Red.toArgb())
+                                        this.width(4f)
+                                        addAll(ri.polyline)
+                                    })
+
+                                    ri.stops.firstOrNull()?.let {
+                                        map.addMarker(
+                                            MarkerOptions().position(
+                                                LatLng(
+                                                    it.lat,
+                                                    it.lng
+                                                )
+                                            )
+                                        )
+                                    }
+
+                                    ri.stops.lastOrNull()?.let {
+                                        map.addMarker(
+                                            MarkerOptions().position(
+                                                LatLng(
+                                                    it.lat,
+                                                    it.lng
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+
+                            availableBusesScope.launch {
+                                viewModel.availableBuses.collectLatest { buses ->
+                                    map.markers.filter { it.snippet == "bus" }
+                                        .forEach { it.remove() }
+
+                                    map.addMarkers(buses.map { b ->
                                         MarkerOptions().apply {
-                                            position(LatLng(it.lat, it.lng))
-                                            snippet("stop")
                                             BitmapUtils.getBitmapFromDrawable(
                                                 ContextCompat.getDrawable(
                                                     context,
-                                                    R.drawable.ic_marker_route_stop_backward
+                                                    if (b.isForward) R.drawable.ic_marker_bus_forward else R.drawable.ic_marker_bus_backwards
                                                 )
                                             )?.let { bit ->
                                                 val smallMarker =
-                                                    Bitmap.createScaledBitmap(bit, 55, 55, false)
+                                                    Bitmap.createScaledBitmap(bit, 100, 100, false)
                                                 val smallMarkerIcon =
                                                     IconFactory.getInstance(context)
                                                         .fromBitmap(smallMarker)
 
                                                 icon(smallMarkerIcon)
+                                                snippet("bus")
                                             }
 
-                                            map.addMarker(`this`)
+                                            position(LatLng(b.lat, b.lng))
                                         }
-                                    }
-
-                                } else {
-                                    map.markers.filter { it.snippet == "stop" }
-                                        .forEach { it.remove() }
-                                }
-                            }.start()
-                        }
-
-                        route1Scope.launch {
-                            viewModel.route1.collectLatest { ri ->
-                                map.addPolyline(PolylineOptions().apply {
-                                    this.color(Color.Green.toArgb())
-                                    this.width(4f)
-                                    addAll(ri.polyline)
-                                })
-
-                                ri.stops.firstOrNull()?.let {
-                                    map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
-                                }
-
-                                ri.stops.lastOrNull()?.let {
-                                    map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
-                                }
-
-                                val firstStop = ri.stops.firstOrNull()
-                                val lastStop = ri.stops.lastOrNull()
-                                val firstLatLng =
-                                    LatLng(firstStop?.lat ?: 0.0, firstStop?.lng ?: 0.0)
-                                val lastLatLng = LatLng(lastStop?.lat ?: 0.0, lastStop?.lng ?: 0.0)
-                                val latLngBounds =
-                                    LatLngBounds.Builder().include(firstLatLng).include(lastLatLng)
-                                        .build()
-
-                                map.animateCamera(
-                                    CameraUpdateFactory.newLatLngZoom(latLngBounds.center, 11.15)
-                                )
-                            }
-                        }
-
-                        route2Scope.launch {
-                            viewModel.route2.collectLatest { ri ->
-                                map.addPolyline(PolylineOptions().apply {
-                                    this.color(Color.Red.toArgb())
-                                    this.width(4f)
-                                    addAll(ri.polyline)
-                                })
-
-                                ri.stops.firstOrNull()?.let {
-                                    map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
-                                }
-
-                                ri.stops.lastOrNull()?.let {
-                                    map.addMarker(MarkerOptions().position(LatLng(it.lat, it.lng)))
+                                    })
                                 }
                             }
                         }
 
-                        availableBusesScope.launch {
-                            viewModel.availableBuses.collectLatest { buses ->
-                                map.markers.filter { it.snippet == "bus" }.forEach { it.remove() }
-
-                                map.addMarkers(buses.map { b ->
-                                    MarkerOptions().apply {
-                                        BitmapUtils.getBitmapFromDrawable(
-                                            ContextCompat.getDrawable(
-                                                context,
-                                                if (b.isForward) R.drawable.ic_marker_bus_forward else R.drawable.ic_marker_bus_backwards
-                                            )
-                                        )?.let { bit ->
-                                            val smallMarker =
-                                                Bitmap.createScaledBitmap(bit, 100, 100, false)
-                                            val smallMarkerIcon = IconFactory.getInstance(context)
-                                                .fromBitmap(smallMarker)
-
-                                            icon(smallMarkerIcon)
-                                            snippet("bus")
-                                        }
-
-                                        position(LatLng(b.lat, b.lng))
-                                    }
-                                })
+                        lifecycleCoroutine.launch {
+                            lifecycleEvent.collectLatest {
+                                when (it) {
+                                    Lifecycle.Event.ON_CREATE -> onCreate(null)
+                                    Lifecycle.Event.ON_START -> onStart()
+                                    Lifecycle.Event.ON_RESUME -> onResume()
+                                    Lifecycle.Event.ON_PAUSE -> onPause()
+                                    Lifecycle.Event.ON_STOP -> onStop()
+                                    Lifecycle.Event.ON_DESTROY -> onDestroy()
+                                    Lifecycle.Event.ON_ANY -> onLowMemory()
+                                }
                             }
                         }
                     }
-
-                    lifecycleCoroutine.launch {
-                        lifecycleEvent.collectLatest {
-                            when (it) {
-                                Lifecycle.Event.ON_CREATE -> onCreate(null)
-                                Lifecycle.Event.ON_START -> onStart()
-                                Lifecycle.Event.ON_RESUME -> onResume()
-                                Lifecycle.Event.ON_PAUSE -> onPause()
-                                Lifecycle.Event.ON_STOP -> onStop()
-                                Lifecycle.Event.ON_DESTROY -> onDestroy()
-                                Lifecycle.Event.ON_ANY -> onLowMemory()
-                            }
-                        }
-                    }
-                }
-            })
+                })
+            }
         }
-
-        Icon(painter = painterResource(id = R.drawable.ic_arrow_square_left),
-            contentDescription = null,
-            modifier = Modifier
-                .padding(5.dp)
-                .size(54.dp)
-                .padding(8.dp)
-                .clickable { currentActivity?.finish() }
-                .align(Alignment.TopStart))
     }
 }
