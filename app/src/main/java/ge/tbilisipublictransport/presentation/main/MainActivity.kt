@@ -14,6 +14,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (!LocationUtil.isLocationTurnedOn(this)) {
+            LocationUtil.requestLocation(this) { }
+        }
+
         Mapbox.getInstance(
             this,
             "pk.eyJ1IjoiZ2VvcmdlZ2lnYXVyaSIsImEiOiJjbGZhdTBqMGIydHRqM3ByMG00c2wyaGo2In0.rISsWHRrxsQRKfrrdkntRw"
@@ -23,14 +27,6 @@ class MainActivity : ComponentActivity() {
             TbilisiPublicTransportTheme {
                 MainScreenContent()
             }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        if (!LocationUtil.isLocationTurnedOn(this)) {
-            LocationUtil.requestLocation(this) { }
         }
     }
 }

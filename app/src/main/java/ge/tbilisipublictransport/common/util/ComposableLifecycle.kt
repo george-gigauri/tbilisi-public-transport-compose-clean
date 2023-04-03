@@ -13,12 +13,8 @@ fun ComposableLifecycle(
     onEvent: (LifecycleOwner, Lifecycle.Event) -> Unit
 ) {
     DisposableEffect(lifeCycleOwner) {
-        val observer = LifecycleEventObserver { source, event ->
-            onEvent(source, event)
-        }
+        val observer = LifecycleEventObserver { source, event -> onEvent(source, event) }
         lifeCycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifeCycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifeCycleOwner.lifecycle.removeObserver(observer) }
     }
 }

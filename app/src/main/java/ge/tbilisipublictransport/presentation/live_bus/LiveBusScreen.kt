@@ -35,6 +35,7 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.tbilisipublictransport.R
+import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.domain.model.RouteStop
 import kotlinx.coroutines.cancelChildren
@@ -67,16 +68,40 @@ fun LiveBusScreen(
     val coarseLocationPermissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
 
+    val infoBottomSheetState = rememberModalBottomSheetState()
+    val infoBottomSheetScope = rememberCoroutineScope()
+
+    ComposableLifecycle(onEvent = { s, event ->
+        lifecycleEvent.value = event
+    })
+
+    var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+    SideEffect {
+        if (locationPermissionState.status == PermissionStatus.Granted) {
+            LocationUtil.getMyLocation(context, onSuccess = {
+                userLocation = LatLng(it.latitude, it.longitude)
+            }, onError = {
+
+            })
+        }
+    }
+
     Scaffold(
         topBar = {
             LiveBusTopBar(
                 route = viewModel.route1.collectAsState().value,
-                onBackButtonClick = { currentActivity?.finish() }
+                onBackButtonClick = { currentActivity?.finish() },
+                onNotifyClick = { },
+                onInfoClick = { infoBottomSheetScope.launch { infoBottomSheetState.show() } }
             )
         }
     ) {
         it.calculateBottomPadding()
-        Box(modifier = Modifier.fillMaxSize().padding(top = 54.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 54.dp)
+        ) {
             if (isLoading && errorMessage.isNullOrEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (!isLoading && !errorMessage.isNullOrEmpty()) {
@@ -95,7 +120,8 @@ fun LiveBusScreen(
                                                     .builder(context, it)
                                                     .build()
                                             )
-                                            map.locationComponent.isLocationComponentEnabled = true
+                                            map.locationComponent.isLocationComponentEnabled =
+                                                true
                                         } else {
                                             LocationUtil.requestLocation(c) {
                                                 map.locationComponent.activateLocationComponent(
@@ -243,12 +269,7 @@ fun LiveBusScreen(
 
                                     ri.stops.lastOrNull()?.let {
                                         map.addMarker(
-                                            MarkerOptions().position(
-                                                LatLng(
-                                                    it.lat,
-                                                    it.lng
-                                                )
-                                            )
+                                            MarkerOptions().position(LatLng(it.lat, it.lng))
                                         )
                                     }
                                 }
@@ -268,7 +289,12 @@ fun LiveBusScreen(
                                                 )
                                             )?.let { bit ->
                                                 val smallMarker =
-                                                    Bitmap.createScaledBitmap(bit, 100, 100, false)
+                                                    Bitmap.createScaledBitmap(
+                                                        bit,
+                                                        100,
+                                                        100,
+                                                        false
+                                                    )
                                                 val smallMarkerIcon =
                                                     IconFactory.getInstance(context)
                                                         .fromBitmap(smallMarker)
@@ -300,6 +326,19 @@ fun LiveBusScreen(
                     }
                 })
             }
+        }
+    }
+
+    if (infoBottomSheetState.isVisible) {
+        LiveBusInfoBottomSheet(
+            infoBottomSheetState,
+            userLocation,
+            viewModel.route1.collectAsState().value,
+            viewModel.route2.collectAsState().value,
+            viewModel.availableBuses.collectAsState().value.filter { it.isForward },
+            viewModel.availableBuses.collectAsState().value.filter { !it.isForward },
+        ) {
+            infoBottomSheetScope.launch { infoBottomSheetState.hide() }
         }
     }
 }

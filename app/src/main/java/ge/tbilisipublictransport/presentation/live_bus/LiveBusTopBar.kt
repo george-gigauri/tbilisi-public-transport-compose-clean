@@ -96,6 +96,7 @@ fun LiveBusTopBar(
             modifier = Modifier
                 .height(50.dp)
                 .width(52.dp)
+                .clickable { onNotifyClick.invoke() }
                 .padding(8.dp)
                 .background(iconColor, RoundedCornerShape(8.dp))
                 .padding(6.dp)
@@ -108,6 +109,7 @@ fun LiveBusTopBar(
             modifier = Modifier
                 .height(50.dp)
                 .width(52.dp)
+                .clickable { onInfoClick.invoke() }
                 .padding(8.dp)
                 .background(iconColor, RoundedCornerShape(8.dp))
                 .padding(6.dp)
