@@ -71,6 +71,9 @@ fun LiveBusScreen(
     val infoBottomSheetState = rememberModalBottomSheetState()
     val infoBottomSheetScope = rememberCoroutineScope()
 
+    val notifyMeBottomSheetState = rememberModalBottomSheetState()
+    val notifyMeBottomSheetScope = rememberCoroutineScope()
+
     ComposableLifecycle(onEvent = { s, event ->
         lifecycleEvent.value = event
     })
@@ -86,12 +89,35 @@ fun LiveBusScreen(
         }
     }
 
+    // Bottom Sheet of Information
+    if (infoBottomSheetState.isVisible) {
+        LiveBusInfoBottomSheet(
+            infoBottomSheetState,
+            userLocation,
+            viewModel.route1.collectAsState().value,
+            viewModel.route2.collectAsState().value,
+            viewModel.availableBuses.collectAsState().value.filter { it.isForward },
+            viewModel.availableBuses.collectAsState().value.filter { !it.isForward },
+        ) {
+            infoBottomSheetScope.launch { infoBottomSheetState.hide() }
+        }
+    }
+
+    // Notification Bottom Sheet
+    if (notifyMeBottomSheetState.isVisible) {
+        LiveBusScheduleNotificationBottomSheet(
+            notifyMeBottomSheetState,
+        ) {
+
+        }
+    }
+
     Scaffold(
         topBar = {
             LiveBusTopBar(
                 route = viewModel.route1.collectAsState().value,
                 onBackButtonClick = { currentActivity?.finish() },
-                onNotifyClick = { },
+                onNotifyClick = { notifyMeBottomSheetScope.launch { notifyMeBottomSheetState.show() } },
                 onInfoClick = { infoBottomSheetScope.launch { infoBottomSheetState.show() } }
             )
         }
@@ -326,19 +352,6 @@ fun LiveBusScreen(
                     }
                 })
             }
-        }
-    }
-
-    if (infoBottomSheetState.isVisible) {
-        LiveBusInfoBottomSheet(
-            infoBottomSheetState,
-            userLocation,
-            viewModel.route1.collectAsState().value,
-            viewModel.route2.collectAsState().value,
-            viewModel.availableBuses.collectAsState().value.filter { it.isForward },
-            viewModel.availableBuses.collectAsState().value.filter { !it.isForward },
-        ) {
-            infoBottomSheetScope.launch { infoBottomSheetState.hide() }
         }
     }
 }

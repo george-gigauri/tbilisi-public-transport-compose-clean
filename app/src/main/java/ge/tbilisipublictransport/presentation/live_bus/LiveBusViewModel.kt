@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ge.tbilisipublictransport.BuildConfig
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import ge.tbilisipublictransport.domain.model.Bus
 import ge.tbilisipublictransport.domain.model.RouteInfo
@@ -81,7 +82,7 @@ class LiveBusViewModel @Inject constructor(
                     arrayListOf<Bus>().apply { addAll(forwardBuses); addAll(backwardBuses) }
                 availableBuses.value = bothBuses
 
-                delay(5000)
+                delay(if (BuildConfig.DEBUG) 35000 else 5000)
             }
         }
     }

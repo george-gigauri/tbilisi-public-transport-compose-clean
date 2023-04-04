@@ -65,9 +65,9 @@ object LocationUtil {
     ) {
         (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
             .requestLocationUpdates(
-                LocationManager.NETWORK_PROVIDER,
-                2000L,
-                1.5f
+                LocationManager.PASSIVE_PROVIDER,
+                5000L,
+                3.5f
             ) {
                 onSuccess.invoke(it)
             }
