@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,7 +21,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
@@ -35,6 +38,7 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.tbilisipublictransport.R
+import ge.tbilisipublictransport.common.service.worker.BusDistanceReminderWorker
 import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.domain.model.RouteStop
@@ -63,6 +67,8 @@ fun LiveBusScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.error.collectAsStateWithLifecycle()
 
+    var isReminderRunning by rememberSaveable { mutableStateOf(false) }
+
     val locationPermissionState =
         rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
     val coarseLocationPermissionState =
@@ -71,15 +77,15 @@ fun LiveBusScreen(
     val infoBottomSheetState = rememberModalBottomSheetState()
     val infoBottomSheetScope = rememberCoroutineScope()
 
-    val notifyMeBottomSheetState = rememberModalBottomSheetState()
-    val notifyMeBottomSheetScope = rememberCoroutineScope()
+    var isNotifyMeDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     ComposableLifecycle(onEvent = { s, event ->
         lifecycleEvent.value = event
     })
 
     var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
-    SideEffect {
+
+    LaunchedEffect(key1 = Unit) {
         if (locationPermissionState.status == PermissionStatus.Granted) {
             LocationUtil.getMyLocation(context, onSuccess = {
                 userLocation = LatLng(it.latitude, it.longitude)
@@ -87,6 +93,19 @@ fun LiveBusScreen(
 
             })
         }
+    }
+
+    // Check if reminder worker is running for current route
+    DisposableEffect(key1 = Unit) {
+        val workInfo = BusDistanceReminderWorker.getWorkInfo(context, viewModel.routeNumber ?: 0)
+        val observer = Observer<List<WorkInfo>> {
+            isReminderRunning = it.isNotEmpty() && (it.lastOrNull()?.state in listOf(
+                WorkInfo.State.ENQUEUED,
+                WorkInfo.State.RUNNING,
+            ))
+        }
+        workInfo.observeForever(observer)
+        onDispose { workInfo.removeObserver(observer) }
     }
 
     // Bottom Sheet of Information
@@ -104,20 +123,36 @@ fun LiveBusScreen(
     }
 
     // Notification Bottom Sheet
-    if (notifyMeBottomSheetState.isVisible) {
-        LiveBusScheduleNotificationBottomSheet(
-            notifyMeBottomSheetState,
-        ) {
-
-        }
+    if (isNotifyMeDialogVisible) {
+        LiveBusScheduleNotificationDialog(
+            viewModel.route1.collectAsState().value,
+            viewModel.route2.collectAsState().value,
+            onSchedule = { distance, isForward ->
+                BusDistanceReminderWorker.start(
+                    context,
+                    viewModel.route1.value.number,
+                    userLocation,
+                    distance,
+                    isForward
+                )
+            }, onCancel = {
+                isNotifyMeDialogVisible = false
+            })
     }
 
     Scaffold(
         topBar = {
             LiveBusTopBar(
+                isReminderRunning = isReminderRunning,
                 route = viewModel.route1.collectAsState().value,
                 onBackButtonClick = { currentActivity?.finish() },
-                onNotifyClick = { notifyMeBottomSheetScope.launch { notifyMeBottomSheetState.show() } },
+                onNotifyClick = {
+                    if (isReminderRunning) {
+                        BusDistanceReminderWorker.stop(context, viewModel.routeNumber)
+                    } else {
+                        isNotifyMeDialogVisible = true
+                    }
+                },
                 onInfoClick = { infoBottomSheetScope.launch { infoBottomSheetState.show() } }
             )
         }

@@ -3,7 +3,6 @@ package ge.tbilisipublictransport.presentation.live_bus
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -53,7 +52,7 @@ fun LiveBusInfoBottomSheet(
         }
     }
 
-    BackHandler { onCancel.invoke() }
+  //  BackHandler { onCancel.invoke() }
 }
 
 @Composable

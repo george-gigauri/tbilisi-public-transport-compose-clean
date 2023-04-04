@@ -25,7 +25,7 @@ class LiveBusViewModel @Inject constructor(
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
 
-    private val routeNumber: Int? get() = savedStateHandle["route_number"]
+    val routeNumber: Int? get() = savedStateHandle["route_number"]
 
     init {
         viewModelScope.launch {

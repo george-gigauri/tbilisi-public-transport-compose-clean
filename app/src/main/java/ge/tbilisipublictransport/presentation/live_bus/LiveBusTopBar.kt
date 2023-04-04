@@ -20,15 +20,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.tbilisipublictransport.R
 import ge.tbilisipublictransport.domain.model.RouteInfo
 
 @Composable
-@Preview
 fun LiveBusTopBar(
+    isReminderRunning: Boolean = false,
     route: RouteInfo = RouteInfo.empty(),
     onBackButtonClick: () -> Unit = { },
     onNotifyClick: () -> Unit = { },
@@ -92,7 +91,11 @@ fun LiveBusTopBar(
         Icon(
             painter = painterResource(id = R.drawable.ic_notification),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primaryContainer,
+            tint = if (isReminderRunning) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.primaryContainer
+            },
             modifier = Modifier
                 .height(50.dp)
                 .width(52.dp)
