@@ -3,6 +3,8 @@ package ge.tbilisipublictransport.presentation.bus_routes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ge.tbilisipublictransport.common.other.mapper.toDomain
+import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import ge.tbilisipublictransport.domain.model.Route
 import kotlinx.coroutines.*
@@ -11,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BusRoutesViewModel @Inject constructor(
-    private val repository: TransportRepository
+    private val repository: TransportRepository,
+    private val db: AppDatabase
 ) : ViewModel() {
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -31,10 +34,12 @@ class BusRoutesViewModel @Inject constructor(
             error.value = null
 
             try {
-                val result = repository.getRoutes()
-                data.value = result
-                routes.value = result
-                error.value = null
+                db.routeDao().getAllFlow().collect {
+                    val result = it.map { it.toDomain() }
+                    data.value = result
+                    routes.value = result
+                    error.value = null
+                }
             } catch (e: java.lang.Exception) {
                 error.value = e.message
             } finally {

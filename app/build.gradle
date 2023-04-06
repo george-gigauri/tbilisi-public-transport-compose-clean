@@ -72,6 +72,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 
     // Room
     implementation "androidx.room:room-ktx:2.5.1"

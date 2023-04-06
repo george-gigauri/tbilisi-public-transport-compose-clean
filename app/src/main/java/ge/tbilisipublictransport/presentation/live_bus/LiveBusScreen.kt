@@ -3,6 +3,7 @@ package ge.tbilisipublictransport.presentation.live_bus
 import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
@@ -69,10 +71,16 @@ fun LiveBusScreen(
 
     var isReminderRunning by rememberSaveable { mutableStateOf(false) }
 
-    val locationPermissionState =
-        rememberPermissionState(permission = Manifest.permission.ACCESS_FINE_LOCATION)
-    val coarseLocationPermissionState =
-        rememberPermissionState(permission = Manifest.permission.ACCESS_COARSE_LOCATION)
+    val notificationsPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+    } else null
+
+    val locationPermissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
+    )
 
     val infoBottomSheetState = rememberModalBottomSheetState()
     val infoBottomSheetScope = rememberCoroutineScope()
@@ -86,7 +94,7 @@ fun LiveBusScreen(
     var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
 
     LaunchedEffect(key1 = Unit) {
-        if (locationPermissionState.status == PermissionStatus.Granted) {
+        if (locationPermissionState.allPermissionsGranted) {
             LocationUtil.getMyLocation(context, onSuccess = {
                 userLocation = LatLng(it.latitude, it.longitude)
             }, onError = {
@@ -150,7 +158,11 @@ fun LiveBusScreen(
                     if (isReminderRunning) {
                         BusDistanceReminderWorker.stop(context, viewModel.routeNumber)
                     } else {
-                        isNotifyMeDialogVisible = true
+                        if (notificationsPermission?.status == PermissionStatus.Granted) {
+                            isNotifyMeDialogVisible = true
+                        } else {
+                            notificationsPermission?.launchPermissionRequest()
+                        }
                     }
                 },
                 onInfoClick = { infoBottomSheetScope.launch { infoBottomSheetState.show() } }
@@ -173,7 +185,7 @@ fun LiveBusScreen(
                     MapView(it).apply {
                         getMapAsync { map ->
                             map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
-                                if (coarseLocationPermissionState.status == PermissionStatus.Granted) {
+                                if (locationPermissionState.allPermissionsGranted) {
                                     currentActivity?.let { c ->
                                         if (LocationUtil.isLocationTurnedOn(c)) {
                                             map.locationComponent.activateLocationComponent(
@@ -196,8 +208,7 @@ fun LiveBusScreen(
                                         }
                                     }
                                 } else {
-                                    locationPermissionState.launchPermissionRequest()
-                                    coarseLocationPermissionState.launchPermissionRequest()
+                                    locationPermissionState.launchMultiplePermissionRequest()
                                 }
                             }
 
@@ -380,7 +391,7 @@ fun LiveBusScreen(
                                     Lifecycle.Event.ON_PAUSE -> onPause()
                                     Lifecycle.Event.ON_STOP -> onStop()
                                     Lifecycle.Event.ON_DESTROY -> onDestroy()
-                                    Lifecycle.Event.ON_ANY -> onLowMemory()
+                                    Lifecycle.Event.ON_ANY -> onCreate(null)
                                 }
                             }
                         }

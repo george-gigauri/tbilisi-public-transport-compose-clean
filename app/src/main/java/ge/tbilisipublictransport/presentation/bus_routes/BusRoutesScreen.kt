@@ -1,6 +1,7 @@
 package ge.tbilisipublictransport.presentation.bus_routes
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,15 +36,17 @@ fun BusRoutesScreen(
     viewModel: BusRoutesViewModel = hiltViewModel()
 ) {
     val routes by viewModel.routes.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val context: Context = LocalContext.current
 
     Scaffold(
-        topBar = { TopBar(viewModel::searchRoute)}
+        topBar = { TopBar(viewModel::searchRoute) }
     ) {
         Box(modifier = Modifier.padding(top = 54.dp)) {
-            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            LazyColumn(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)) {
                 itemsIndexed(routes) { index, item ->
-                    RouteItem(index, item)
+                    RouteItem(context, index, item)
                 }
             }
         }
@@ -51,8 +54,7 @@ fun BusRoutesScreen(
 }
 
 @Composable
-fun RouteItem(index: Int, item: Route) {
-    val context = LocalContext.current
+fun RouteItem(context: Context, index: Int, item: Route) {
 
     Row(
         modifier = Modifier
@@ -61,7 +63,8 @@ fun RouteItem(index: Int, item: Route) {
                 intent.putExtra("route_number", item.number.toIntOrNull() ?: -1)
                 context.startActivity(intent)
             }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "#${item.number}",
@@ -73,12 +76,14 @@ fun RouteItem(index: Int, item: Route) {
                 .padding(vertical = 8.dp, horizontal = 12.dp),
             color = Color.White,
             fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = item.longName, color = if (isSystemInDarkTheme()) Color.White else Color.Black,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            fontSize = 14.sp
         )
     }
 }
@@ -92,7 +97,7 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
             .fillMaxWidth()
             .height(54.dp)
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 2.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -100,15 +105,17 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
         ) {
             Box(
                 modifier = Modifier
+                    .padding(vertical = 4.dp)
                     .background(
                         if (isSystemInDarkTheme()) Color.DarkGray.copy(alpha = 0.5f)
                         else Color.LightGray.copy(alpha = 0.5f),
                         RoundedCornerShape(100)
                     )
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .wrapContentHeight()
+                    .padding(start = 8.dp)
+                    .fillMaxHeight()
                     .weight(1f)
             ) {
+
                 BasicTextField(
                     value = searchKeywordValue,
                     onValueChange = {
@@ -120,7 +127,10 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
                         fontSize = 15.sp,
                         color = if (isSystemInDarkTheme()) Color.White else Color.Black,
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp)
+                        .align(Alignment.CenterStart)
                 )
 
                 if (searchKeywordValue.isEmpty()) {
@@ -128,7 +138,10 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
                         text = "მარშრუტის ძიება...",
                         color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
                         else Color.DarkGray.copy(alpha = 0.5f),
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .align(Alignment.CenterStart)
                     )
                 }
             }

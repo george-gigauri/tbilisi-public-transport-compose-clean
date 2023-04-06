@@ -1,6 +1,7 @@
 package ge.tbilisipublictransport.common.other.mapper
 
 import com.mapbox.mapboxsdk.geometry.LatLng
+import ge.tbilisipublictransport.data.local.entity.RouteEntity
 import ge.tbilisipublictransport.data.remote.dto.RouteDto
 import ge.tbilisipublictransport.data.remote.dto.RouteInfoDto
 import ge.tbilisipublictransport.data.remote.dto.RouteStopDto
@@ -10,12 +11,23 @@ import ge.tbilisipublictransport.domain.model.RouteStop
 
 fun RouteDto.toDomain(): Route {
     return Route(
+        this.id,
         "#${this.color}",
         this.number,
         this.longName,
         this.startStop,
         this.lastStop
     )
+}
+
+fun Route.toEntity(): RouteEntity {
+    return RouteEntity(
+        id, color, number, longName, firstStation, lastStation
+    )
+}
+
+fun RouteEntity.toDomain(): Route {
+    return Route(id, color, number, longName, firstStation, lastStation)
 }
 
 fun RouteInfoDto.toDomain(): RouteInfo {

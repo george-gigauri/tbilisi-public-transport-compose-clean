@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.tbilisipublictransport.presentation.bus_routes.BusRoutesScreen
+import ge.tbilisipublictransport.presentation.bus_stops.BusStopsScreen
 import ge.tbilisipublictransport.presentation.home.HomeScreen
 
 @Composable
@@ -24,10 +25,10 @@ fun BottomNavGraph(navController: NavHostController) {
         modifier = Modifier.windowInsetsPadding(WindowInsets(bottom = 54.dp))
     ) {
         composable(MainNavigationScreen.Home.screenName) {
-            HomeScreen()
+            HomeScreen(navController)
         }
 
-        composable(MainNavigationScreen.Stops.screenName) {
+        composable(MainNavigationScreen.Routes.screenName) {
             BusRoutesScreen()
         }
 
@@ -37,6 +38,11 @@ fun BottomNavGraph(navController: NavHostController) {
 
         composable(MainNavigationScreen.Settings.screenName) {
 
+        }
+
+        // Not Bottom Menu
+        composable(MainNavigationScreen.Stops.screenName) {
+            BusStopsScreen()
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.tbilisipublictransport.BuildConfig
+import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import ge.tbilisipublictransport.domain.model.Bus
 import ge.tbilisipublictransport.domain.model.RouteInfo
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LiveBusViewModel @Inject constructor(
     private val repository: TransportRepository,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val db: AppDatabase
 ) : ViewModel() {
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -29,10 +31,13 @@ class LiveBusViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            awaitAll(
-                async { fetchRoutes() },
-                async { fetchAvailableBuses() }
-            )
+            withContext(Dispatchers.IO) {
+                listOf(
+                    launch { fetchRoutes() },
+                    launch { fetchAvailableBuses() },
+                    launch { routeNumber?.let { db.routeDao().increaseClickCount(it) } }
+                ).joinAll()
+            }
         }
     }
 
@@ -43,10 +48,12 @@ class LiveBusViewModel @Inject constructor(
                 error.value = null
                 if (routeNumber == null) throw NullPointerException("Route number is invalid!")
                 else {
-                    val _route1 = repository.getRouteByBus(routeNumber!!, true)
-                    val _route2 = repository.getRouteByBus(routeNumber!!, false)
-                    route1.value = _route1
-                    route2.value = _route2
+                    val routes = awaitAll(
+                        async { repository.getRouteByBus(routeNumber!!, true) },
+                        async { repository.getRouteByBus(routeNumber!!, false) }
+                    )
+                    route1.value = routes[0]
+                    route2.value = routes[1]
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -64,25 +71,29 @@ class LiveBusViewModel @Inject constructor(
             if (routeNumber == null) throw NullPointerException("Route number is MUST!")
 
             while (true) {
-                val forwardBuses = try {
-                    repository.getBusPositions(routeNumber!!, true)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    emptyList()
-                }
+                val busesAsync = awaitAll(
+                    async {
+                        try {
+                            repository.getBusPositions(routeNumber!!, true)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList()
+                        }
+                    },
+                    async {
+                        try {
+                            repository.getBusPositions(routeNumber!!, false)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyList()
+                        }
+                    }
+                )
 
-                val backwardBuses = try {
-                    repository.getBusPositions(routeNumber!!, false)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    emptyList()
-                }
-
-                val bothBuses =
-                    arrayListOf<Bus>().apply { addAll(forwardBuses); addAll(backwardBuses) }
+                val bothBuses = busesAsync.flatten()
                 availableBuses.value = bothBuses
 
-                delay(if (BuildConfig.DEBUG) 35000 else 5000)
+                delay(if (BuildConfig.DEBUG) 45000 else 5500)
             }
         }
     }

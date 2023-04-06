@@ -17,11 +17,11 @@ sealed class MainNavigationScreen(
         "home"
     )
 
-    object Stops : MainNavigationScreen(
-        "გაჩერებები",
+    object Routes : MainNavigationScreen(
+        "მარშრუტები",
         R.drawable.ic_task_square_outline,
         R.drawable.ic_task_square_filled,
-        "stops"
+        "routes"
     )
 
     object Favorites : MainNavigationScreen(
@@ -38,7 +38,9 @@ sealed class MainNavigationScreen(
         "settings"
     )
 
+    object Stops : MainNavigationScreen("", -1, -1, "stops")
+
     companion object {
-        fun all(): List<MainNavigationScreen> = listOf(Home, Stops, Favorites, Settings)
+        fun all(): List<MainNavigationScreen> = listOf(Home, Routes, Favorites, Settings)
     }
 }

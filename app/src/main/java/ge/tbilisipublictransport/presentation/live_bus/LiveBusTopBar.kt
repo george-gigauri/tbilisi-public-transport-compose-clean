@@ -92,7 +92,7 @@ fun LiveBusTopBar(
             painter = painterResource(id = R.drawable.ic_notification),
             contentDescription = null,
             tint = if (isReminderRunning) {
-                MaterialTheme.colorScheme.primary
+                Color(0xFFffdd00)
             } else {
                 MaterialTheme.colorScheme.primaryContainer
             },
