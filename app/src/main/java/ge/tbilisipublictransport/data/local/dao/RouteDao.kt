@@ -1,6 +1,7 @@
 package ge.tbilisipublictransport.data.local.dao
 
 import androidx.room.*
+import ge.tbilisipublictransport.data.local.entity.RouteClicksEntity
 import ge.tbilisipublictransport.data.local.entity.RouteEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -22,8 +23,11 @@ interface RouteDao {
     @Query("SELECT * FROM route INNER JOIN route_click_count WHERE clicks >= 3 ORDER BY clicks DESC")
     suspend fun getTopRoutes(): List<RouteEntity>
 
-    @Query("SELECT * FROM route INNER JOIN route_click_count WHERE clicks >= 3 ORDER BY clicks DESC")
-    suspend fun getTopRoutesFlow(): Flow<List<RouteEntity>>
+    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 ORDER BY clicks DESC")
+    fun getTopRoutesFlow(): Flow<List<RouteEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertClickEntity(clicksEntity: RouteClicksEntity)
 
     @Query("UPDATE route_click_count SET clicks=(clicks + 1) WHERE routeNumber=:routeNumber")
     suspend fun increaseClickCount(routeNumber: Int)

@@ -58,6 +58,7 @@ fun RouteItem(context: Context, index: Int, item: Route) {
 
     Row(
         modifier = Modifier
+            .fillMaxWidth()
             .clickable {
                 val intent = Intent(context, LiveBusActivity::class.java)
                 intent.putExtra("route_number", item.number.toIntOrNull() ?: -1)

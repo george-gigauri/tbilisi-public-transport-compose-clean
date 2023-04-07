@@ -2,26 +2,23 @@ package ge.tbilisipublictransport.presentation.home
 
 import android.Manifest
 import android.os.Build
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -32,7 +29,9 @@ import ge.tbilisipublictransport.domain.model.BusStop
 import ge.tbilisipublictransport.domain.model.Route
 import ge.tbilisipublictransport.presentation.bus_routes.RouteItem
 import ge.tbilisipublictransport.presentation.bus_stops.ItemBusStop
+import ge.tbilisipublictransport.presentation.main.MainActivity
 import ge.tbilisipublictransport.presentation.main.MainNavigationScreen
+import ge.tbilisipublictransport.ui.theme.DynamicWhite
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -44,15 +43,24 @@ fun HomeScreen(
 
     val context = LocalContext.current
 
+    val topRoutes by viewModel.topRoutes.collectAsStateWithLifecycle()
+    val favoriteStops by viewModel.favoriteStops.collectAsStateWithLifecycle()
+    val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
+
+    var isLocationEnabled by rememberSaveable { mutableStateOf(false) }
+    var userLocation by rememberSaveable { mutableStateOf(LatLng()) }
+
+
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ),
         onPermissionsResult = {
-            if (it.all { it.value }) {
-                LocationUtil.getMyLocation(context, onSuccess = {
-                    viewModel.fetchNearbyStops(LatLng(it.latitude, it.longitude))
+            if (it.all { i -> i.value }) {
+                LocationUtil.getMyLocation(context, onSuccess = { loc ->
+                    userLocation = LatLng(loc.latitude, loc.longitude)
+                    viewModel.fetchNearbyStops(userLocation)
                 })
             }
         }
@@ -62,13 +70,22 @@ fun HomeScreen(
         rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
     } else null
 
+    DisposableEffect(key1 = Unit) {
+        LocationUtil.observeLocationStatus(context, onEnable = {
+            isLocationEnabled = true
+        }, onDisable = {
+            isLocationEnabled = false
+        })
+        onDispose { LocationUtil.removeLocationObserver() }
+    }
 
     LaunchedEffect(key1 = Unit) {
         if (locationPermissionState.allPermissionsGranted) {
             if (LocationUtil.isLocationTurnedOn(context)) {
-                LocationUtil.getMyLocation(context, onSuccess = {
-                    viewModel.fetchNearbyStops(LatLng(it.latitude, it.longitude))
-                })
+                LocationUtil.getLastKnownLocation(context)?.let {
+                    userLocation = LatLng(it.latitude, it.longitude)
+                    viewModel.fetchNearbyStops(userLocation)
+                }
             }
         } else {
             locationPermissionState.launchMultiplePermissionRequest()
@@ -88,44 +105,87 @@ fun HomeScreen(
         ) {
             Spacer(modifier = Modifier.height(54.dp))
             Spacer(modifier = Modifier.height(12.dp))
-            FavoriteRoutes()
-            Spacer(modifier = Modifier.height(16.dp))
-            FavoriteStops()
-            Spacer(modifier = Modifier.height(16.dp))
-            NearbyStops(navController, viewModel.nearbyStops.collectAsState().value)
+            if (topRoutes.isNotEmpty()) {
+                FavoriteRoutes(topRoutes)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            if (favoriteStops.isNotEmpty()) {
+                FavoriteStops(favoriteStops)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            NearbyStops(navController, nearbyStops, isLocationEnabled, userLocation)
             Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-fun FavoriteRoutes() {
+fun FavoriteRoutes(routes: List<Route>) {
     val context = LocalContext.current
     Column {
         Header(text = "ტოპ მარშრუტები")
         Spacer(modifier = Modifier.height(8.dp))
-        RouteItem(context = context, index = 1, item = Route.empty())
+        routes.forEachIndexed { index, route ->
+            RouteItem(context = context, index = index, item = route)
+        }
     }
 }
 
 @Composable
-fun FavoriteStops() {
+fun FavoriteStops(stops: List<BusStop>) {
     Column {
         Header(text = "ფავორიტი გაჩერებები")
         Spacer(modifier = Modifier.height(8.dp))
-        ItemBusStop(BusStop("312", "3123", "ხერგიანის ქ. #14", 0.0, 0.0))
-        ItemBusStop(BusStop("312", "3123", "ხერგიანის ქ. #26", 0.0, 0.0))
+        stops.forEach {
+            ItemBusStop(BusStop(it.id, it.code, it.name, it.lat, it.lng))
+        }
     }
 }
 
 @Composable
-fun NearbyStops(navController: NavController, stops: List<BusStop>) {
+fun NearbyStops(
+    navController: NavController,
+    stops: List<BusStop>,
+    isLocationEnabled: Boolean,
+    userLocation: LatLng,
+) {
+    val activity = (LocalContext.current as? MainActivity)
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Header(text = "უახლოესი გაჩერებები")
         Spacer(modifier = Modifier.height(8.dp))
 
-        stops.forEach {
-            ItemBusStop(BusStop(it.id, it.code, it.name, it.lat, it.lng))
+        if (isLocationEnabled) {
+            stops.forEach {
+                ItemBusStop(it, true, userLocation.distanceTo(LatLng(it.lat, it.lng)))
+            }
+        } else {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(color = DynamicWhite)
+                    ) {
+                        append("უახლოესი გაჩერებები ვერ მოიძებნა თქვენს ადგილმდებარეობაზე არასაკმარისი ინფორმაციის გამო. თუ ლოკაცია გამორთული გაქვთ, ")
+                    }
+                    withStyle(
+                        style = SpanStyle(
+                            color = colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ) {
+                        append("ჩასართავად დააჭირეთ აქ.")
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clickable {
+                        activity?.let { LocationUtil.requestLocation(it) {} }
+                    },
+                textAlign = TextAlign.Center,
+                fontSize = 13.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         Spacer(modifier = Modifier.height(12.dp))

@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.tbilisipublictransport.domain.model.BusStop
 import ge.tbilisipublictransport.ui.theme.DynamicPrimary
 import ge.tbilisipublictransport.ui.theme.DynamicWhite
+import java.text.DecimalFormat
 
 @Composable
 @Preview
@@ -46,7 +48,7 @@ fun BusStopsScreen(
 }
 
 @Composable
-fun ItemBusStop(stop: BusStop) {
+fun ItemBusStop(stop: BusStop, isDistance: Boolean = false, distance: Double = 1.0) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -54,13 +56,21 @@ fun ItemBusStop(stop: BusStop) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "ID:${stop.id.replace("1:", "")}",
+            text = if (isDistance) {
+                val isMoreThanKm = (distance / 1000).toInt() != 0
+                val distanceInKms = (distance / 1000)
+                if (isMoreThanKm) {
+                    "${DecimalFormat("#.#").format(distanceInKms)}კმ"
+                } else "${DecimalFormat("#.#").format(distance)}მ"
+            } else "ID:${stop.code}",
             modifier = Modifier
+                .defaultMinSize(85.dp)
                 .border(2.dp, DynamicPrimary, RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             color = DynamicWhite,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 15.sp
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(

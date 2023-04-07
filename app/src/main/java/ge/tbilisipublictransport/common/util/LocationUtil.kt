@@ -3,6 +3,7 @@ package ge.tbilisipublictransport.common.util
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Context.LOCATION_SERVICE
 import android.content.IntentSender.SendIntentException
 import android.location.Location
 import android.location.LocationManager
@@ -11,8 +12,11 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.*
 
 object LocationUtil {
+
+    private var locationObserverScope = CoroutineScope(Dispatchers.Main)
 
     fun isLocationTurnedOn(context: Context): Boolean {
         val manager = (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
@@ -71,5 +75,26 @@ object LocationUtil {
             ) {
                 onSuccess.invoke(it)
             }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getLastKnownLocation(context: Context): Location? {
+        return (context.getSystemService(LOCATION_SERVICE) as LocationManager)
+            .getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+    }
+
+    fun observeLocationStatus(context: Context, onEnable: () -> Unit, onDisable: () -> Unit = { }) {
+        locationObserverScope.coroutineContext.cancelChildren()
+        locationObserverScope.launch {
+            while (locationObserverScope.isActive) {
+                if (isLocationTurnedOn(context)) onEnable.invoke()
+                else onDisable.invoke()
+                delay(1500L)
+            }
+        }
+    }
+
+    fun removeLocationObserver() {
+        locationObserverScope.coroutineContext.cancelChildren()
     }
 }

@@ -27,7 +27,7 @@ interface BusStopDao {
     suspend fun getFavorites(limit: Int): List<BusStopEntity>
 
     @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop WHERE code=stopCode ORDER BY savedAt DESC")
-    suspend fun getFavoritesFlow(): Flow<List<BusStopEntity>>
+    fun getFavoritesFlow(): Flow<List<BusStopEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addToFavorites(item: FavoriteStopEntity)

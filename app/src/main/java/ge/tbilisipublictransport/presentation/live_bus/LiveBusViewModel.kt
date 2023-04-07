@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.tbilisipublictransport.BuildConfig
 import ge.tbilisipublictransport.data.local.db.AppDatabase
+import ge.tbilisipublictransport.data.local.entity.RouteClicksEntity
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import ge.tbilisipublictransport.domain.model.Bus
 import ge.tbilisipublictransport.domain.model.RouteInfo
@@ -35,7 +36,16 @@ class LiveBusViewModel @Inject constructor(
                 listOf(
                     launch { fetchRoutes() },
                     launch { fetchAvailableBuses() },
-                    launch { routeNumber?.let { db.routeDao().increaseClickCount(it) } }
+                    launch {
+                        routeNumber?.let {
+                            try {
+                                db.routeDao().insertClickEntity(RouteClicksEntity(it, 0))
+                            } catch (e: Exception) {
+
+                            }
+                            db.routeDao().increaseClickCount(it)
+                        }
+                    }
                 ).joinAll()
             }
         }
