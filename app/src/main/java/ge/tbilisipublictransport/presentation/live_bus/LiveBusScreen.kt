@@ -2,6 +2,7 @@ package ge.tbilisipublictransport.presentation.live_bus
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.widget.Toast
@@ -44,6 +45,7 @@ import ge.tbilisipublictransport.common.service.worker.BusDistanceReminderWorker
 import ge.tbilisipublictransport.common.util.ComposableLifecycle
 import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.domain.model.RouteStop
+import ge.tbilisipublictransport.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -210,6 +212,19 @@ fun LiveBusScreen(
                                 } else {
                                     locationPermissionState.launchMultiplePermissionRequest()
                                 }
+                            }
+
+                            map.setOnMarkerClickListener {
+                                val stopId = arrayListOf<RouteStop>().apply {
+                                    addAll(viewModel.route1.value.stops)
+                                    addAll(viewModel.route2.value.stops)
+                                }.find { s -> LatLng(s.lat, s.lng) == it.position }?.id
+
+                                val intent = Intent(context, TimeTableActivity::class.java)
+                                intent.putExtra("stop_id", stopId)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(intent)
+                                return@setOnMarkerClickListener true
                             }
 
                             map.addOnCameraMoveListener {

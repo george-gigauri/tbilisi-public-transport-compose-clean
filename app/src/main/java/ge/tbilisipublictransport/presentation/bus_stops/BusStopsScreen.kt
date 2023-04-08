@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -72,12 +73,12 @@ fun ItemBusStop(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
             .clickable {
                 val intent = Intent(context, TimeTableActivity::class.java)
                 intent.putExtra("stop_id", stop.code)
                 context.startActivity(intent)
-            },
+            }
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -85,8 +86,8 @@ fun ItemBusStop(
                 val isMoreThanKm = (distance / 1000).toInt() != 0
                 val distanceInKms = (distance / 1000)
                 if (isMoreThanKm) {
-                    "${DecimalFormat("#.#").format(distanceInKms)}კმ"
-                } else "${DecimalFormat("#.#").format(distance)}მ"
+                    "${DecimalFormat("#.#").format(distanceInKms)}${stringResource(id = ge.tbilisipublictransport.R.string.km)}"
+                } else "${DecimalFormat("#.#").format(distance)}${stringResource(id = ge.tbilisipublictransport.R.string.m)}"
             } else "ID:${stop.code}",
             modifier = Modifier
                 .defaultMinSize(85.dp)

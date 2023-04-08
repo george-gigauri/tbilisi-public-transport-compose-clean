@@ -51,8 +51,6 @@ fun LiveBusInfoBottomSheet(
             Spacer(modifier = Modifier.height(36.dp))
         }
     }
-
-  //  BackHandler { onCancel.invoke() }
 }
 
 @Composable

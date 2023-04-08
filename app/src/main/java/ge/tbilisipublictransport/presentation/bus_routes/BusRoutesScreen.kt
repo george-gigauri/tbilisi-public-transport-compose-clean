@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,9 +43,11 @@ fun BusRoutesScreen(
         topBar = { TopBar(viewModel::searchRoute) }
     ) {
         Box(modifier = Modifier.padding(top = 54.dp)) {
-            LazyColumn(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
                 itemsIndexed(routes) { index, item ->
                     RouteItem(context, index, item)
                 }
@@ -136,7 +139,7 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
 
                 if (searchKeywordValue.isEmpty()) {
                     Text(
-                        text = "მარშრუტის ძიება...",
+                        text = stringResource(id = R.string.search_route),
                         color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
                         else Color.DarkGray.copy(alpha = 0.5f),
                         maxLines = 1,

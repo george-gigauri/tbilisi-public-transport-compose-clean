@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,7 +43,7 @@ fun TimeTableScreen(
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val isReminderRunning by rememberSaveable { mutableStateOf(false) }
 
-    BackHandler() {
+    BackHandler {
         currentActivity?.finish()
     }
 
@@ -113,7 +114,7 @@ fun HeaderInformation() {
         )
 
         Text(
-            text = "მიმართულება",
+            text = stringResource(id = ge.tbilisipublictransport.R.string.direction),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
@@ -123,7 +124,7 @@ fun HeaderInformation() {
         )
 
         Text(
-            text = "წთ",
+            text = stringResource(id = ge.tbilisipublictransport.R.string.min),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,

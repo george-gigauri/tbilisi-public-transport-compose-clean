@@ -33,12 +33,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(context: Context): Retrofit {
+    fun provideRetrofit(context: Context, dataStore: AppDataStore): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(Const.BASE_URL)
+            .baseUrl(
+                Const.TBILISI_BASE_URL
+            )
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().apply {
                 ignoreAllSSLErrors()
+                addInterceptor { chain ->
+                    val request = chain.request().newBuilder()
+                    chain.proceed(request.build())
+                }
                 addInterceptor(ChuckerInterceptor.Builder(context).build())
             }.build())
             .build()

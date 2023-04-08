@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +26,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.geometry.LatLng
+import ge.tbilisipublictransport.R
 import ge.tbilisipublictransport.common.util.LocationUtil
 import ge.tbilisipublictransport.domain.model.BusStop
 import ge.tbilisipublictransport.domain.model.Route
@@ -83,13 +85,11 @@ fun HomeScreen(
     LaunchedEffect(key1 = Unit) {
         if (locationPermissionState.allPermissionsGranted) {
             if (LocationUtil.isLocationTurnedOn(context)) {
-                LocationUtil.getMyLocation(context, onSuccess = {
+                LocationUtil.getLastKnownLocation(context)?.let {
                     val newLatLng = LatLng(it.latitude, it.longitude)
-                    if (newLatLng.distanceTo(userLocation) >= 25) {
-                        userLocation = LatLng(it.latitude, it.longitude)
-                        viewModel.fetchNearbyStops(userLocation)
-                    }
-                })
+                    userLocation = newLatLng
+                    viewModel.fetchNearbyStops(userLocation)
+                }
             }
         } else {
             locationPermissionState.launchMultiplePermissionRequest()
@@ -127,7 +127,7 @@ fun HomeScreen(
 fun FavoriteRoutes(routes: List<Route>) {
     val context = LocalContext.current
     Column {
-        Header(text = "ტოპ მარშრუტები")
+        Header(text = stringResource(id = R.string.top_routes))
         Spacer(modifier = Modifier.height(8.dp))
         routes.forEachIndexed { index, route ->
             RouteItem(context = context, index = index, item = route)
@@ -136,9 +136,9 @@ fun FavoriteRoutes(routes: List<Route>) {
 }
 
 @Composable
-fun FavoriteStops(context: Context, stops: List<BusStop>) {
+private fun FavoriteStops(context: Context, stops: List<BusStop>) {
     Column {
-        Header(text = "ფავორიტი გაჩერებები")
+        Header(text = stringResource(id = R.string.favorite_stops))
         Spacer(modifier = Modifier.height(8.dp))
         stops.forEach {
             ItemBusStop(context, it)
@@ -160,7 +160,7 @@ fun NearbyStops(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        Header(text = "უახლოესი გაჩერებები")
+        Header(text = stringResource(id = R.string.nearby_stops))
         Spacer(modifier = Modifier.height(8.dp))
 
         if (isLocationEnabled) {
@@ -202,7 +202,7 @@ fun NearbyStops(
             navController.navigate(MainNavigationScreen.Stops.screenName)
         }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(
-                text = "ყველას ნახვა",
+                text = stringResource(id = R.string.see_all),
                 fontWeight = FontWeight.SemiBold,
                 color = colorScheme.primary,
                 fontSize = 15.sp,
@@ -232,7 +232,7 @@ fun TopBar() {
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "მთავარი",
+            text = stringResource(id = R.string.home),
             color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
             //     fontFamily = FontFamily(Font(R.font.bpg_nino_mtavruli_bold)),
             fontWeight = FontWeight.Bold,

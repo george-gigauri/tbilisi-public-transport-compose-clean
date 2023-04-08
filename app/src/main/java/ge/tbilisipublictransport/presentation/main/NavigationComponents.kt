@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.tbilisipublictransport.presentation.bus_routes.BusRoutesScreen
 import ge.tbilisipublictransport.presentation.bus_stops.BusStopsScreen
+import ge.tbilisipublictransport.presentation.favorites.FavoritesScreen
 import ge.tbilisipublictransport.presentation.home.HomeScreen
 
 @Composable
@@ -33,7 +34,7 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable(MainNavigationScreen.Favorites.screenName) {
-
+            FavoritesScreen()
         }
 
         composable(MainNavigationScreen.Settings.screenName) {
