@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import com.mapbox.mapboxsdk.Mapbox
 import dagger.hilt.android.AndroidEntryPoint
 import ge.tbilisipublictransport.common.util.LocationUtil
+import ge.tbilisipublictransport.common.util.QRScanner
 import ge.tbilisipublictransport.ui.theme.TbilisiPublicTransportTheme
 
 @AndroidEntryPoint
@@ -16,6 +17,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        QRScanner.init(this)
 
         if (!LocationUtil.isLocationTurnedOn(this)) {
             LocationUtil.requestLocation(this) { }

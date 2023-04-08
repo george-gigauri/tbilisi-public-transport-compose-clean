@@ -16,7 +16,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.tbilisipublictransport.presentation.bus_routes.BusRoutesScreen
 import ge.tbilisipublictransport.presentation.bus_stops.BusStopsScreen
 import ge.tbilisipublictransport.presentation.home.HomeScreen
-import ge.tbilisipublictransport.presentation.scan_bus_stop.ScanStopScreen
 
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
@@ -43,11 +42,7 @@ fun BottomNavGraph(navController: NavHostController) {
 
         // Not Bottom Menu
         composable(MainNavigationScreen.Stops.screenName) {
-            BusStopsScreen(navController)
-        }
-
-        composable(MainNavigationScreen.Scanner.screenName) {
-            ScanStopScreen()
+            BusStopsScreen()
         }
     }
 }

@@ -21,10 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import ge.tbilisipublictransport.common.util.QRScanner
 import ge.tbilisipublictransport.domain.model.BusStop
-import ge.tbilisipublictransport.presentation.main.MainNavigationScreen
 import ge.tbilisipublictransport.presentation.timetable.TimeTableActivity
 import ge.tbilisipublictransport.ui.theme.DynamicPrimary
 import ge.tbilisipublictransport.ui.theme.DynamicWhite
@@ -32,7 +31,6 @@ import java.text.DecimalFormat
 
 @Composable
 fun BusStopsScreen(
-    navController: NavController,
     viewModel: BusStopsViewModel = hiltViewModel()
 ) {
     rememberSystemUiController().setStatusBarColor(DynamicPrimary)
@@ -44,7 +42,11 @@ fun BusStopsScreen(
         topBar = {
             BusStopTopBar(
                 onSearchKeywordChange = viewModel::search,
-                onScanClick = { navController.navigate(MainNavigationScreen.Scanner.screenName) }
+                onScanClick = {
+                    QRScanner.start {
+
+                    }
+                }
             )
         }
     ) {
