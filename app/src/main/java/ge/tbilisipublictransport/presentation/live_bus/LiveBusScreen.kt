@@ -62,7 +62,7 @@ fun LiveBusScreen(
     val route1Scope = rememberCoroutineScope()
     val route2Scope = rememberCoroutineScope()
     val availableBusesScope = rememberCoroutineScope()
-    val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_CREATE) }
+    val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_ANY) }
     val isDarkMode = isSystemInDarkTheme()
     val context = LocalContext.current
 
@@ -383,15 +383,15 @@ fun LiveBusScreen(
                         }
 
                         lifecycleCoroutine.launch {
-                            lifecycleEvent.collectLatest {
+                            lifecycleEvent.collect {
                                 when (it) {
                                     Lifecycle.Event.ON_CREATE -> onCreate(null)
                                     Lifecycle.Event.ON_START -> onStart()
                                     Lifecycle.Event.ON_RESUME -> onResume()
-                                    Lifecycle.Event.ON_PAUSE -> onPause()
-                                    Lifecycle.Event.ON_STOP -> onStop()
+//                                    Lifecycle.Event.ON_PAUSE -> onPause()
+//                                    Lifecycle.Event.ON_STOP -> onStop()
                                     Lifecycle.Event.ON_DESTROY -> onDestroy()
-                                    Lifecycle.Event.ON_ANY -> onCreate(null)
+                                    else -> Unit
                                 }
                             }
                         }

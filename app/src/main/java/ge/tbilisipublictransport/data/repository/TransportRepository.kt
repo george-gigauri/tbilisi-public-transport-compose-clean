@@ -47,4 +47,10 @@ class TransportRepository @Inject constructor(
         }
         return body
     }
+
+    override suspend fun getTimeTable(stopId: String): List<ArrivalTime> {
+        return api.getTimeTableInformation(stopId).body()?.arrivalTimes?.map {
+            it.toDomain()
+        }.orEmpty()
+    }
 }

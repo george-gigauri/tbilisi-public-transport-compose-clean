@@ -6,6 +6,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "favorite_stop")
 data class FavoriteStopEntity(
     @PrimaryKey val stopId: String,
-    val stopCode: String,
     val savedAt: Long
 )

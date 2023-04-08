@@ -21,11 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TbilisiPublicTransport"
         tools:targetApi="31">
-
+        <activity
+            android:name=".presentation.timetable.TimeTableActivity"
+            android:exported="false" />
         <activity
             android:name=".presentation.live_bus.LiveBusActivity"
             android:windowSoftInputMode="adjustResize" />
-
         <activity
             android:name=".presentation.main.MainActivity"
             android:exported="true"
@@ -33,6 +34,7 @@
             android:theme="@style/Theme.TbilisiPublicTransport">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -42,4 +44,5 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
     </application>
+
 </manifest>

@@ -1,6 +1,7 @@
 package ge.tbilisipublictransport.presentation.home
 
 import android.Manifest
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -110,10 +111,10 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
             if (favoriteStops.isNotEmpty()) {
-                FavoriteStops(favoriteStops)
+                FavoriteStops(context, favoriteStops)
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            NearbyStops(navController, nearbyStops, isLocationEnabled, userLocation)
+            NearbyStops(context, navController, nearbyStops, isLocationEnabled, userLocation)
             Spacer(modifier = Modifier.height(12.dp))
         }
     }
@@ -132,18 +133,19 @@ fun FavoriteRoutes(routes: List<Route>) {
 }
 
 @Composable
-fun FavoriteStops(stops: List<BusStop>) {
+fun FavoriteStops(context: Context, stops: List<BusStop>) {
     Column {
         Header(text = "ფავორიტი გაჩერებები")
         Spacer(modifier = Modifier.height(8.dp))
         stops.forEach {
-            ItemBusStop(BusStop(it.id, it.code, it.name, it.lat, it.lng))
+            ItemBusStop(context, it)
         }
     }
 }
 
 @Composable
 fun NearbyStops(
+    context: Context,
     navController: NavController,
     stops: List<BusStop>,
     isLocationEnabled: Boolean,
@@ -151,13 +153,16 @@ fun NearbyStops(
 ) {
     val activity = (LocalContext.current as? MainActivity)
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
         Header(text = "უახლოესი გაჩერებები")
         Spacer(modifier = Modifier.height(8.dp))
 
         if (isLocationEnabled) {
             stops.forEach {
-                ItemBusStop(it, true, userLocation.distanceTo(LatLng(it.lat, it.lng)))
+                ItemBusStop(context, it, true, userLocation.distanceTo(LatLng(it.lat, it.lng)))
             }
         } else {
             Spacer(modifier = Modifier.height(16.dp))

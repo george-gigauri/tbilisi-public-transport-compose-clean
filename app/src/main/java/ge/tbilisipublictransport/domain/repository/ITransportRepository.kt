@@ -8,4 +8,5 @@ interface ITransportRepository {
     suspend fun getBusStopsByBusNumber(busNumber: Int): List<RouteStop>
     suspend fun getBusPositions(busNumber: Int, isForward: Boolean = true): List<Bus>
     suspend fun getStops(): List<BusStop>
+    suspend fun getTimeTable(stopId: String): List<ArrivalTime>
 }

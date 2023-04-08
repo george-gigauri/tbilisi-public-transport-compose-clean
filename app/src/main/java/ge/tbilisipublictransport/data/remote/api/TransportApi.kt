@@ -35,4 +35,9 @@ interface TransportApi {
         @Query("routeNumber") number: Int,
         @Query("forward") forward: Int = 0
     ): Response<BusesResponseDto>
+
+    @GET("routers/ttc/stopArrivalTimes")
+    suspend fun getTimeTableInformation(
+        @Query("stopId") stopId: String
+    ): Response<TimeTableResponse>
 }

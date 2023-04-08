@@ -20,13 +20,13 @@ interface BusStopDao {
     @Query("SELECT * FROM bus_stop")
     fun getStopsFlow(): Flow<List<BusStopEntity>>
 
-    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop WHERE code=stopCode")
+    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop ON code=stopId ORDER BY savedAt DESC")
     suspend fun getFavorites(): List<BusStopEntity>
 
-    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop WHERE code=stopCode ORDER BY savedAt DESC LIMIT :limit")
+    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop ON code=stopId ORDER BY savedAt DESC LIMIT :limit")
     suspend fun getFavorites(limit: Int): List<BusStopEntity>
 
-    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop WHERE code=stopCode ORDER BY savedAt DESC")
+    @Query("SELECT * FROM bus_stop INNER JOIN favorite_stop ON code=stopId ORDER BY savedAt DESC")
     fun getFavoritesFlow(): Flow<List<BusStopEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

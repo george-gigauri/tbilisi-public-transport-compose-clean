@@ -1,6 +1,9 @@
 package ge.tbilisipublictransport.presentation.bus_stops
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.tbilisipublictransport.domain.model.BusStop
+import ge.tbilisipublictransport.presentation.timetable.TimeTableActivity
 import ge.tbilisipublictransport.ui.theme.DynamicPrimary
 import ge.tbilisipublictransport.ui.theme.DynamicWhite
 import java.text.DecimalFormat
@@ -32,6 +37,8 @@ fun BusStopsScreen(
     var stopSearchKeyword by rememberSaveable { mutableStateOf("") }
     val stops by viewModel.result.collectAsState()
 
+    val context = LocalContext.current
+
     Scaffold(
         topBar = { BusStopTopBar { viewModel.search(it) } }
     ) {
@@ -40,7 +47,7 @@ fun BusStopsScreen(
             Spacer(modifier = Modifier.height(54.dp))
             LazyColumn {
                 items(stops) {
-                    ItemBusStop(it)
+                    ItemBusStop(context, it)
                 }
             }
         }
@@ -48,11 +55,21 @@ fun BusStopsScreen(
 }
 
 @Composable
-fun ItemBusStop(stop: BusStop, isDistance: Boolean = false, distance: Double = 1.0) {
+fun ItemBusStop(
+    context: Context,
+    stop: BusStop,
+    isDistance: Boolean = false,
+    distance: Double = 1.0
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable {
+                val intent = Intent(context, TimeTableActivity::class.java)
+                intent.putExtra("stop_id", stop.code)
+                context.startActivity(intent)
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

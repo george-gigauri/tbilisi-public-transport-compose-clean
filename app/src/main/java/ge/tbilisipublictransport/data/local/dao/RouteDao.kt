@@ -20,7 +20,7 @@ interface RouteDao {
     @Query("SELECT * FROM route")
     fun getAllFlow(): Flow<List<RouteEntity>>
 
-    @Query("SELECT * FROM route INNER JOIN route_click_count WHERE clicks >= 3 ORDER BY clicks DESC")
+    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 ORDER BY clicks DESC")
     suspend fun getTopRoutes(): List<RouteEntity>
 
     @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 ORDER BY clicks DESC")
