@@ -83,10 +83,13 @@ fun HomeScreen(
     LaunchedEffect(key1 = Unit) {
         if (locationPermissionState.allPermissionsGranted) {
             if (LocationUtil.isLocationTurnedOn(context)) {
-                LocationUtil.getLastKnownLocation(context)?.let {
-                    userLocation = LatLng(it.latitude, it.longitude)
-                    viewModel.fetchNearbyStops(userLocation)
-                }
+                LocationUtil.getMyLocation(context, onSuccess = {
+                    val newLatLng = LatLng(it.latitude, it.longitude)
+                    if (newLatLng.distanceTo(userLocation) >= 25) {
+                        userLocation = LatLng(it.latitude, it.longitude)
+                        viewModel.fetchNearbyStops(userLocation)
+                    }
+                })
             }
         } else {
             locationPermissionState.launchMultiplePermissionRequest()

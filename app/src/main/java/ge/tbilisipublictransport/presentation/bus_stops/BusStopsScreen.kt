@@ -10,37 +10,43 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.tbilisipublictransport.domain.model.BusStop
+import ge.tbilisipublictransport.presentation.main.MainNavigationScreen
 import ge.tbilisipublictransport.presentation.timetable.TimeTableActivity
 import ge.tbilisipublictransport.ui.theme.DynamicPrimary
 import ge.tbilisipublictransport.ui.theme.DynamicWhite
 import java.text.DecimalFormat
 
 @Composable
-@Preview
 fun BusStopsScreen(
+    navController: NavController,
     viewModel: BusStopsViewModel = hiltViewModel()
 ) {
     rememberSystemUiController().setStatusBarColor(DynamicPrimary)
-    var stopSearchKeyword by rememberSaveable { mutableStateOf("") }
     val stops by viewModel.result.collectAsState()
 
     val context = LocalContext.current
 
     Scaffold(
-        topBar = { BusStopTopBar { viewModel.search(it) } }
+        topBar = {
+            BusStopTopBar(
+                onSearchKeywordChange = viewModel::search,
+                onScanClick = { navController.navigate(MainNavigationScreen.Scanner.screenName) }
+            )
+        }
     ) {
         it.calculateBottomPadding()
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {

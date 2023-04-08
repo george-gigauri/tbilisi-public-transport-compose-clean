@@ -38,7 +38,9 @@ sealed class MainNavigationScreen(
         "settings"
     )
 
+    // Non-Bottom
     object Stops : MainNavigationScreen("", -1, -1, "stops")
+    object Scanner : MainNavigationScreen("", -1, -1, "scanner")
 
     companion object {
         fun all(): List<MainNavigationScreen> = listOf(Home, Routes, Favorites, Settings)

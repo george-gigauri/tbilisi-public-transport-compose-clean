@@ -31,7 +31,7 @@ class TimeTableViewModel @Inject constructor(
 
     init {
         listenIsFavorite()
-        load()
+        requestTimetableUpdates()
     }
 
     private fun listenIsFavorite() = viewModelScope.launch {
@@ -42,26 +42,29 @@ class TimeTableViewModel @Inject constructor(
         }
     }
 
+    private fun requestTimetableUpdates() = viewModelScope.launch {
+        while (scope.isActive) {
+            load()
+            delay(15 * 1000L)
+        }
+    }
+
     private fun load() = viewModelScope.launch {
         scope.coroutineContext.cancelChildren()
         scope.launch {
             withContext(Dispatchers.IO) {
-                while (true) {
-                    isLoading.value = true
-                    try {
-                        repository.getTimeTable(stopId).let {
-                            data.value = it
-                        }
-                    } catch (httpError: HttpException) {
-                        error.value = httpError.message()
-                    } catch (e: Exception) {
-                        error.value = e.message ?: "Unknown Error"
-                    } finally {
-                        isLoading.value = false
-                        error.value = null
+                isLoading.value = true
+                try {
+                    repository.getTimeTable(stopId).let {
+                        data.value = it
                     }
-
-                    delay(35 * 1000L)
+                } catch (httpError: HttpException) {
+                    error.value = httpError.message()
+                } catch (e: Exception) {
+                    error.value = e.message ?: "Unknown Error"
+                } finally {
+                    isLoading.value = false
+                    error.value = null
                 }
             }
         }

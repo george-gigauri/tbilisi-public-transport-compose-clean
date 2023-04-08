@@ -27,7 +27,8 @@ import ge.tbilisipublictransport.ui.theme.DynamicPrimary
 @Composable
 @Preview
 fun BusStopTopBar(
-    onSearchKeywordChange: (String) -> Unit = { }
+    onSearchKeywordChange: (String) -> Unit = { },
+    onScanClick: () -> Unit = { }
 ) {
     var searchKeywordValue by rememberSaveable { mutableStateOf("") }
 
@@ -94,7 +95,7 @@ fun BusStopTopBar(
 
         Spacer(modifier = Modifier.width(6.dp))
         IconButton(
-            onClick = {},
+            onClick = { onScanClick.invoke() },
             modifier = Modifier.size(54.dp)
         ) {
             Icon(
@@ -102,7 +103,8 @@ fun BusStopTopBar(
                 contentDescription = null,
                 tint = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.55f) else Color.DarkGray,
                 modifier = Modifier
-                    .size(54.dp).padding(6.dp)
+                    .size(54.dp)
+                    .padding(8.dp)
             )
         }
         Spacer(modifier = Modifier.width(2.dp))
