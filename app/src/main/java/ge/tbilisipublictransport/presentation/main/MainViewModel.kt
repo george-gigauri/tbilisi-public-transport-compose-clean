@@ -7,6 +7,7 @@ import ge.tbilisipublictransport.common.other.Const
 import ge.tbilisipublictransport.data.local.datastore.AppDataStore
 import ge.tbilisipublictransport.data.repository.TransportRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,10 +23,17 @@ class MainViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             val lastUpdated = dataStore.dataLastUpdatedAt.firstOrNull() ?: 0
             val interval = System.currentTimeMillis() - lastUpdated
-            if (interval >= Const.DATA_UPDATE_INTERVAL_MILLIS) {
+            val updatedCityId = dataStore.lastUpdatedCityId.first()
+            val city = dataStore.city.first()
+
+            if (
+                interval >= Const.DATA_UPDATE_INTERVAL_MILLIS ||
+                updatedCityId != city.id
+            ) {
                 repository.getStops()
                 repository.getRoutes()
                 dataStore.setDataLastUpdatedAt(System.currentTimeMillis())
+                dataStore.setLastUpdatedCityId(city)
             }
         }
     }

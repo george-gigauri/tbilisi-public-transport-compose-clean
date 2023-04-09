@@ -2,6 +2,7 @@ package ge.tbilisipublictransport.presentation.home
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -98,8 +99,8 @@ fun HomeScreen(
     }
 
     Scaffold(topBar = {
-        TopBar()
-    }) {
+        TopBar(context, viewModel)
+    }, modifier = Modifier.fillMaxSize()) {
         it.calculateBottomPadding()
 
         Column(
@@ -223,7 +224,9 @@ private fun Header(text: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TopBar() {
+fun TopBar(context: Context, viewModel: HomeViewModel) {
+    val currentCity by viewModel.city.collectAsStateWithLifecycle()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -238,7 +241,18 @@ fun TopBar() {
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-            modifier = Modifier.align(Alignment.CenterStart)
+            modifier = Modifier
+                .wrapContentWidth()
+                .align(Alignment.CenterStart)
         )
+
+        CitySwitchDropDown(currentCity, {
+            viewModel.setDefaultCity(it)
+            val intent = Intent(context, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
+            (context as? MainActivity)?.finish()
+            context.startActivity(intent)
+            Runtime.getRuntime().exit(0)
+        }, Modifier.align(Alignment.CenterEnd))
     }
 }

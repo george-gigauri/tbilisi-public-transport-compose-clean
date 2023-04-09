@@ -9,5 +9,5 @@ data class BusStopEntity(
     val code: String,
     val name: String,
     val lat: Double,
-    val lng: Double
+    val lng: Double,
 )

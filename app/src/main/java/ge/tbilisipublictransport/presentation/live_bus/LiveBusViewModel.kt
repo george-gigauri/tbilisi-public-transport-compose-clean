@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.tbilisipublictransport.BuildConfig
+import ge.tbilisipublictransport.data.local.datastore.AppDataStore
 import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.local.entity.RouteClicksEntity
 import ge.tbilisipublictransport.data.repository.TransportRepository
@@ -13,13 +14,15 @@ import ge.tbilisipublictransport.domain.model.Bus
 import ge.tbilisipublictransport.domain.model.RouteInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @HiltViewModel
 class LiveBusViewModel @Inject constructor(
     private val repository: TransportRepository,
     private val savedStateHandle: SavedStateHandle,
-    private val db: AppDatabase
+    private val db: AppDatabase,
+    private val dataStore: AppDataStore
 ) : ViewModel() {
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -36,18 +39,26 @@ class LiveBusViewModel @Inject constructor(
                 listOf(
                     launch { fetchRoutes() },
                     launch { fetchAvailableBuses() },
-                    launch {
-                        routeNumber?.let {
-                            try {
-                                db.routeDao().insertClickEntity(RouteClicksEntity(it, 0))
-                            } catch (e: Exception) {
-
-                            }
-                            db.routeDao().increaseClickCount(it)
-                        }
-                    }
+                    launch { increaseRouteVisitNumber() }
                 ).joinAll()
             }
+        }
+    }
+
+    private fun increaseRouteVisitNumber() = viewModelScope.launch {
+        val city = dataStore.city.first()
+        routeNumber?.let {
+            if (!db.routeDao().isTop(it, dataStore.city.first().id)) {
+                db.routeDao().insertClickEntity(
+                    RouteClicksEntity(
+                        null,
+                        it,
+                        0,
+                        city.id
+                    )
+                )
+            }
+            db.routeDao().increaseClickCount(it, city.id)
         }
     }
 

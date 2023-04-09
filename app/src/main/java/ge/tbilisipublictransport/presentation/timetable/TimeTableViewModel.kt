@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ge.tbilisipublictransport.data.local.datastore.AppDataStore
 import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.local.entity.FavoriteStopEntity
 import ge.tbilisipublictransport.data.repository.TransportRepository
@@ -11,6 +12,7 @@ import ge.tbilisipublictransport.domain.model.ArrivalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class TimeTableViewModel @Inject constructor(
     private val repository: TransportRepository,
     private val db: AppDatabase,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val dataStore: AppDataStore
 ) : ViewModel() {
 
     val stopId: String get() = savedStateHandle["stop_id"] ?: "-1"
@@ -80,6 +83,7 @@ class TimeTableViewModel @Inject constructor(
                 db.busStopDao().addToFavorites(
                     FavoriteStopEntity(
                         stopId,
+                        dataStore.city.first().id,
                         System.currentTimeMillis()
                     )
                 )

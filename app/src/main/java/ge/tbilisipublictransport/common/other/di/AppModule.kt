@@ -8,11 +8,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import ge.tbilisipublictransport.common.other.Const
 import ge.tbilisipublictransport.common.other.extensions.ignoreAllSSLErrors
 import ge.tbilisipublictransport.data.local.datastore.AppDataStore
 import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.remote.api.TransportApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -36,7 +37,7 @@ object AppModule {
     fun provideRetrofit(context: Context, dataStore: AppDataStore): Retrofit {
         return Retrofit.Builder()
             .baseUrl(
-                Const.TBILISI_BASE_URL
+                runBlocking { dataStore.city.first() }.baseUrl
             )
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().apply {
