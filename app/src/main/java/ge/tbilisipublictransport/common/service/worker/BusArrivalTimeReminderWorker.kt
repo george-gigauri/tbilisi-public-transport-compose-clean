@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 @HiltWorker
 class BusArrivalTimeReminderWorker @AssistedInject constructor(
@@ -50,6 +51,7 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
         arrivalTime: Int
     ) = withContext(Dispatchers.IO) {
         while (true) {
+            delay(Random.nextInt(IntRange(7, 20)) * 1000L)
             try {
                 val result = repository.getTimeTable(stopId)
                 result.forEach {
@@ -65,7 +67,6 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
             }
 
             if (notifiedRoutes.containsAll(routes.toList())) break
-            delay(35 * 1000)
         }
     }
 

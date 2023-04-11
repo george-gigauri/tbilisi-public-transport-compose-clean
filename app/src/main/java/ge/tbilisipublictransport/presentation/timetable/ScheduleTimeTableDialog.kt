@@ -105,7 +105,9 @@ fun ScheduleTimeTableDialog(
 
                 item {
                     SelectRoutes(routes = routes, selectedRoutes = selectedRoutes) {
-                        selectedRoutes = selectedRoutes.plus(it.routeNumber)
+                        selectedRoutes = if (selectedRoutes.contains(it.routeNumber)) {
+                            selectedRoutes.minus(it.routeNumber)
+                        } else selectedRoutes.plus(it.routeNumber)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -155,7 +157,7 @@ private fun SelectRoutes(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        routes.forEach { route ->
+        routes.sortedBy { it.routeNumber }.forEach { route ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

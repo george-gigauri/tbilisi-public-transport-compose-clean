@@ -18,6 +18,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -41,6 +42,11 @@ object AppModule {
             )
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().apply {
+                this.connectTimeout(35, TimeUnit.SECONDS)
+                this.callTimeout(35, TimeUnit.SECONDS)
+                this.writeTimeout(50, TimeUnit.SECONDS)
+                this.readTimeout(50, TimeUnit.SECONDS)
+
                 ignoreAllSSLErrors()
                 addInterceptor { chain ->
                     val request = chain.request().newBuilder()
