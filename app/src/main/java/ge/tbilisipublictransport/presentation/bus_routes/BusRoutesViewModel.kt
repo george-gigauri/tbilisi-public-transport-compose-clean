@@ -54,7 +54,8 @@ class BusRoutesViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 routes.value = if (keyword.isNotEmpty()) {
                     data.value.filter {
-                        it.number.startsWith(keyword) || it.longName.contains(keyword)
+                        it.number.startsWith(keyword) || it.longName.lowercase()
+                            .contains(keyword.lowercase())
                     }
                 } else data.value
             }

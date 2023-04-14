@@ -17,6 +17,7 @@ import ge.tbilisipublictransport.presentation.bus_routes.BusRoutesScreen
 import ge.tbilisipublictransport.presentation.bus_stops.BusStopsScreen
 import ge.tbilisipublictransport.presentation.favorites.FavoritesScreen
 import ge.tbilisipublictransport.presentation.home.HomeScreen
+import ge.tbilisipublictransport.presentation.settings.SettingsScreen
 
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
@@ -38,7 +39,7 @@ fun BottomNavGraph(navController: NavHostController) {
         }
 
         composable(MainNavigationScreen.Settings.screenName) {
-
+            SettingsScreen()
         }
 
         // Not Bottom Menu

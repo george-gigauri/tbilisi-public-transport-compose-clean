@@ -9,6 +9,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ge.tbilisipublictransport.common.other.extensions.ignoreAllSSLErrors
+import ge.tbilisipublictransport.common.util.AppLanguage
 import ge.tbilisipublictransport.data.local.datastore.AppDataStore
 import ge.tbilisipublictransport.data.local.db.AppDatabase
 import ge.tbilisipublictransport.data.remote.api.TransportApi
@@ -34,11 +35,15 @@ object AppModule {
     fun provideAppDataStore(context: Context): AppDataStore = AppDataStore(context)
 
     @Provides
-    @Singleton
     fun provideRetrofit(context: Context, dataStore: AppDataStore): Retrofit {
         return Retrofit.Builder()
             .baseUrl(
-                runBlocking { dataStore.city.first() }.baseUrl
+                // Return value based on app language
+                runBlocking {
+                    val city = dataStore.city.first()
+                    val language = dataStore.language.first()
+                    if (language == AppLanguage.Language.ENG) city.baseUrlEng else city.baseUrl
+                }
             )
             .addConverterFactory(GsonConverterFactory.create())
             .client(OkHttpClient.Builder().apply {

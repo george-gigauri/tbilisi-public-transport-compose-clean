@@ -14,6 +14,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +46,7 @@ fun CitySwitchDropDown(
 
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = defaultValue.title,
+            text = stringResource(id = defaultValue.titleRes),
             color = MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
@@ -59,7 +60,7 @@ fun CitySwitchDropDown(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = it.title,
+                            text = stringResource(id = it.titleRes),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 15.sp
                         )

@@ -35,13 +35,11 @@ class LiveBusViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                listOf(
-                    launch { fetchRoutes() },
-                    launch { fetchAvailableBuses() },
-                    launch { increaseRouteVisitNumber() }
-                ).joinAll()
-            }
+            listOf(
+                async { fetchRoutes() },
+                async { fetchAvailableBuses() },
+                async { increaseRouteVisitNumber() }
+            ).joinAll()
         }
     }
 
@@ -114,7 +112,7 @@ class LiveBusViewModel @Inject constructor(
                 val bothBuses = busesAsync.flatten()
                 availableBuses.value = bothBuses
 
-                delay(if (BuildConfig.DEBUG) 45000 else 5500)
+                delay(if (BuildConfig.DEBUG) 15000 else 8000)
             }
         }
     }

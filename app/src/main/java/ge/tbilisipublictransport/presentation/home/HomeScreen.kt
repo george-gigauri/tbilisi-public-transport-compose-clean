@@ -175,7 +175,7 @@ fun NearbyStops(
                     withStyle(
                         style = SpanStyle(color = DynamicWhite)
                     ) {
-                        append("უახლოესი გაჩერებები ვერ მოიძებნა თქვენს ადგილმდებარეობაზე არასაკმარისი ინფორმაციის გამო. თუ ლოკაცია გამორთული გაქვთ, ")
+                        append(stringResource(id = R.string.label_home_screen_if_location_is_off_part_one))
                     }
                     withStyle(
                         style = SpanStyle(
@@ -183,7 +183,8 @@ fun NearbyStops(
                             fontWeight = FontWeight.Bold
                         )
                     ) {
-                        append("ჩასართავად დააჭირეთ აქ.")
+                        append(" ")
+                        append(stringResource(id = R.string.label_home_screen_if_location_is_off_part_two))
                     }
                 },
                 modifier = Modifier

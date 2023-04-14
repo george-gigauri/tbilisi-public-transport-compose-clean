@@ -53,7 +53,7 @@ class BusStopsViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             result.value = stops.value.filter {
                 it.id.contains(keyword) || it.code.contains(keyword) ||
-                        it.name.contains(keyword)
+                        it.name.lowercase().contains(keyword.lowercase())
             }
         }
     }
