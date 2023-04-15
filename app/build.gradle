@@ -8,6 +8,13 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+def getSecretKeys() {
+    def keyFile = project.rootProject.file("local.properties")
+    def secretKeys = new Properties()
+    secretKeys.load(new FileInputStream(keyFile))
+    return secretKeys
+}
+
 android {
     namespace 'ge.transitgeorgia'
     compileSdk 33
@@ -23,6 +30,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField 'String', 'MAPBOX_TOKEN', getSecretKeys()['MAPBOX_TOKEN']
     }
 
     buildTypes {

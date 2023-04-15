@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.mapbox.mapboxsdk.Mapbox
 import dagger.hilt.android.AndroidEntryPoint
+import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.common.util.LocationUtil
@@ -33,11 +34,7 @@ class MainActivity : ComponentActivity() {
         }
 
         viewModel.load()
-
-        Mapbox.getInstance(
-            this,
-            "pk.eyJ1IjoiZ2VvcmdlZ2lnYXVyaSIsImEiOiJjbGZhdTBqMGIydHRqM3ByMG00c2wyaGo2In0.rISsWHRrxsQRKfrrdkntRw"
-        )
+        Mapbox.getInstance(this, BuildConfig.MAPBOX_TOKEN)
 
         setContent {
             TbilisiPublicTransportTheme {
