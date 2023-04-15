@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:333542289615:android:12482527dfb2d4f33347ba",
+        "mobilesdk_app_id": "1:333542289615:android:ad08ce8ee6a3d6513347ba",
         "android_client_info": {
-          "package_name": "ge.tbilisipublictransport"
+          "package_name": "ge.transitgeorgia"
         }
       },
       "oauth_client": [
