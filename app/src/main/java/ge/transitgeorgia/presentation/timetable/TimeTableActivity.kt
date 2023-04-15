@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTheme
 
 @AndroidEntryPoint
@@ -15,5 +16,10 @@ class TimeTableActivity : ComponentActivity() {
                 TimeTableScreen()
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Analytics.logOpenStopTimetable()
     }
 }

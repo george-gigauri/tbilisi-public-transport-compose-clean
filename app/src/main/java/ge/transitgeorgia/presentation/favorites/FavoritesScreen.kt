@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.ui.theme.DynamicPrimary
 
 @Composable
@@ -35,9 +36,11 @@ fun FavoritesScreen(
         TabRow(selectedTabIndex = selectedTabIndex) {
             TabItem(selectedTabIndex, stringResource(id = R.string.routes), 0) {
                 selectedTabIndex = it
+                Analytics.logViewTopRoutesPage()
             }
             TabItem(selectedTabIndex, stringResource(id = R.string.stops), 1) {
                 selectedTabIndex = it
+                Analytics.logViewFavoriteStopsPage()
             }
         }
 

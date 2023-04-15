@@ -3,6 +3,7 @@ package ge.transitgeorgia.presentation.bus_stops
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.repository.TransportRepository
@@ -50,6 +51,7 @@ class BusStopsViewModel @Inject constructor(
     }
 
     fun search(keyword: String) = viewModelScope.launch {
+        Analytics.logSearchStops()
         withContext(Dispatchers.IO) {
             result.value = stops.value.filter {
                 it.id.contains(keyword) || it.code.contains(keyword) ||

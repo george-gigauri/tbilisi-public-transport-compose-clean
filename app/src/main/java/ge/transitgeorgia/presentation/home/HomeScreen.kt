@@ -28,6 +28,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.geometry.LatLng
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.LocationUtil
 import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.domain.model.Route
@@ -190,6 +191,7 @@ fun NearbyStops(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable {
+                        Analytics.logLocationPrompt()
                         activity?.let { LocationUtil.requestLocation(it) {} }
                     },
                 textAlign = TextAlign.Center,
@@ -248,6 +250,7 @@ fun TopBar(context: Context, viewModel: HomeViewModel) {
         )
 
         CitySwitchDropDown(currentCity, {
+            Analytics.logChangeCity(it.id)
             viewModel.setDefaultCity(it)
             val intent = Intent(context, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK

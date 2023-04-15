@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.data.local.datastore.AppDataStore
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
@@ -87,7 +88,11 @@ class TimeTableViewModel @Inject constructor(
                         System.currentTimeMillis()
                     )
                 )
-            } else db.busStopDao().removeFromFavorites(stopId)
+                Analytics.logAddStopToFavorites()
+            } else {
+                db.busStopDao().removeFromFavorites(stopId)
+                Analytics.logRemoveStopFromFavorites()
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ import androidx.work.*
 import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.other.Const
 import ge.transitgeorgia.data.repository.TransportRepository
 import ge.transitgeorgia.domain.model.Bus
@@ -43,6 +44,8 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         }
         val distance = params.inputData.getInt("distance", 0)
         val isForward = params.inputData.getBoolean("is_forward", true)
+
+        Analytics.logScheduleBusDistanceNotifier()
 
         if (userLocation != null) {
             fetch(busNumber, isForward, userLocation, distance)

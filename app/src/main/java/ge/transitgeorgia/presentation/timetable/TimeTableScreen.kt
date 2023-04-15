@@ -33,6 +33,7 @@ import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusArrivalTimeReminderWorker
 import ge.transitgeorgia.domain.model.ArrivalTime
 import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
@@ -98,6 +99,7 @@ fun TimeTableScreen(
                             notificationsPermission?.launchPermissionRequest()
                         }
                     }
+                    Analytics.logClickArrivalTimeAlert()
                 },
                 onRefresh = { viewModel.refresh() },
                 onFavorites = { viewModel.addOrRemoveToFavorites() }
@@ -203,6 +205,7 @@ fun RouteTimeItem(
                 intent.putExtra("route_number", item.routeNumber)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
+                Analytics.logOpenRouteFromTimetable()
             }
             .then(modifier)
     ) {

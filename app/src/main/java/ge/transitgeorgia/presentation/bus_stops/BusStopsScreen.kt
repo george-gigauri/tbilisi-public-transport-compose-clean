@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.QRScanner
 import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
@@ -34,6 +35,7 @@ import java.text.DecimalFormat
 fun BusStopsScreen(
     viewModel: BusStopsViewModel = hiltViewModel()
 ) {
+    Analytics.logOpenAllStops()
     rememberSystemUiController().setStatusBarColor(DynamicPrimary)
     val stops by viewModel.result.collectAsState()
 

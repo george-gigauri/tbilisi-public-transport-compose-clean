@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun BusRoutesScreen(
@@ -38,6 +38,10 @@ fun BusRoutesScreen(
 ) {
     val routes by viewModel.routes.collectAsStateWithLifecycle()
     val context: Context = LocalContext.current
+
+    LaunchedEffect(key1 = Unit) {
+        Analytics.logOpenRoutesPage()
+    }
 
     Scaffold(
         topBar = { TopBar(viewModel::searchRoute) }
@@ -66,6 +70,7 @@ fun RouteItem(context: Context, index: Int, item: Route) {
                 val intent = Intent(context, LiveBusActivity::class.java)
                 intent.putExtra("route_number", item.number.toIntOrNull() ?: -1)
                 context.startActivity(intent)
+                Analytics.logOpenRouteDetails(item.number.toIntOrNull() ?: -1)
             }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -125,6 +130,7 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
                     onValueChange = {
                         searchKeywordValue = it
                         onSearchKeywordChange.invoke(it)
+                        Analytics.logSearchRoutes()
                     },
                     singleLine = true,
                     textStyle = TextStyle(

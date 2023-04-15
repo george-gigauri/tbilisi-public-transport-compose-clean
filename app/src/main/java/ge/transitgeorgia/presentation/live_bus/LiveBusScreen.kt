@@ -41,6 +41,7 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.ComposableLifecycle
 import ge.transitgeorgia.common.util.LocationUtil
@@ -166,8 +167,12 @@ fun LiveBusScreen(
                             notificationsPermission?.launchPermissionRequest()
                         }
                     }
+                    Analytics.logClickBusDistanceNotifier()
                 },
-                onInfoClick = { infoBottomSheetScope.launch { infoBottomSheetState.show() } }
+                onInfoClick = {
+                    infoBottomSheetScope.launch { infoBottomSheetState.show() }
+                    Analytics.logClickRouteAdditionalInfo()
+                }
             )
         }
     ) {
@@ -224,6 +229,8 @@ fun LiveBusScreen(
                                 intent.putExtra("stop_id", stopId)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                 context.startActivity(intent)
+
+                                Analytics.logOpenTimetableFromRouteMap()
                                 return@setOnMarkerClickListener true
                             }
 

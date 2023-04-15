@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData
 import androidx.work.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.other.Const
 import ge.transitgeorgia.data.repository.TransportRepository
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
@@ -38,6 +39,8 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
         val stopId = params.inputData.getString("stop_id")
         val routes = params.inputData.getIntArray("routes")
         val arrivalTime = params.inputData.getInt("arrival_time", 5)
+
+        Analytics.logScheduleBusArrivalTimeAlert()
 
         return if (stopId != null && routes?.isNotEmpty() == true) {
             fetch(stopId, routes, arrivalTime)

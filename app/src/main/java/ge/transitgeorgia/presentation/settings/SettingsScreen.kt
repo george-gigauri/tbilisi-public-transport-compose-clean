@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.presentation.main.MainActivity
 
@@ -29,6 +31,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val activity = (LocalContext.current as? MainActivity)
+
+    LaunchedEffect(key1 = Unit) {
+        Analytics.logViewSettingsPage()
+    }
 
     Scaffold(topBar = { TopBar() }, bottomBar = { VersionNameBottomBar() }) {
         it.calculateBottomPadding()
@@ -43,6 +49,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                     onValueSelected = { index ->
                         val language = AppLanguage.Language.values()[index]
                         viewModel.setAppLanguage(language)
+                        Analytics.logChangeLanguage(language.name)
 
                         android.os.Handler().postDelayed({
                             val intent = Intent(activity, MainActivity::class.java)
@@ -59,12 +66,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             item {
                 GoToSetting(text = stringResource(id = R.string.developer_contact)) {
                     openDeveloperContact(activity!!)
+                    Analytics.logClickDeveloperContact()
                 }
             }
             item { Divider() }
             item {
                 GoToSetting(text = stringResource(id = R.string.more_by_developer)) {
                     openMoreByDeveloper(activity!!)
+                    Analytics.logClickMoreByDeveloper()
                 }
             }
         }
