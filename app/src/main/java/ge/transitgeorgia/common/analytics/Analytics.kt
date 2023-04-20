@@ -33,6 +33,9 @@ object Analytics {
     const val EVENT_CHANGE_CITY = "change_city"
     const val EVENT_CLICK_DEVELOPER_CONTACT = "click_developer_contact"
     const val EVENT_CLICK_MORE_BY_DEVELOPER = "click_more_by_developer"
+    const val EVENT_CLICK_QR_SCANNER = "click_qr_scanner"
+    const val EVENT_VIEW_QR_SCANNER_PAGE = "view_qr_scanner_page"
+    const val EVENT_OPEN_GMS_QR_SCANNER = "open_google_qr_scanner"
 
     private fun isTest(): Boolean = BuildConfig.DEBUG
 
@@ -181,5 +184,23 @@ object Analytics {
         if (isTest()) return
         val bundle = Bundle()
         Firebase.analytics.logEvent(EVENT_CLICK_MORE_BY_DEVELOPER, bundle)
+    }
+
+    fun logClickQrScanner() {
+        if (isTest()) return
+        val bundle = Bundle()
+        Firebase.analytics.logEvent(EVENT_CLICK_QR_SCANNER, bundle)
+    }
+
+    fun logViewQrScannerPage() {
+        if (isTest()) return
+        val bundle = Bundle()
+        Firebase.analytics.logEvent(EVENT_VIEW_QR_SCANNER_PAGE, bundle)
+    }
+
+    fun logOpenGoogleQrScanner() {
+        if (isTest()) return
+        val bundle = Bundle()
+        Firebase.analytics.logEvent(EVENT_OPEN_GMS_QR_SCANNER, bundle)
     }
 }

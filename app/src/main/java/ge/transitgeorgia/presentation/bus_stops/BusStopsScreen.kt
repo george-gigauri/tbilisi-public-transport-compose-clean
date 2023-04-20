@@ -4,7 +4,14 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.mlkit.vision.barcode.common.Barcode
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.QRScanner
 import ge.transitgeorgia.domain.model.BusStop
+import ge.transitgeorgia.presentation.scanner.QRScannerActivity
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import ge.transitgeorgia.ui.theme.DynamicPrimary
 import ge.transitgeorgia.ui.theme.DynamicWhite
@@ -46,9 +55,14 @@ fun BusStopsScreen(
             BusStopTopBar(
                 onSearchKeywordChange = viewModel::search,
                 onScanClick = {
-                    QRScanner.start {
-
-                    }
+                    Analytics.logClickQrScanner()
+                    QRScanner.start(onSuccess = {
+                        processBarcode(context, it)
+                        Analytics.logOpenGoogleQrScanner()
+                    }, onError = {
+                        val intent = Intent(context, QRScannerActivity::class.java)
+                        context.startActivity(intent)
+                    })
                 }
             )
         }
@@ -108,5 +122,20 @@ fun ItemBusStop(
             fontWeight = FontWeight.Normal,
             fontSize = 15.sp
         )
+    }
+}
+
+private fun processBarcode(c: Context, b: Barcode) {
+    when (b.valueType) {
+        Barcode.TYPE_SMS -> processSMSBarcode(c, b)
+    }
+}
+
+private fun processSMSBarcode(context: Context, b: Barcode) {
+    b.sms?.message?.also {
+        val intent = Intent(context, TimeTableActivity::class.java)
+        intent.putExtra("stop_id", it)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
     }
 }

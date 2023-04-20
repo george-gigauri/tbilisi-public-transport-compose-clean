@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Transit Georgia</string>
+    <string name="app_name" translatable="false">BusPlore</string>
     <string name="home">მთავარი</string>
     <string name="top_routes">ტოპ მარშრუტები</string>
     <string name="favorite_stops">ფავორიტი გაჩერებები</string>

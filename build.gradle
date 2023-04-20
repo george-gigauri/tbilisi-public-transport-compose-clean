@@ -1,7 +1,8 @@
 buildscript {
-    ext {
-        compose_version = '1.3.3'
-    }
+
+    def keyFile = project.rootProject.file("local.properties")
+    def secretKeys = new Properties()
+    secretKeys.load(new FileInputStream(keyFile))
 
     repositories {
         google()
@@ -13,20 +14,18 @@ buildscript {
                 basic(BasicAuthentication)
             }
             credentials {
-                // Do not change the username below.
-                // This should always be `mapbox` (not your username).
                 username = "mapbox"
-                // Use the secret token you stored in gradle.properties as the password
-                password = "pk.eyJ1IjoiZ2VvcmdlZ2lnYXVyaSIsImEiOiJjbGZhdTBqMGIydHRqM3ByMG00c2wyaGo2In0.rISsWHRrxsQRKfrrdkntRw"
+                password = secretKeys['MAPBOX_TOKEN']
             }
         }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.0.0'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10'
         classpath 'com.google.dagger:hilt-android-gradle-plugin:2.44'
         classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.5'
     }
 }
 //

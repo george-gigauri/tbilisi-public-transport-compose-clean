@@ -38,7 +38,6 @@ import ge.transitgeorgia.presentation.main.MainActivity
 import ge.transitgeorgia.presentation.main.MainNavigationScreen
 import ge.transitgeorgia.ui.theme.DynamicWhite
 
-
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
