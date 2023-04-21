@@ -4,12 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
@@ -33,6 +36,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var appUpdateManager: AppUpdateManager
     private lateinit var appUpdateInfoTask: Task<AppUpdateInfo>
 
+    private val appUpdateListener = InstallStateUpdatedListener { state ->
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            appUpdateManager.completeUpdate()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val language = runBlocking { AppDataStore(this@MainActivity).language.first() }
         AppLanguage.updateLanguage(this, language.value)
@@ -40,6 +49,7 @@ class MainActivity : ComponentActivity() {
 
         appUpdateManager = AppUpdateManagerFactory.create(this)
         appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateManager.registerListener(appUpdateListener)
 
         QRScanner.init(this)
 
@@ -72,10 +82,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startFlexibleInAppUpdate(appUpdateInfo: AppUpdateInfo) {
-        appUpdateManager.startUpdateFlow(
+        appUpdateManager.startUpdateFlowForResult(
             appUpdateInfo,
+            AppUpdateType.FLEXIBLE,
             this,
-            AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
+            798512
         )
     }
 
@@ -87,6 +98,16 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun alertUpdateDownloadComplete() {
+        AlertDialog.Builder(this)
+            .setCancelable(false)
+            .setTitle("Update Completed")
+            .setMessage("განახლება ჩამოტვირთულია. გადატვირთეთ აპლიკაცია მის დასაინსტალირებლად.")
+            .setPositiveButton("გადატვირთვა") { _, _ ->
+                appUpdateManager.completeUpdate()
+            }.show()
+    }
+
     override fun onResume() {
         super.onResume()
         checkForUpdate()
@@ -95,5 +116,10 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         Analytics.logAppLoaded()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appUpdateManager.unregisterListener(appUpdateListener)
     }
 }
