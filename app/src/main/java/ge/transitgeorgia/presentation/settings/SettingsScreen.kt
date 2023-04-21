@@ -18,8 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
@@ -27,7 +27,7 @@ import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.presentation.main.MainActivity
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
+fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
 
     val appLanguage by viewModel.appLanguage.collectAsStateWithLifecycle()
     val activity = (LocalContext.current as? MainActivity)
