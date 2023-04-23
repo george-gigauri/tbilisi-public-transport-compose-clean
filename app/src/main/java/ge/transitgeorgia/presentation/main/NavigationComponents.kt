@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -68,7 +69,15 @@ fun BottomNavigation(navController: NavHostController) {
             NavigationBarItem(
                 alwaysShowLabel = false,
                 selected = isSelected,
-                onClick = { navController.navigate(it.screenName) },
+                onClick = {
+                    navController.navigate(it.screenName) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
                 icon = {
                     Icon(
                         painter = icon,
