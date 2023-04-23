@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.transitgeorgia.presentation.bus_routes.BusRoutesScreen
+import ge.transitgeorgia.presentation.bus_stops.BusStopsMapScreen
 import ge.transitgeorgia.presentation.bus_stops.BusStopsScreen
 import ge.transitgeorgia.presentation.favorites.FavoritesScreen
 import ge.transitgeorgia.presentation.home.HomeScreen
@@ -49,6 +50,10 @@ fun BottomNavGraph(navController: NavHostController) {
         // Not Bottom Menu
         composable(MainNavigationScreen.Stops.screenName) {
             BusStopsScreen()
+        }
+
+        composable(MainNavigationScreen.StopsMap.screenName) {
+            BusStopsMapScreen()
         }
     }
 }

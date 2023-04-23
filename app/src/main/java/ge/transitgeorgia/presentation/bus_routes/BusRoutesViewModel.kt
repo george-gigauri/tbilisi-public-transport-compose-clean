@@ -5,16 +5,18 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.db.AppDatabase
-import ge.transitgeorgia.data.repository.TransportRepository
 import ge.transitgeorgia.domain.model.Route
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class BusRoutesViewModel @Inject constructor(
-    private val repository: TransportRepository,
     private val db: AppDatabase
 ) : ViewModel() {
 

@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
@@ -201,15 +202,44 @@ fun NearbyStops(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        FilledTonalButton(onClick = {
-            navController.navigate(MainNavigationScreen.Stops.screenName)
-        }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
-            Text(
-                text = stringResource(id = R.string.see_all),
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.primary,
-                fontSize = 15.sp,
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            // QR Scanner
+//            FilledTonalButton(onClick = { }) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.ic_scan_barcode),
+//                    contentDescription = null,
+//                    tint = colorScheme.primary
+//                )
+//            }
+//            Spacer(modifier = Modifier.width(8.dp))
+
+            // Map
+            FilledTonalButton(onClick = {
+                navController.navigate(MainNavigationScreen.StopsMap.screenName)
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_map),
+                    contentDescription = null,
+                    tint = colorScheme.primary
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // All Stops
+            FilledTonalButton(onClick = {
+                navController.navigate(MainNavigationScreen.Stops.screenName)
+            }) {
+                Text(
+                    text = stringResource(id = R.string.see_all),
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.primary,
+                    fontSize = 15.sp,
+                )
+            }
         }
     }
 }

@@ -40,6 +40,7 @@ sealed class MainNavigationScreen(
 
     // Non-Bottom
     object Stops : MainNavigationScreen("", -1, -1, "stops")
+    object StopsMap : MainNavigationScreen("", -1, -1, "stops_map")
 
     companion object {
         fun all(): List<MainNavigationScreen> = listOf(Home, Routes, Favorites, Settings)

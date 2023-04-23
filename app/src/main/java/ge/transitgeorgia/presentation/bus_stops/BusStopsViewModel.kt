@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.db.AppDatabase
-import ge.transitgeorgia.data.repository.TransportRepository
 import ge.transitgeorgia.domain.model.BusStop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,7 +18,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BusStopsViewModel @Inject constructor(
-    private val repository: TransportRepository,
     private val db: AppDatabase
 ) : ViewModel() {
 
@@ -33,20 +31,18 @@ class BusStopsViewModel @Inject constructor(
     val error: MutableSharedFlow<String?> = MutableSharedFlow()
 
     private fun load() = viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-            try {
-                db.busStopDao().getStopsFlow().collectLatest {
-                    val data = db.busStopDao().getStops().map { it.toDomain() }
-                    result.value = data
-                    stops.value = data
-                }
-            } catch (e: HttpException) {
-                error.emit(e.message())
-            } catch (e: Exception) {
-                error.emit("Unknown Error")
-            } finally {
-                isLoading.value = false
+        try {
+            db.busStopDao().getStopsFlow().collectLatest {
+                val data = db.busStopDao().getStops().map { it.toDomain() }
+                result.value = data
+                stops.value = data
             }
+        } catch (e: HttpException) {
+            error.emit(e.message())
+        } catch (e: Exception) {
+            error.emit("Unknown Error")
+        } finally {
+            isLoading.value = false
         }
     }
 

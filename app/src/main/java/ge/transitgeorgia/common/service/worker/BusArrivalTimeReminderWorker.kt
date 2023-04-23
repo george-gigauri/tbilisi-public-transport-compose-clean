@@ -10,12 +10,18 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.lifecycle.LiveData
-import androidx.work.*
+import androidx.work.CoroutineWorker
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.other.Const
-import ge.transitgeorgia.data.repository.TransportRepository
+import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -31,7 +37,7 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     @Inject
-    lateinit var repository: TransportRepository
+    lateinit var repository: ITransportRepository
 
     private val notifiedRoutes = arrayListOf<Int>()
 

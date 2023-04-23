@@ -13,6 +13,10 @@ import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.data.local.datastore.AppDataStore
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.remote.api.TransportApi
+import ge.transitgeorgia.data.repository.TransportRepository
+import ge.transitgeorgia.domain.repository.ITransportRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -20,11 +24,19 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    object Name {
+        const val DISPATCHER_DEFAULT = "dispatcher_default"
+        const val DISPATCHER_MAIN = "dispatcher_main"
+        const val DISPATCHER_IO = "dispatcher_io"
+        const val DISPATCHER_UNCONFINED = "dispatcher_unconfined"
+    }
 
     @Provides
     @Singleton
@@ -75,4 +87,32 @@ object AppModule {
     fun provideApiService(retrofit: Retrofit): TransportApi {
         return retrofit.create()
     }
+
+    @Named(Name.DISPATCHER_DEFAULT)
+    @Provides
+    @Singleton
+    fun provideDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+
+    @Named(Name.DISPATCHER_MAIN)
+    @Provides
+    @Singleton
+    fun provideMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
+    @Named(Name.DISPATCHER_IO)
+    @Provides
+    @Singleton
+    fun provideIODispatcher(): CoroutineDispatcher = Dispatchers.IO
+
+    @Named(Name.DISPATCHER_UNCONFINED)
+    @Provides
+    @Singleton
+    fun provideUnconfinedDispatcher(): CoroutineDispatcher = Dispatchers.Unconfined
+
+    @Provides
+    @Singleton
+    fun provideTransportRepository(
+        api: TransportApi,
+        db: AppDatabase,
+        @Named(Name.DISPATCHER_IO) ioDispatcher: CoroutineDispatcher
+    ): ITransportRepository = TransportRepository(api, db, ioDispatcher)
 }

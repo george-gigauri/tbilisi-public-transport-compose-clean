@@ -9,17 +9,21 @@ import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.data.local.datastore.AppDataStore
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.local.entity.RouteClicksEntity
-import ge.transitgeorgia.data.repository.TransportRepository
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.model.RouteInfo
-import kotlinx.coroutines.*
+import ge.transitgeorgia.domain.repository.ITransportRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LiveBusViewModel @Inject constructor(
-    private val repository: TransportRepository,
+    private val repository: ITransportRepository,
     private val savedStateHandle: SavedStateHandle,
     private val db: AppDatabase,
     private val dataStore: AppDataStore
@@ -61,59 +65,55 @@ class LiveBusViewModel @Inject constructor(
     }
 
     private fun fetchRoutes() = viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-            try {
-                isLoading.value = true
-                error.value = null
-                if (routeNumber == null) throw NullPointerException("Route number is invalid!")
-                else {
-                    val routes = awaitAll(
-                        async { repository.getRouteByBus(routeNumber!!, true) },
-                        async { repository.getRouteByBus(routeNumber!!, false) }
-                    )
-                    route1.value = routes[0]
-                    route2.value = routes[1]
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Log.d("LiveBusViewModel", e.message ?: "Error while parsing data")
-                error.value = e.message
-            } finally {
-                error.value = null
-                isLoading.value = false
+        try {
+            isLoading.value = true
+            error.value = null
+            if (routeNumber == null) throw NullPointerException("Route number is invalid!")
+            else {
+                val routes = awaitAll(
+                    async { repository.getRouteByBus(routeNumber!!, true) },
+                    async { repository.getRouteByBus(routeNumber!!, false) }
+                )
+                route1.value = routes[0]
+                route2.value = routes[1]
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("LiveBusViewModel", e.message ?: "Error while parsing data")
+            error.value = e.message
+        } finally {
+            error.value = null
+            isLoading.value = false
         }
     }
 
     private fun fetchAvailableBuses() = viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-            if (routeNumber == null) throw NullPointerException("Route number is MUST!")
+        if (routeNumber == null) throw NullPointerException("Route number is MUST!")
 
-            while (true) {
-                val busesAsync = awaitAll(
-                    async {
-                        try {
-                            repository.getBusPositions(routeNumber!!, true)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            emptyList()
-                        }
-                    },
-                    async {
-                        try {
-                            repository.getBusPositions(routeNumber!!, false)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            emptyList()
-                        }
+        while (true) {
+            val busesAsync = awaitAll(
+                async {
+                    try {
+                        repository.getBusPositions(routeNumber!!, true)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emptyList()
                     }
-                )
+                },
+                async {
+                    try {
+                        repository.getBusPositions(routeNumber!!, false)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        emptyList()
+                    }
+                }
+            )
 
-                val bothBuses = busesAsync.flatten()
-                availableBuses.value = bothBuses
+            val bothBuses = busesAsync.flatten()
+            availableBuses.value = bothBuses
 
-                delay(if (BuildConfig.DEBUG) 15000 else 8000)
-            }
+            delay(if (BuildConfig.DEBUG) 15000 else 8000)
         }
     }
 }
