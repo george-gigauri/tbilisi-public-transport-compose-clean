@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
     private fun fetchTopRoutes() = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             db.routeDao().getTopRoutesFlow(dataStore.city.first().id).collectLatest {
-                topRoutes.value = it.take(3).map { it.toDomain() }
+                topRoutes.value = it.take(4).map { it.toDomain() }
             }
         }
     }
@@ -70,7 +70,7 @@ class HomeViewModel @Inject constructor(
                 nearbyStops.value = it.map { i -> i.toDomain() }.sortedBy { b ->
                     val latLng = LatLng(b.lat, b.lng)
                     position.distanceTo(latLng)
-                }.take(15)
+                }.take(10)
             }
         }
     }

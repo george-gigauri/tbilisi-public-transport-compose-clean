@@ -211,9 +211,15 @@ fun BusStopsMapScreen(
         // Button Move Zoom to user location
         FilledTonalIconButton(
             onClick = {
+                if (!LocationUtil.isLocationTurnedOn(context)) {
+                    LocationUtil.requestLocation(currentActivity!!) {
+                        LocationUtil.requestLocation(context) {}
+                    }
+                }
+
                 LocationUtil.getLastKnownLocation(context)?.let {
                     val latLng = LatLng(it.latitude, it.longitude)
-                    map?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.5))
+                    map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0), 1500)
                 }
             },
             modifier = Modifier

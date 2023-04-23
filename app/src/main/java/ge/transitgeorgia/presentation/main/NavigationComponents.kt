@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -76,8 +75,14 @@ fun BottomNavigation(navController: NavHostController) {
                 selected = isSelected,
                 onClick = {
                     navController.navigate(it.screenName) {
-                        popUpTo(navController.graph.findStartDestination().id) {
+
+                        val destinationId = navController.currentBackStackEntry?.destination?.id
+                        val route = destinationId?.let { destinationId }
+                            ?: navController.graph.startDestinationId
+
+                        popUpTo(route) {
                             saveState = true
+                            inclusive = true
                         }
                         launchSingleTop = true
                         restoreState = true
