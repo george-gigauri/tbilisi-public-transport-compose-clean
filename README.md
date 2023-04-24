@@ -11,6 +11,11 @@ BUSPLORE is Tbilisi & Rustavi bus Android application that simplifies your journ
 - Android 5.0 and later
 - Your own google-services.json and MAPBOX TOKEN
 
+## **Availability**
+You can download app directly from Google Play Store:
+
+<a href="https://play.google.com/store/apps/details?id=ge.transitgeorgia"><img height=70 src="https://images.squarespace-cdn.com/content/v1/612cd2833850b4741fea579d/1630594213756-6H1W5BCTUTRLOS3BT3MD/GooglePlay+banner.png"/></a>
+
 ## **Tech Stack**
 - 100% Kotlin
 - MVVM + Clean Architecture
