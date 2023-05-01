@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
+import ge.transitgeorgia.common.service.worker.TranslateDataWorker
 import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.presentation.main.MainActivity
 
@@ -51,6 +52,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                         viewModel.setAppLanguage(language)
                         Analytics.logChangeLanguage(language.name)
 
+                        if (language == AppLanguage.Language.ENG) {
+                            activity?.let(TranslateDataWorker::start)
+                        }
+
                         android.os.Handler().postDelayed({
                             val intent = Intent(activity, MainActivity::class.java)
                             intent.flags =
@@ -58,7 +63,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             activity?.finish()
                             activity?.startActivity(intent)
                             Runtime.getRuntime().exit(0)
-                        }, 800)
+                        }, 750)
                     }
                 )
             }

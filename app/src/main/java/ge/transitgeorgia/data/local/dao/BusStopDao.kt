@@ -15,6 +15,12 @@ interface BusStopDao {
     @Insert
     suspend fun insertAll(items: List<BusStopEntity>)
 
+    @Update
+    suspend fun update(item: BusStopEntity)
+
+    @Update
+    suspend fun updateAll(items: List<BusStopEntity>)
+
     @Query("SELECT * FROM bus_stop")
     suspend fun getStops(): List<BusStopEntity>
 

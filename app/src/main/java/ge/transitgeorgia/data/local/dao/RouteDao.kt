@@ -15,6 +15,12 @@ interface RouteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(items: List<RouteEntity>)
 
+    @Update
+    suspend fun update(item: RouteEntity)
+
+    @Update
+    suspend fun update(items: List<RouteEntity>)
+
     @Query("SELECT * FROM route")
     suspend fun getAll(): List<RouteEntity>
 
@@ -30,7 +36,7 @@ interface RouteDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertClickEntity(clicksEntity: RouteClicksEntity)
 
-    @Query("SELECT (COUNT(*) > 0) FROM route_click_count WHERE routeNumber=:routeNumber AND city=:cityId")
+    @Query("SELECT (COUNT(*) > 0) FROM route INNER JOIN route_click_count ON number=:routeNumber WHERE clicks >= 3 AND city=:cityId ORDER BY clicks DESC")
     suspend fun isTop(routeNumber: Int, cityId: String): Boolean
 
     @Query("UPDATE route_click_count SET clicks=(clicks + 1) WHERE routeNumber=:routeNumber AND city=:cityId")

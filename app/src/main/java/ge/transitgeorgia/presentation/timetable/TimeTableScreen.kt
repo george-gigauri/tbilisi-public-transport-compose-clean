@@ -9,15 +9,29 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -25,7 +39,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,15 +50,27 @@ import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.Style
+import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusArrivalTimeReminderWorker
+import ge.transitgeorgia.common.util.rawAsString
 import ge.transitgeorgia.domain.model.ArrivalTime
+import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
 import ge.transitgeorgia.ui.theme.DynamicPrimary
+import ge.transitgeorgia.ui.theme.DynamicWhite
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun TimeTableScreen(
+    stop: BusStop?,
     viewModel: TimeTableViewModel = hiltViewModel()
 ) {
 
@@ -50,6 +79,9 @@ fun TimeTableScreen(
     val context = LocalContext.current
 
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val shouldShowLoading by viewModel.shouldShowLoading.collectAsStateWithLifecycle()
+
     var isReminderRunning by rememberSaveable { mutableStateOf(false) }
     var isNotifyMeDialogVisible by rememberSaveable { mutableStateOf(false) }
 
@@ -106,35 +138,41 @@ fun TimeTableScreen(
             )
         }
     ) {
-        Column {
-            Spacer(modifier = Modifier.height(54.dp))
-            Spacer(modifier = Modifier.height(12.dp))
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(DynamicPrimary, RoundedCornerShape(16.dp))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.secondaryContainer,
-                        RoundedCornerShape(16.dp)
-                    )
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(isRefreshing = isLoading && shouldShowLoading),
+            onRefresh = { viewModel.onSwipeToRefresh() },
+            modifier = Modifier.padding(top = 54.dp)
+        ) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    .padding(1.dp)
-            ) {
-                item { HeaderInformation() }
-                itemsIndexed(arrivalTimes, key = { _, it -> it.routeNumber }) { index, it ->
-                    RouteTimeItem(
-                        context,
-                        it,
-                        index == arrivalTimes.size - 1,
-                        modifier = Modifier.animateItemPlacement()
-                    )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .background(DynamicPrimary, RoundedCornerShape(16.dp))
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            RoundedCornerShape(16.dp)
+                        )
+                        .padding(1.dp)
+                ) {
+                    HeaderInformation()
+                    arrivalTimes.forEachIndexed { index, arrivalTime ->
+                        RouteTimeItem(
+                            context,
+                            arrivalTime,
+                            index == arrivalTimes.size - 1,
+                            modifier = Modifier
+                        )
+                    }
                 }
+                StopMapLocation(stop)
             }
-        }
 
-        it.calculateBottomPadding()
+            it.calculateBottomPadding()
+        }
     }
 }
 
@@ -248,5 +286,51 @@ fun RouteTimeItem(
                 )
                 .padding(horizontal = 12.dp, vertical = 12.dp)
         )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun StopMapLocation(stop: BusStop? = BusStop("", "", "Xergianis q. 57", 0.0, 0.0)) {
+    val context = LocalContext.current
+    val mapStyle = Style.Builder().fromJson(context.resources.rawAsString(R.raw.map_style_outdoor))
+
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "[ID:${stop?.code}] ${stop?.name.orEmpty()}",
+            color = DynamicWhite,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            AndroidView(factory = {
+                MapView(it).also { mv ->
+                    mv.getMapAsync { map ->
+                        map.uiSettings.isScrollGesturesEnabled = false
+                        map.setMaxZoomPreference(17.0)
+                        map.setMinZoomPreference(12.0)
+                        map.uiSettings.isLogoEnabled = false
+                        map.setStyle(mapStyle)
+                        val stopPosition = LatLng(stop?.lat ?: 0.0, stop?.lng ?: 0.0)
+                        map.addMarker(MarkerOptions().apply { position(stopPosition) })
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(stopPosition, 15.0))
+                    }
+                }
+            }, modifier = Modifier.height(350.dp))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

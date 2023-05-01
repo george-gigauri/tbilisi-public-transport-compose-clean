@@ -92,6 +92,7 @@ fun ItemBusStop(
             .clickable {
                 val intent = Intent(context, TimeTableActivity::class.java)
                 intent.putExtra("stop_id", stop.code)
+                intent.putExtra("stop", stop)
                 context.startActivity(intent)
             }
             .padding(vertical = 8.dp),

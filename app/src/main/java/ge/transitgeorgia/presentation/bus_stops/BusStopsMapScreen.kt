@@ -53,8 +53,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-val TBILISI_LAT_LNG = LatLng(41.716537, 44.783333)
-
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -69,6 +67,7 @@ fun BusStopsMapScreen(
     val mapZoomScope = rememberCoroutineScope()
 
     val stops by viewModel.stops.collectAsStateWithLifecycle()
+    val city by viewModel.city.collectAsStateWithLifecycle()
 
     val isDarkMode = isSystemInDarkTheme()
     var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) Style.DARK else Style.LIGHT) }
@@ -100,7 +99,12 @@ fun BusStopsMapScreen(
         AndroidView(factory = {
             MapView(it).apply {
                 getMapAsync { m ->
-                    m.moveCamera(CameraUpdateFactory.newLatLngZoom(TBILISI_LAT_LNG, 11.0))
+                    m.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            city.latLng,
+                            city.mapDefaultZoom
+                        )
+                    )
                     m.setStyle(mapStyle) {
                         if (locationPermissionState.allPermissionsGranted) {
                             currentActivity?.let { c ->

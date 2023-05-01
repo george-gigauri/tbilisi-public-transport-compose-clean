@@ -32,6 +32,7 @@ class TimeTableViewModel @Inject constructor(
 
     val stopId: String get() = savedStateHandle["stop_id"] ?: "-1"
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val shouldShowLoading: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val data: MutableStateFlow<List<ArrivalTime>> = MutableStateFlow(emptyList())
     val isFavorite: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -69,6 +70,7 @@ class TimeTableViewModel @Inject constructor(
             } catch (e: Exception) {
                 error.value = e.message ?: "Unknown Error"
             } finally {
+                shouldShowLoading.value = false
                 isLoading.value = false
                 error.value = null
             }
@@ -76,6 +78,11 @@ class TimeTableViewModel @Inject constructor(
     }
 
     fun refresh() {
+        load()
+    }
+
+    fun onSwipeToRefresh() = viewModelScope.launch {
+        shouldShowLoading.value = true
         load()
     }
 

@@ -67,6 +67,6 @@ class TransportRepository constructor(
     ): List<ArrivalTime> = withContext(ioDispatcher) {
         return@withContext api.getTimeTableInformation(stopId).body()?.arrivalTimes?.map {
             it.toDomain()
-        }.orEmpty()
+        }.orEmpty().sortedBy { it.time }
     }
 }

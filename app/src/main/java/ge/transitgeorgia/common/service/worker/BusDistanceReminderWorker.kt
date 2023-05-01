@@ -70,7 +70,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         distance: Int
     ) = withContext(Dispatchers.IO) {
         var isDone = false
-        var loopCounter = 0
+
         while (!isDone) {
             try {
                 repository.getBusPositions(busNumber, isForward).let {
@@ -79,16 +79,8 @@ class BusDistanceReminderWorker @AssistedInject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            loopCounter++
-            delay(
-                when (loopCounter) {
-                    in 0..45 -> 15000
-                    in 46..105 -> 8500
-                    else -> 7500
-                }
-            )
 
-            if (loopCounter == 155) isDone = true
+            delay(12500)
         }
     }
 

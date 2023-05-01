@@ -13,7 +13,7 @@ class TimeTableActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TbilisiPublicTransportTheme {
-                TimeTableScreen()
+                TimeTableScreen(intent.getParcelableExtra("stop"))
             }
         }
     }
