@@ -5,7 +5,7 @@
 BUSPLORE is Tbilisi & Rustavi bus Android application that simplifies your journey by Public Transport by providing some unique features no other app has. You can see nearby stations, view bus in real-time or even schedule notification when your bus is approaching you.
 
 ## **ScreenShots**
-![screenshots](https://github.com/george-gigauri/tbilisi-public-transport-compose-clean/blob/main/images/BUSPLORE%20Poster%20Screenshots.jpg?raw=true)
+![screenshots](https://raw.githubusercontent.com/george-gigauri/tbilisi-public-transport-compose-clean/main/images/BUSPLORE%20Poster%20Screenshots.jpg)
 
 ## **Requirements**
 - Android 5.0 and later
