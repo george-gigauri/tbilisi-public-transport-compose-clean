@@ -113,7 +113,7 @@ class LiveBusViewModel @Inject constructor(
             val bothBuses = busesAsync.flatten()
             availableBuses.value = bothBuses
 
-            delay(if (BuildConfig.DEBUG) 15000 else 8000)
+            delay(if (BuildConfig.DEBUG) 7500 else 7500)
         }
     }
 }

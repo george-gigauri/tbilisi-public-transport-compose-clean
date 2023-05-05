@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -70,11 +69,11 @@ import ge.transitgeorgia.ui.theme.DynamicWhite
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun TimeTableScreen(
-    stop: BusStop?,
     viewModel: TimeTableViewModel = hiltViewModel()
 ) {
 
     val arrivalTimes by viewModel.data.collectAsStateWithLifecycle()
+    val stopInfo by viewModel.stop.collectAsStateWithLifecycle()
     val currentActivity = (LocalContext.current as? TimeTableActivity)
     val context = LocalContext.current
 
@@ -168,7 +167,7 @@ fun TimeTableScreen(
                         )
                     }
                 }
-                StopMapLocation(stop)
+                stopInfo?.let { StopMapLocation(it) }
             }
 
             it.calculateBottomPadding()
@@ -290,8 +289,7 @@ fun RouteTimeItem(
 }
 
 @Composable
-@Preview(showBackground = true)
-private fun StopMapLocation(stop: BusStop? = BusStop("", "", "Xergianis q. 57", 0.0, 0.0)) {
+private fun StopMapLocation(stop: BusStop) {
     val context = LocalContext.current
     val mapStyle = Style.Builder().fromJson(context.resources.rawAsString(R.raw.map_style_outdoor))
 

@@ -24,6 +24,12 @@ interface BusStopDao {
     @Query("SELECT * FROM bus_stop")
     suspend fun getStops(): List<BusStopEntity>
 
+    @Query("SELECT * FROM bus_stop WHERE id=:id")
+    suspend fun getStopById(id: String): BusStopEntity?
+
+    @Query("SELECT * FROM bus_stop WHERE code=:code")
+    suspend fun getStopByCode(code: String): BusStopEntity?
+
     @Query("SELECT * FROM bus_stop")
     fun getStopsFlow(): Flow<List<BusStopEntity>>
 

@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.analytics.Analytics
+import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.datastore.AppDataStore
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
 import ge.transitgeorgia.domain.model.ArrivalTime
+import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,14 +36,20 @@ class TimeTableViewModel @Inject constructor(
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val shouldShowLoading: MutableStateFlow<Boolean> = MutableStateFlow(true)
     val data: MutableStateFlow<List<ArrivalTime>> = MutableStateFlow(emptyList())
+    val stop: MutableStateFlow<BusStop?> = MutableStateFlow(null)
     val isFavorite: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
+        getStopInfo()
         listenIsFavorite()
         requestTimetableUpdates()
+    }
+
+    private fun getStopInfo() = viewModelScope.launch {
+        stop.value = db.busStopDao().getStopByCode(stopId)?.toDomain()
     }
 
     private fun listenIsFavorite() = viewModelScope.launch {
@@ -53,7 +61,7 @@ class TimeTableViewModel @Inject constructor(
     private fun requestTimetableUpdates() = viewModelScope.launch {
         while (scope.isActive) {
             load()
-            delay(12 * 1000L)
+            delay(15 * 1000L)
         }
     }
 
