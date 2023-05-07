@@ -10,7 +10,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -38,13 +41,16 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.ComposableLifecycle
 import ge.transitgeorgia.common.util.LocationUtil
+import ge.transitgeorgia.common.util.MapStyle
+import ge.transitgeorgia.common.util.dpToPx
+import ge.transitgeorgia.common.util.style
 import ge.transitgeorgia.domain.model.RouteStop
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.cancelChildren
@@ -68,6 +74,11 @@ fun LiveBusScreen(
     val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_ANY) }
     val isDarkMode = isSystemInDarkTheme()
     val context = LocalContext.current
+    var mbMap: MapboxMap? = remember { null }
+
+    val route1 by viewModel.route1.collectAsStateWithLifecycle()
+    val route2 by viewModel.route2.collectAsStateWithLifecycle()
+    val availableBuses by viewModel.availableBuses.collectAsStateWithLifecycle()
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.error.collectAsStateWithLifecycle()
@@ -89,6 +100,8 @@ fun LiveBusScreen(
     val infoBottomSheetScope = rememberCoroutineScope()
 
     var isNotifyMeDialogVisible by rememberSaveable { mutableStateOf(false) }
+
+    var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) MapStyle.BUSPLORE_DARK else MapStyle.BUSPLORE_LIGHT) }
 
     ComposableLifecycle(onEvent = { s, event ->
         lifecycleEvent.value = event
@@ -124,10 +137,10 @@ fun LiveBusScreen(
         LiveBusInfoBottomSheet(
             infoBottomSheetState,
             userLocation,
-            viewModel.route1.collectAsState().value,
-            viewModel.route2.collectAsState().value,
-            viewModel.availableBuses.collectAsState().value.filter { it.isForward },
-            viewModel.availableBuses.collectAsState().value.filter { !it.isForward },
+            route1,
+            route2,
+            availableBuses.filter { it.isForward },
+            availableBuses.filter { !it.isForward },
         ) {
             infoBottomSheetScope.launch { infoBottomSheetState.hide() }
         }
@@ -136,12 +149,12 @@ fun LiveBusScreen(
     // Notification Bottom Sheet
     if (isNotifyMeDialogVisible) {
         LiveBusScheduleNotificationDialog(
-            viewModel.route1.collectAsState().value,
-            viewModel.route2.collectAsState().value,
+            route1,
+            route2,
             onSchedule = { distance, isForward ->
                 BusDistanceReminderWorker.start(
                     context,
-                    viewModel.route1.value.number,
+                    route1.number,
                     userLocation,
                     distance,
                     isForward
@@ -155,7 +168,7 @@ fun LiveBusScreen(
         topBar = {
             LiveBusTopBar(
                 isReminderRunning = isReminderRunning,
-                route = viewModel.route1.collectAsState().value,
+                route = route1,
                 onBackButtonClick = { currentActivity?.finish() },
                 onNotifyClick = {
                     if (isReminderRunning) {
@@ -177,6 +190,7 @@ fun LiveBusScreen(
         }
     ) {
         it.calculateBottomPadding()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -191,7 +205,8 @@ fun LiveBusScreen(
                 AndroidView(factory = {
                     MapView(it).apply {
                         getMapAsync { map ->
-                            map.setStyle(if (isDarkMode) Style.DARK else Style.LIGHT) {
+                            mbMap = map
+                            map.setStyle(mapStyle.style(it)) {
                                 if (locationPermissionState.allPermissionsGranted) {
                                     currentActivity?.let { c ->
                                         if (LocationUtil.isLocationTurnedOn(c)) {
@@ -221,8 +236,8 @@ fun LiveBusScreen(
 
                             map.setOnMarkerClickListener {
                                 val stopId = arrayListOf<RouteStop>().apply {
-                                    addAll(viewModel.route1.value.stops)
-                                    addAll(viewModel.route2.value.stops)
+                                    addAll(route1.stops)
+                                    addAll(route2.stops)
                                 }.find { s -> LatLng(s.lat, s.lng) == it.position }?.id
 
                                 val intent = Intent(context, TimeTableActivity::class.java)
@@ -237,41 +252,42 @@ fun LiveBusScreen(
                             map.addOnCameraMoveListener {
                                 mapZoomScope.coroutineContext.cancelChildren()
                                 mapZoomScope.launch {
-                                    delay(300)
-                                    if (map.cameraPosition.zoom >= 13.2) {
+                                    delay(325)
+                                    if (map.cameraPosition.zoom >= 13) {
                                         map.markers.filter { it.snippet == "stop" }
                                             .forEach { it.remove() }
-                                        val route1Stops = viewModel.route1.value.stops
-                                        val route2Stops = viewModel.route2.value.stops
+
                                         val visibleBounds =
                                             map.projection.visibleRegion.latLngBounds
                                         val visibleStops = arrayListOf<RouteStop>().apply {
-                                            addAll(route1Stops.filter {
-                                                val latLng = LatLng(it.lat, it.lng)
+                                            addAll(route1.stops.filter { rs ->
+                                                val latLng = LatLng(rs.lat, rs.lng)
                                                 visibleBounds.contains(latLng)
                                             })
 
-                                            addAll(route2Stops.filter {
-                                                val latLng = LatLng(it.lat, it.lng)
+                                            addAll(route2.stops.filter { rs ->
+                                                val latLng = LatLng(rs.lat, rs.lng)
                                                 visibleBounds.contains(latLng)
                                             })
                                         }
 
-                                        visibleStops.forEach {
+                                        visibleStops.forEach { rs ->
                                             MarkerOptions().apply {
-                                                position(LatLng(it.lat, it.lng))
+                                                position(LatLng(rs.lat, rs.lng))
                                                 snippet("stop")
                                                 BitmapUtils.getBitmapFromDrawable(
                                                     ContextCompat.getDrawable(
                                                         context,
-                                                        R.drawable.ic_marker_route_stop_backward
+                                                        if (route1.polylineContains(rs.lat, rs.lng))
+                                                            R.drawable.ic_marker_route_stop_forward
+                                                        else R.drawable.ic_marker_route_stop_backward
                                                     )
                                                 )?.let { bit ->
                                                     val smallMarker =
                                                         Bitmap.createScaledBitmap(
                                                             bit,
-                                                            55,
-                                                            55,
+                                                            18.dpToPx(),
+                                                            18.dpToPx(),
                                                             false
                                                         )
                                                     val smallMarkerIcon =
@@ -293,41 +309,42 @@ fun LiveBusScreen(
                             }
 
                             route1Scope.launch {
+                                val firstStation = route1.stops.firstOrNull()
+                                val lastStation = route1.stops.lastOrNull()
+
                                 viewModel.route1.collectLatest { ri ->
                                     map.addPolyline(PolylineOptions().apply {
                                         this.color(Color.Green.toArgb())
-                                        this.width(4f)
+                                        this.width(5f)
                                         addAll(ri.polyline)
                                     })
 
-                                    ri.stops.firstOrNull()?.let {
+                                    ri.stops.firstOrNull()?.let { rs ->
                                         map.addMarker(
                                             MarkerOptions().position(
                                                 LatLng(
-                                                    it.lat,
-                                                    it.lng
+                                                    rs.lat,
+                                                    rs.lng
                                                 )
                                             )
                                         )
                                     }
 
-                                    ri.stops.lastOrNull()?.let {
+                                    ri.stops.lastOrNull()?.let { rs ->
                                         map.addMarker(
                                             MarkerOptions().position(
                                                 LatLng(
-                                                    it.lat,
-                                                    it.lng
+                                                    rs.lat,
+                                                    rs.lng
                                                 )
                                             )
                                         )
                                     }
 
-                                    val firstStop = ri.stops.firstOrNull()
-                                    val lastStop = ri.stops.lastOrNull()
                                     val firstLatLng =
-                                        LatLng(firstStop?.lat ?: 0.0, firstStop?.lng ?: 0.0)
+                                        LatLng(firstStation?.lat ?: 0.0, firstStation?.lng ?: 0.0)
                                     val lastLatLng =
-                                        LatLng(lastStop?.lat ?: 0.0, lastStop?.lng ?: 0.0)
+                                        LatLng(lastStation?.lat ?: 0.0, lastStation?.lng ?: 0.0)
                                     val latLngBounds =
                                         LatLngBounds.Builder().include(firstLatLng)
                                             .include(lastLatLng)
@@ -336,7 +353,7 @@ fun LiveBusScreen(
                                     map.animateCamera(
                                         CameraUpdateFactory.newLatLngZoom(
                                             latLngBounds.center,
-                                            11.15
+                                            11.1
                                         )
                                     )
                                 }
@@ -346,24 +363,24 @@ fun LiveBusScreen(
                                 viewModel.route2.collectLatest { ri ->
                                     map.addPolyline(PolylineOptions().apply {
                                         this.color(Color.Red.toArgb())
-                                        this.width(4f)
+                                        this.width(5f)
                                         addAll(ri.polyline)
                                     })
 
-                                    ri.stops.firstOrNull()?.let {
+                                    ri.stops.firstOrNull()?.let { rs ->
                                         map.addMarker(
                                             MarkerOptions().position(
                                                 LatLng(
-                                                    it.lat,
-                                                    it.lng
+                                                    rs.lat,
+                                                    rs.lng
                                                 )
                                             )
                                         )
                                     }
 
-                                    ri.stops.lastOrNull()?.let {
+                                    ri.stops.lastOrNull()?.let { rs ->
                                         map.addMarker(
-                                            MarkerOptions().position(LatLng(it.lat, it.lng))
+                                            MarkerOptions().position(LatLng(rs.lat, rs.lng))
                                         )
                                     }
                                 }
@@ -371,8 +388,9 @@ fun LiveBusScreen(
 
                             availableBusesScope.launch {
                                 viewModel.availableBuses.collectLatest { buses ->
-                                    map.markers.filter { it.snippet == "bus" }
-                                        .forEach { it.remove() }
+                                    map.markers.filter { m -> m.snippet == "bus" }.forEach { m ->
+                                        m.remove()
+                                    }
 
                                     map.addMarkers(buses.map { b ->
                                         MarkerOptions().apply {
@@ -385,8 +403,8 @@ fun LiveBusScreen(
                                                 val smallMarker =
                                                     Bitmap.createScaledBitmap(
                                                         bit,
-                                                        100,
-                                                        100,
+                                                        28.dpToPx(),
+                                                        28.dpToPx(),
                                                         false
                                                     )
                                                 val smallMarkerIcon =
@@ -405,13 +423,11 @@ fun LiveBusScreen(
                         }
 
                         lifecycleCoroutine.launch {
-                            lifecycleEvent.collect {
-                                when (it) {
+                            lifecycleEvent.collect { event ->
+                                when (event) {
                                     Lifecycle.Event.ON_CREATE -> onCreate(null)
                                     Lifecycle.Event.ON_START -> onStart()
                                     Lifecycle.Event.ON_RESUME -> onResume()
-//                                    Lifecycle.Event.ON_PAUSE -> onPause()
-//                                    Lifecycle.Event.ON_STOP -> onStop()
                                     Lifecycle.Event.ON_DESTROY -> onDestroy()
                                     else -> Unit
                                 }
@@ -419,6 +435,32 @@ fun LiveBusScreen(
                         }
                     }
                 })
+            }
+
+            // Change Map Style
+            FilledTonalIconButton(
+                onClick = {
+                    mapStyle = when (mapStyle) {
+                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
+                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
+                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
+                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
+                        else -> MapStyle.TERRAIN
+                    }
+                    mbMap?.setStyle(mapStyle.style(context))
+                },
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
+                modifier = Modifier
+                    .size(76.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_map),
+                    contentDescription = null,
+                    tint = colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }

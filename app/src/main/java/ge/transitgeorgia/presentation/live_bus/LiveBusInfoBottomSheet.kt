@@ -8,20 +8,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mapbox.mapboxsdk.geometry.LatLng
+import ge.transitgeorgia.R
+import ge.transitgeorgia.common.other.extensions.calculateTotalLengthInMeters
 import ge.transitgeorgia.common.util.DistanceCalculator
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.ui.theme.DynamicWhite
 import java.text.DecimalFormat
 import java.util.*
 
@@ -47,8 +57,50 @@ fun LiveBusInfoBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
             TotalAvailableBusCount(route1Buses, route2Buses)
             Spacer(modifier = Modifier.height(24.dp))
+            RouteLength(route1, route2)
+            Spacer(modifier = Modifier.height(24.dp))
             NearestBusStopInfo(userLocation, route1.stops, route2.stops)
             Spacer(modifier = Modifier.height(36.dp))
+        }
+    }
+}
+
+@Composable
+@Preview
+fun RouteLength(route1: RouteInfo = RouteInfo.empty(), route2: RouteInfo = RouteInfo.empty()) {
+    val route1Length = convertMetersIntoKm(route1.polyline.calculateTotalLengthInMeters())
+    val route2Length = convertMetersIntoKm(route2.polyline.calculateTotalLengthInMeters())
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.route_length),
+            color = DynamicWhite,
+            fontWeight = FontWeight.ExtraBold
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .background(Color.Green, CircleShape)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(text = "$route1Length ${stringResource(id = R.string.km)}", color = DynamicWhite)
+
+            Spacer(modifier = Modifier.width(16.dp))
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .background(Color.Red, CircleShape)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(text = "$route2Length ${stringResource(id = R.string.km)}", color = DynamicWhite)
         }
     }
 }
@@ -121,33 +173,29 @@ fun NearestBusStopInfo(
     route1Stops: List<RouteStop>,
     route2Stops: List<RouteStop>
 ) {
-    if (location.latitude != 0.0 && location.longitude != 0.0) {
-        val nearestStop = DistanceCalculator.getNearestLatLng(
-            location,
-            route1Stops.plus(route2Stops).map { LatLng(it.lat, it.lng) }
-        )
+    val context = LocalContext.current
+    var nearestStop: DistanceCalculator.DistanceLatLng? by remember { mutableStateOf(null) }
+    var address: String by remember { mutableStateOf("") }
 
+    LaunchedEffect(key1 = Unit) {
+        if (location.latitude != 0.0 && location.longitude != 0.0) {
+            nearestStop = DistanceCalculator.getNearestLatLng(
+                location,
+                route1Stops.plus(route2Stops).map { LatLng(it.lat, it.lng) }
+            )
+            address = getNearestStopAddress(context, nearestStop?.latLng)
+        }
+    }
+
+    if (location.latitude != 0.0 && location.longitude != 0.0) {
         Text(text = buildAnnotatedString {
             append("თქვენს ადგილმდებარეობასთან უახლოესი გაჩერება ")
-            withStyle(
-                SpanStyle(fontWeight = FontWeight.ExtraBold)
-            ) {
+            withStyle(SpanStyle(fontWeight = FontWeight.ExtraBold)) {
                 append("${DecimalFormat("#.#").format(nearestStop?.distance ?: 0.0)} მეტრში")
             }
-            append(
-                " მდებარეობს. "
-            )
-            withStyle(
-                SpanStyle(fontWeight = FontWeight.ExtraBold)
-            ) {
-                append(
-                    "მის: ${
-                        getNearestStopAddress(
-                            LocalContext.current,
-                            nearestStop?.latLng
-                        )
-                    }."
-                )
+            append(" მდებარეობს. ")
+            withStyle(SpanStyle(fontWeight = FontWeight.ExtraBold)) {
+                append("მის: $address.")
             }
         })
     }
@@ -171,5 +219,12 @@ private fun getNearestStopAddress(context: Context, point: LatLng?): String {
             "$knownName"
         } else "---"
     } ?: "---"
+}
 
+private fun convertMetersIntoKm(distance: Double): String {
+    val isMoreThanKm = (distance / 1000).toInt() != 0
+    val distanceInKms = (distance / 1000)
+    return if (isMoreThanKm) {
+        DecimalFormat("#.#").format(distanceInKms)
+    } else DecimalFormat("#.#").format(distance)
 }

@@ -207,15 +207,6 @@ fun NearbyStops(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // QR Scanner
-//            FilledTonalButton(onClick = { }) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.ic_scan_barcode),
-//                    contentDescription = null,
-//                    tint = colorScheme.primary
-//                )
-//            }
-//            Spacer(modifier = Modifier.width(8.dp))
 
             // Map
             FilledTonalButton(onClick = {

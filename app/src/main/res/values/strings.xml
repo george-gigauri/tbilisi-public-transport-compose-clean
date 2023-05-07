@@ -23,4 +23,5 @@
     <string name="app_language">აპის ენა</string>
     <string name="developer_contact">დეველოპერთან კონტაქტი</string>
     <string name="more_by_developer">სხვა აპლიკაციები</string>
+    <string name="route_length">მარშრუტის მანძილი (კმ)</string>
 </resources>
