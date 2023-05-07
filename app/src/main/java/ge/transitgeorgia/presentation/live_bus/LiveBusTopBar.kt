@@ -2,16 +2,19 @@ package ge.transitgeorgia.presentation.live_bus
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -33,26 +36,10 @@ fun LiveBusTopBar(
     onNotifyClick: () -> Unit = { },
     onInfoClick: () -> Unit = { }
 ) {
-    val isDarkMode = isSystemInDarkTheme()
     val systemUi = rememberSystemUiController()
     val statusBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
     val iconColor = MaterialTheme.colorScheme.secondary
     systemUi.setStatusBarColor(statusBarColor)
-
-    val buttonColorCoroutine = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-//        if (isDarkMode) {
-//            buttonColorCoroutine.launch {
-//                while (true) {
-//                    delay(15000)
-//                    buttonColor = if (isDarkMode) Color.Black else Color.White
-//                    delay(8000)
-//                    buttonColor = if (isDarkMode) Color.White else Color.Black
-//                }
-//            }
-//        }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -87,6 +74,19 @@ fun LiveBusTopBar(
         )
 
         Spacer(modifier = Modifier.weight(1f))
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_calendar),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier
+                .height(50.dp)
+                .width(52.dp)
+                .clickable {  }
+                .padding(8.dp)
+                .background(iconColor, RoundedCornerShape(8.dp))
+                .padding(6.dp)
+        )
 
         Icon(
             painter = painterResource(id = R.drawable.ic_notification),

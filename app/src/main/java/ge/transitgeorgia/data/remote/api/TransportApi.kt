@@ -45,5 +45,5 @@ interface TransportApi {
     suspend fun getSchedule(
         @Query("routeNumber") routeNumber: Int,
         @Query("forward") forward: Int = 1
-    ): Response<Any>
+    ): Response<ScheduleResponseDto>
 }

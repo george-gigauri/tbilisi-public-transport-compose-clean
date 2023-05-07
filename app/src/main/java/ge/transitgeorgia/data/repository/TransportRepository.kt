@@ -10,8 +10,10 @@ import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.domain.model.Schedule
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Singleton
 
@@ -69,4 +71,11 @@ class TransportRepository constructor(
             it.toDomain()
         }.orEmpty().sortedBy { it.time }
     }
+
+    override suspend fun getSchedule(routeNumber: Int, isForward: Boolean): List<Schedule> =
+        withContext(Dispatchers.IO) {
+            return@withContext api.getSchedule(routeNumber, if (isForward) 1 else 0).body()
+                ?.toDomain()
+                .orEmpty()
+        }
 }

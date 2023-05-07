@@ -1,6 +1,12 @@
 package ge.transitgeorgia.domain.repository
 
-import ge.transitgeorgia.domain.model.*
+import ge.transitgeorgia.domain.model.ArrivalTime
+import ge.transitgeorgia.domain.model.Bus
+import ge.transitgeorgia.domain.model.BusStop
+import ge.transitgeorgia.domain.model.Route
+import ge.transitgeorgia.domain.model.RouteInfo
+import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.domain.model.Schedule
 
 interface ITransportRepository {
     suspend fun getRoutes(): List<Route>
@@ -9,4 +15,5 @@ interface ITransportRepository {
     suspend fun getBusPositions(busNumber: Int, isForward: Boolean = true): List<Bus>
     suspend fun getStops(): List<BusStop>
     suspend fun getTimeTable(stopId: String): List<ArrivalTime>
+    suspend fun getSchedule(routeNumber: Int, isForward: Boolean): List<Schedule>
 }
