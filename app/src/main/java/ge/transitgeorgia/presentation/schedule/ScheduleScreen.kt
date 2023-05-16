@@ -1,12 +1,12 @@
 package ge.transitgeorgia.presentation.schedule
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
+@Preview
 fun ScheduleScreen(
-    viewModel: ScheduleViewModel = hiltViewModel()
+  //  viewModel: ScheduleViewModel = hiltViewModel()
 ) {
-
 
 }

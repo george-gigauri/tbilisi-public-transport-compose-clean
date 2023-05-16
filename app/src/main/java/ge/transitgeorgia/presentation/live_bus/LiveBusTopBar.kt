@@ -75,18 +75,19 @@ fun LiveBusTopBar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Icon(
-            painter = painterResource(id = R.drawable.ic_calendar),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier
-                .height(50.dp)
-                .width(52.dp)
-                .clickable {  }
-                .padding(8.dp)
-                .background(iconColor, RoundedCornerShape(8.dp))
-                .padding(6.dp)
-        )
+        // SCHEDULE
+//        Icon(
+//            painter = painterResource(id = R.drawable.ic_calendar),
+//            contentDescription = null,
+//            tint = MaterialTheme.colorScheme.primaryContainer,
+//            modifier = Modifier
+//                .height(50.dp)
+//                .width(52.dp)
+//                .clickable {  }
+//                .padding(8.dp)
+//                .background(iconColor, RoundedCornerShape(8.dp))
+//                .padding(6.dp)
+//        )
 
         Icon(
             painter = painterResource(id = R.drawable.ic_notification),

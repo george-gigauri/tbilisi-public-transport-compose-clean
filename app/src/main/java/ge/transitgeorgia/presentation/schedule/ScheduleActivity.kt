@@ -16,8 +16,6 @@ class ScheduleActivity : ComponentActivity() {
         val language = runBlocking { AppDataStore(this@ScheduleActivity).language.first() }
         AppLanguage.updateLanguage(this, language.value)
         super.onCreate(savedInstanceState)
-        setContent {
-            ScheduleScreen()
-        }
+        setContent { ScheduleScreen() }
     }
 }

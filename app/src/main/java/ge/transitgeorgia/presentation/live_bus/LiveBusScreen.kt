@@ -8,6 +8,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -252,8 +253,8 @@ fun LiveBusScreen(
                             map.addOnCameraMoveListener {
                                 mapZoomScope.coroutineContext.cancelChildren()
                                 mapZoomScope.launch {
-                                    delay(325)
-                                    if (map.cameraPosition.zoom >= 13) {
+                                    delay(300)
+                                    if (map.cameraPosition.zoom >= 13.5) {
                                         map.markers.filter { it.snippet == "stop" }
                                             .forEach { it.remove() }
 
@@ -437,30 +438,60 @@ fun LiveBusScreen(
                 })
             }
 
-            // Change Map Style
-            FilledTonalIconButton(
-                onClick = {
-                    mapStyle = when (mapStyle) {
-                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
-                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
-                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
-                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
-                        else -> MapStyle.TERRAIN
-                    }
-                    mbMap?.setStyle(mapStyle.style(context))
-                },
-                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
-                modifier = Modifier
-                    .size(76.dp)
-                    .align(Alignment.BottomEnd)
-                    .padding(12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_map),
-                    contentDescription = null,
-                    tint = colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
+            // Button Move Zoom to user location
+            Column(modifier = Modifier.align(Alignment.BottomEnd)) {
+                FilledTonalIconButton(
+                    onClick = {
+                        if (!LocationUtil.isLocationTurnedOn(context)) {
+                            LocationUtil.requestLocation(currentActivity!!) {
+                                LocationUtil.requestLocation(currentActivity) {}
+                            }
+                        }
+
+                        LocationUtil.getLastKnownLocation(context)?.let {
+                            val latLng = LatLng(it.latitude, it.longitude)
+                            mbMap?.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(latLng, 16.0),
+                                1500
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .size(85.dp)
+                        .padding(12.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_gps),
+                        contentDescription = null,
+                        tint = colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                // Change Map Style
+                FilledTonalIconButton(
+                    onClick = {
+                        mapStyle = when (mapStyle) {
+                            MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
+                            MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
+                            MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
+                            MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
+                            else -> MapStyle.TERRAIN
+                        }
+                        mbMap?.setStyle(mapStyle.style(context))
+                    },
+                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
+                    modifier = Modifier
+                        .size(85.dp)
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_map),
+                        contentDescription = null,
+                        tint = colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
     }

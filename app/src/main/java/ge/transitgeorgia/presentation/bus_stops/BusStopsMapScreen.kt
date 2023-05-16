@@ -6,11 +6,13 @@ import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,13 +41,14 @@ import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.ComposableLifecycle
 import ge.transitgeorgia.common.util.LocationUtil
+import ge.transitgeorgia.common.util.MapStyle
 import ge.transitgeorgia.common.util.dpToPx
+import ge.transitgeorgia.common.util.style
 import ge.transitgeorgia.presentation.main.MainActivity
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.cancelChildren
@@ -70,7 +73,7 @@ fun BusStopsMapScreen(
     val city by viewModel.city.collectAsStateWithLifecycle()
 
     val isDarkMode = isSystemInDarkTheme()
-    var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) Style.DARK else Style.LIGHT) }
+    var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) MapStyle.BUSPLORE_DARK else MapStyle.BUSPLORE_LIGHT) }
 
     var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
 
@@ -105,7 +108,7 @@ fun BusStopsMapScreen(
                             city.mapDefaultZoom
                         )
                     )
-                    m.setStyle(mapStyle) {
+                    m.setStyle(mapStyle.style(it)) {
                         if (locationPermissionState.allPermissionsGranted) {
                             currentActivity?.let { c ->
                                 if (LocationUtil.isLocationTurnedOn(c)) {
@@ -213,30 +216,56 @@ fun BusStopsMapScreen(
         })
 
         // Button Move Zoom to user location
-        FilledTonalIconButton(
-            onClick = {
-                if (!LocationUtil.isLocationTurnedOn(context)) {
-                    LocationUtil.requestLocation(currentActivity!!) {
-                        LocationUtil.requestLocation(context) {}
+        Column(modifier = Modifier.align(Alignment.BottomEnd)) {
+            FilledTonalIconButton(
+                onClick = {
+                    if (!LocationUtil.isLocationTurnedOn(context)) {
+                        LocationUtil.requestLocation(currentActivity!!) {
+                            LocationUtil.requestLocation(context) {}
+                        }
                     }
-                }
 
-                LocationUtil.getLastKnownLocation(context)?.let {
-                    val latLng = LatLng(it.latitude, it.longitude)
-                    map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0), 1500)
-                }
-            },
-            modifier = Modifier
-                .size(85.dp)
-                .align(Alignment.BottomEnd)
-                .padding(12.dp),
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_gps),
-                contentDescription = null,
-                tint = colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
+                    LocationUtil.getLastKnownLocation(context)?.let {
+                        val latLng = LatLng(it.latitude, it.longitude)
+                        map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0), 1500)
+                    }
+                },
+                modifier = Modifier
+                    .size(85.dp)
+                    .padding(12.dp),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_gps),
+                    contentDescription = null,
+                    tint = colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Change Map Style
+            FilledTonalIconButton(
+                onClick = {
+                    mapStyle = when (mapStyle) {
+                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
+                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
+                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
+                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
+                        else -> MapStyle.TERRAIN
+                    }
+                    map?.setStyle(mapStyle.style(context))
+                },
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
+                modifier = Modifier
+                    .size(85.dp)
+                    .padding(12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_map),
+                    contentDescription = null,
+                    tint = colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
