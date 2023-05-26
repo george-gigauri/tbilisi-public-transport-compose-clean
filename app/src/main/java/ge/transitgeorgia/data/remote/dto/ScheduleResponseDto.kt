@@ -22,7 +22,7 @@ data class ScheduleStopDto(
     @SerializedName("Lon") val lng: Double,
     @SerializedName("Sequence") val sequence: Int,
     @SerializedName("Type") val type: String,
-    @SerializedName("ArrivalTimes") val arrivalTimes: String,
+    @SerializedName("ArriveTimes") val arrivalTimes: String,
     @SerializedName("HasBoard") val hasBoard: Boolean,
     @SerializedName("Virtual") val virtual: Boolean,
     @SerializedName("Routes") val routes: List<Any>

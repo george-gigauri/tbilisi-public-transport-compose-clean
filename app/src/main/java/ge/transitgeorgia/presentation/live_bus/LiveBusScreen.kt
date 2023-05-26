@@ -53,6 +53,7 @@ import ge.transitgeorgia.common.util.MapStyle
 import ge.transitgeorgia.common.util.dpToPx
 import ge.transitgeorgia.common.util.style
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
@@ -171,6 +172,12 @@ fun LiveBusScreen(
                 isReminderRunning = isReminderRunning,
                 route = route1,
                 onBackButtonClick = { currentActivity?.finish() },
+                onScheduleClick = {
+                    val intent = Intent(context, ScheduleActivity::class.java)
+                    intent.putExtra("route_number", viewModel.routeNumber)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                },
                 onNotifyClick = {
                     if (isReminderRunning) {
                         BusDistanceReminderWorker.stop(context, viewModel.routeNumber)

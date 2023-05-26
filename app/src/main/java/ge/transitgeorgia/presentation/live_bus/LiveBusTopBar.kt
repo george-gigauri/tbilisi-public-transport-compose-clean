@@ -33,6 +33,7 @@ fun LiveBusTopBar(
     isReminderRunning: Boolean = false,
     route: RouteInfo = RouteInfo.empty(),
     onBackButtonClick: () -> Unit = { },
+    onScheduleClick: () -> Unit = { },
     onNotifyClick: () -> Unit = { },
     onInfoClick: () -> Unit = { }
 ) {
@@ -76,18 +77,18 @@ fun LiveBusTopBar(
         Spacer(modifier = Modifier.weight(1f))
 
         // SCHEDULE
-//        Icon(
-//            painter = painterResource(id = R.drawable.ic_calendar),
-//            contentDescription = null,
-//            tint = MaterialTheme.colorScheme.primaryContainer,
-//            modifier = Modifier
-//                .height(50.dp)
-//                .width(52.dp)
-//                .clickable {  }
-//                .padding(8.dp)
-//                .background(iconColor, RoundedCornerShape(8.dp))
-//                .padding(6.dp)
-//        )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_calendar),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier
+                .height(50.dp)
+                .width(52.dp)
+                .clickable { onScheduleClick.invoke() }
+                .padding(8.dp)
+                .background(iconColor, RoundedCornerShape(8.dp))
+                .padding(6.dp)
+        )
 
         Icon(
             painter = painterResource(id = R.drawable.ic_notification),

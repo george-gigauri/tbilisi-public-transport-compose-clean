@@ -41,9 +41,10 @@ interface TransportApi {
         @Query("stopId") stopId: String
     ): Response<TimeTableResponse>
 
-    @GET("routers/ttc/routeSchedule?routeNumber=351&type=3&forward=1")
+    @GET("routers/ttc/routeSchedule")
     suspend fun getSchedule(
         @Query("routeNumber") routeNumber: Int,
-        @Query("forward") forward: Int = 1
+        @Query("forward") forward: Int = 1,
+        @Query("type") type: Int = 3
     ): Response<ScheduleResponseDto>
 }
