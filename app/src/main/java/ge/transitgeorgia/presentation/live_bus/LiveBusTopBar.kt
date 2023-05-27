@@ -32,6 +32,8 @@ import ge.transitgeorgia.domain.model.RouteInfo
 fun LiveBusTopBar(
     isReminderRunning: Boolean = false,
     route: RouteInfo = RouteInfo.empty(),
+    routeNumber: String = "---",
+    routeColor: String = "#ff0584",
     onBackButtonClick: () -> Unit = { },
     onScheduleClick: () -> Unit = { },
     onNotifyClick: () -> Unit = { },
@@ -61,14 +63,14 @@ fun LiveBusTopBar(
         )
 
         Text(
-            text = route.number.toString(),
+            text = routeNumber,
             color = Color.White,
             fontSize = with(LocalDensity.current) { 17.dp.toSp() },
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .background(
-                    Color(android.graphics.Color.parseColor(route.color)),
+                    Color(android.graphics.Color.parseColor(routeColor)),
                     RoundedCornerShape(8.dp)
                 )
                 .padding(horizontal = 12.dp, vertical = 4.dp)

@@ -26,7 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
+import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.ui.theme.DynamicPrimary
+import ge.transitgeorgia.ui.theme.DynamicWhite
 
 @Composable
 fun ScheduleScreen(
@@ -34,15 +36,17 @@ fun ScheduleScreen(
 ) {
 
     val schedules by viewModel.data.collectAsStateWithLifecycle()
+    val route by viewModel.route.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { ScheduleTopBar() }
+        topBar = { ScheduleTopBar(viewModel.routeNumber.toString(), viewModel.routeColor) }
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
         ) {
+            item { DirectionHeader(route = route, isForward = viewModel.isForward) }
             itemsIndexed(schedules) { index, item ->
                 StopScheduleItem(
                     schedule = item,
@@ -52,6 +56,19 @@ fun ScheduleScreen(
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
+    }
+}
+
+@Composable
+private fun DirectionHeader(route: Route, isForward: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DynamicPrimary)
+            .padding(12.dp)
+    ) {
+        Text(text = if (isForward) route.lastStation else route.firstStation)
     }
 }
 
@@ -70,7 +87,7 @@ private fun StopScheduleItem(
 
         Text(
             text = schedule.currentScheduledArrivalTime,
-            color = Color.DarkGray,
+            color = DynamicWhite,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .align(Alignment.Top)
@@ -107,11 +124,11 @@ private fun StopScheduleItem(
                 .align(Alignment.Top)
                 .padding(top = 16.dp)
         ) {
-            Text(text = schedule.stopName, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = schedule.stopName, fontWeight = FontWeight.Bold, color = DynamicWhite)
             Text(
                 text = schedule.futureScheduledArrivalTimes.joinToString(",  "),
                 fontWeight = FontWeight.Normal,
-                color = Color.LightGray,
+                color = Color.Gray,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

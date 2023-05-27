@@ -36,6 +36,7 @@ class LiveBusViewModel @Inject constructor(
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
 
     val routeNumber: Int? get() = savedStateHandle["route_number"]
+    val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
 
     init {
         viewModelScope.launch {
@@ -50,7 +51,7 @@ class LiveBusViewModel @Inject constructor(
     private fun increaseRouteVisitNumber() = viewModelScope.launch {
         val city = dataStore.city.first()
         routeNumber?.let {
-            if (!db.routeDao().isTop(it, dataStore.city.first().id)) {
+            if (!db.routeDao().isTrackingClicks(it, dataStore.city.first().id)) {
                 db.routeDao().insertClickEntity(
                     RouteClicksEntity(
                         null,

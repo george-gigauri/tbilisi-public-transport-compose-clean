@@ -24,20 +24,26 @@ interface RouteDao {
     @Query("SELECT * FROM route")
     suspend fun getAll(): List<RouteEntity>
 
+    @Query("SELECT * FROM route WHERE number=:routeNumber")
+    suspend fun getRoute(routeNumber: Int): RouteEntity?
+
     @Query("SELECT * FROM route")
     fun getAllFlow(): Flow<List<RouteEntity>>
 
-    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId ORDER BY clicks DESC")
+    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
     suspend fun getTopRoutes(cityId: String = SupportedCity.TBILISI.id): List<RouteEntity>
 
-    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId ORDER BY clicks DESC")
+    @Query("SELECT * FROM route INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
     fun getTopRoutesFlow(cityId: String = SupportedCity.TBILISI.id): Flow<List<RouteEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertClickEntity(clicksEntity: RouteClicksEntity)
 
-    @Query("SELECT (COUNT(*) > 0) FROM route INNER JOIN route_click_count ON number=:routeNumber WHERE clicks >= 3 AND city=:cityId ORDER BY clicks DESC")
+    @Query("SELECT (COUNT(*) > 0) FROM route INNER JOIN route_click_count ON number=:routeNumber WHERE clicks >= 3 AND number=:routeNumber AND city=:cityId ORDER BY clicks DESC")
     suspend fun isTop(routeNumber: Int, cityId: String): Boolean
+
+    @Query("SELECT (COUNT(*) > 0) FROM route_click_count WHERE routeNumber=:routeNumber AND city=:cityId")
+    suspend fun isTrackingClicks(routeNumber: Int, cityId: String): Boolean
 
     @Query("UPDATE route_click_count SET clicks=(clicks + 1) WHERE routeNumber=:routeNumber AND city=:cityId")
     suspend fun increaseClickCount(routeNumber: Int, cityId: String = SupportedCity.TBILISI.id)

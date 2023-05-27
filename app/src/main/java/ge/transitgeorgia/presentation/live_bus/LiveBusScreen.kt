@@ -171,10 +171,13 @@ fun LiveBusScreen(
             LiveBusTopBar(
                 isReminderRunning = isReminderRunning,
                 route = route1,
+                routeNumber = viewModel.routeNumber.toString(),
+                routeColor = viewModel.routeColor,
                 onBackButtonClick = { currentActivity?.finish() },
                 onScheduleClick = {
                     val intent = Intent(context, ScheduleActivity::class.java)
                     intent.putExtra("route_number", viewModel.routeNumber)
+                    intent.putExtra("route_color", viewModel.routeColor)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },

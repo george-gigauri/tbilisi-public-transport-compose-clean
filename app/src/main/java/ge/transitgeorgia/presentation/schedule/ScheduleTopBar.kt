@@ -21,15 +21,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.transitgeorgia.R
 import ge.transitgeorgia.ui.theme.DynamicPrimary
 
 @Composable
-@Preview
-fun ScheduleTopBar() {
+fun ScheduleTopBar(
+    routeNumber: String,
+    routeColor: String
+) {
     val systemUi = rememberSystemUiController()
     val statusBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
     val iconColor = MaterialTheme.colorScheme.secondary
@@ -52,14 +53,14 @@ fun ScheduleTopBar() {
             )
 
             Text(
-                text = "განრიგები - 351",
+                text = routeNumber,
                 color = Color.White,
                 fontSize = with(LocalDensity.current) { 17.dp.toSp() },
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .background(
-                        Color(android.graphics.Color.parseColor("#000000")),
+                        Color(android.graphics.Color.parseColor(routeColor)),
                         RoundedCornerShape(8.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 4.dp)

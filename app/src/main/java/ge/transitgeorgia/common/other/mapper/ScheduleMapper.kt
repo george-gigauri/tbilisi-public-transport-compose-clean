@@ -22,6 +22,12 @@ fun ScheduleStopDto.toDomain(): ScheduleStop {
         this.name,
         this.lat,
         this.lng,
-        this.arrivalTimes.split(",")
+        this.arrivalTimes.split(",").map {
+            val timeSplit = it.split(":")
+            val hour = timeSplit[0]
+            val minute = timeSplit[1]
+            if (hour.length == 1) "0$hour:$minute"
+            else it
+        }
     )
 }

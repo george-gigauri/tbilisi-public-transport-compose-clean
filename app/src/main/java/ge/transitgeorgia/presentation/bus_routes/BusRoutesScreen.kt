@@ -69,6 +69,7 @@ fun RouteItem(context: Context, index: Int, item: Route) {
             .clickable {
                 val intent = Intent(context, LiveBusActivity::class.java)
                 intent.putExtra("route_number", item.number.toIntOrNull() ?: -1)
+                intent.putExtra("route_color", item.color)
                 context.startActivity(intent)
                 Analytics.logOpenRouteDetails(item.number.toIntOrNull() ?: -1)
             }
