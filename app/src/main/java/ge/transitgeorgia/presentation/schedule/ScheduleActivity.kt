@@ -22,7 +22,9 @@ class ScheduleActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TbilisiPublicTransportTheme {
-                ScheduleScreen(viewModel)
+                ScheduleScreen(viewModel) {
+                    finish()
+                }
             }
         }
     }

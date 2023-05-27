@@ -34,6 +34,11 @@ class LiveBusViewModel @Inject constructor(
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
+    var autoRefresh: Boolean = true
+        set(value) {
+            field = value
+            fetchAvailableBuses()
+        }
 
     val routeNumber: Int? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
@@ -91,7 +96,7 @@ class LiveBusViewModel @Inject constructor(
     private fun fetchAvailableBuses() = viewModelScope.launch {
         if (routeNumber == null) throw NullPointerException("Route number is MUST!")
 
-        while (true) {
+        while (autoRefresh) {
             val busesAsync = awaitAll(
                 async {
                     try {
@@ -114,7 +119,7 @@ class LiveBusViewModel @Inject constructor(
             val bothBuses = busesAsync.flatten()
             availableBuses.value = bothBuses
 
-            delay(if (BuildConfig.DEBUG) 7000 else 7000)
+            delay(if (BuildConfig.DEBUG) 25000 else 5999)
         }
     }
 }

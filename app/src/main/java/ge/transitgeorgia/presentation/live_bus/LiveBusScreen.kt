@@ -438,8 +438,20 @@ fun LiveBusScreen(
                                 when (event) {
                                     Lifecycle.Event.ON_CREATE -> onCreate(null)
                                     Lifecycle.Event.ON_START -> onStart()
-                                    Lifecycle.Event.ON_RESUME -> onResume()
-                                    Lifecycle.Event.ON_DESTROY -> onDestroy()
+                                    Lifecycle.Event.ON_RESUME -> {
+                                        onResume()
+                                        viewModel.autoRefresh = true
+                                    }
+
+                                    Lifecycle.Event.ON_PAUSE -> {
+                                        viewModel.autoRefresh = false
+                                    }
+
+                                    Lifecycle.Event.ON_DESTROY -> {
+                                        onDestroy()
+                                        viewModel.autoRefresh = false
+                                    }
+
                                     else -> Unit
                                 }
                             }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,17 +20,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.transitgeorgia.R
 import ge.transitgeorgia.ui.theme.DynamicPrimary
+import ge.transitgeorgia.ui.theme.DynamicWhite
 
 @Composable
 fun ScheduleTopBar(
     routeNumber: String,
-    routeColor: String
+    routeColor: String,
+    onBackPressed: () -> Unit
 ) {
     val systemUi = rememberSystemUiController()
     val statusBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
@@ -48,14 +53,20 @@ fun ScheduleTopBar(
                 tint = iconColor,
                 modifier = Modifier
                     .size(54.dp)
-                    .clickable { }
+                    .clickable { onBackPressed() }
                     .padding(8.dp)
             )
-
+            Text(
+                text = stringResource(id = R.string.schedule),
+                color = DynamicWhite,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = routeNumber,
                 color = Color.White,
-                fontSize = with(LocalDensity.current) { 17.dp.toSp() },
+                fontSize = with(LocalDensity.current) { 18.dp.toSp() },
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -65,8 +76,7 @@ fun ScheduleTopBar(
                     )
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             )
-
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(16.dp))
         }
     }
 }

@@ -85,4 +85,8 @@ class ScheduleViewModel @Inject constructor(
             isLoading.emit(false)
         }
     }
+
+    fun refresh() {
+        fetch()
+    }
 }
