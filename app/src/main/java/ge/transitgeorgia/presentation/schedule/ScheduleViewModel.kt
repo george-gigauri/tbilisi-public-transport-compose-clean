@@ -16,6 +16,7 @@ import okio.IOException
 import retrofit2.HttpException
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,7 +51,8 @@ class ScheduleViewModel @Inject constructor(
 
             val currentDateTime = LocalDateTime.now()
             val currentTime = currentDateTime.toLocalTime()
-            val currentHourAndMinute = "${currentTime.hour}:${currentTime.minute}"
+            val currentTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+            val currentHourAndMinute = currentTimeFormatter.format(currentTime)
             val currentWeekDay = currentDateTime.dayOfWeek
 
             val currentWeekDaySchedules = result.find {
