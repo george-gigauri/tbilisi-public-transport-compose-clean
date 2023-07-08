@@ -202,12 +202,10 @@ fun LiveBusScreen(
             )
         }
     ) {
-        it.calculateBottomPadding()
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 54.dp)
+                .padding(top = it.calculateTopPadding())
         ) {
             if (isLoading && errorMessage.isNullOrEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -215,6 +213,11 @@ fun LiveBusScreen(
                 Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 currentActivity?.finish()
             } else {
+
+                FilledTonalButton(onClick = { }, modifier = Modifier.align(Alignment.Center)) {
+                    Text(text = "სცადე თავიდან / Try Again")
+                }
+
                 AndroidView(factory = {
                     MapView(it).apply {
                         getMapAsync { map ->
@@ -265,7 +268,7 @@ fun LiveBusScreen(
                             map.addOnCameraMoveListener {
                                 mapZoomScope.coroutineContext.cancelChildren()
                                 mapZoomScope.launch {
-                                    delay(300)
+                                    delay(350)
                                     if (map.cameraPosition.zoom >= 13.5) {
                                         map.markers.filter { it.snippet == "stop" }
                                             .forEach { it.remove() }
@@ -363,7 +366,7 @@ fun LiveBusScreen(
                                             .include(lastLatLng)
                                             .build()
 
-                                    map.animateCamera(
+                                    map.moveCamera(
                                         CameraUpdateFactory.newLatLngZoom(
                                             latLngBounds.center,
                                             11.1
@@ -436,25 +439,31 @@ fun LiveBusScreen(
                         }
 
                         lifecycleCoroutine.launch {
-                            lifecycleEvent.collect { event ->
+                            lifecycleEvent.collectLatest { event ->
                                 when (event) {
-                                    Lifecycle.Event.ON_CREATE -> onCreate(null)
-                                    Lifecycle.Event.ON_START -> onStart()
+                                    Lifecycle.Event.ON_CREATE -> {
+                                        onCreate(null)
+                                    }
+
+                                    Lifecycle.Event.ON_START -> {
+                                        onStart()
+                                    }
+
                                     Lifecycle.Event.ON_RESUME -> {
-                                        onResume()
                                         viewModel.autoRefresh = true
+                                        onResume()
                                     }
 
                                     Lifecycle.Event.ON_PAUSE -> {
                                         viewModel.autoRefresh = false
+                                        onPause()
                                     }
 
                                     Lifecycle.Event.ON_DESTROY -> {
                                         onDestroy()
-                                        viewModel.autoRefresh = false
                                     }
 
-                                    else -> Unit
+                                    else -> onStart()
                                 }
                             }
                         }

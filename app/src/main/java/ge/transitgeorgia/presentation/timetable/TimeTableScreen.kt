@@ -159,7 +159,7 @@ fun TimeTableScreen(
                 ) {
                     HeaderInformation()
 
-                    if (arrivalTimes.isNotEmpty()) {
+                    if (arrivalTimes.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.error_nothing_found),
                             textAlign = TextAlign.Center,

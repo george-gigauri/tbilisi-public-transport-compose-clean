@@ -116,7 +116,7 @@ fun QRScannerScreen(
                             preview,
                             imageAnalysis
                         )
-                        camera?.cameraControl?.setLinearZoom(0.35f)
+                        camera?.cameraControl?.setZoomRatio(100f)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
