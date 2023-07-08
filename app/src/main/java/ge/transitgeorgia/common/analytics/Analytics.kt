@@ -34,6 +34,7 @@ object Analytics {
     const val EVENT_VIEW_QR_SCANNER_PAGE = "view_qr_scanner_page"
     const val EVENT_OPEN_GMS_QR_SCANNER = "open_google_qr_scanner"
     const val EVENT_OPEN_METRO_SCHEDULE = "open_metro_schedule"
+    const val EVENT_LANGUAGE_SET = "language_set"
 
     fun logAppLoaded() {
         val bundle = Bundle()
@@ -176,5 +177,11 @@ object Analytics {
     fun logOpenGoogleQrScanner() {
         val bundle = Bundle()
         Firebase.analytics.logEvent(EVENT_OPEN_GMS_QR_SCANNER, bundle)
+    }
+
+    fun logLanguageSet(name: String) {
+        val bundle = Bundle()
+        bundle.putString("lang", name)
+        Firebase.analytics.logEvent(EVENT_LANGUAGE_SET, bundle)
     }
 }

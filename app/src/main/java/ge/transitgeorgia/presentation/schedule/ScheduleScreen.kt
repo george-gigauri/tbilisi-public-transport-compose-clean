@@ -167,7 +167,7 @@ private fun StopScheduleItem(
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .width(36.dp)
+                .width(45.dp)
                 .align(Alignment.Top)
                 .padding(top = 24.dp)
         )

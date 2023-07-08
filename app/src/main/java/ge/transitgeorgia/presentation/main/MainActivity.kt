@@ -1,10 +1,13 @@
 package ge.transitgeorgia.presentation.main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -22,6 +25,7 @@ import com.mapbox.mapboxsdk.Mapbox
 import dagger.hilt.android.AndroidEntryPoint
 import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.common.analytics.Analytics
+import ge.transitgeorgia.common.service.worker.TranslateDataWorker
 import ge.transitgeorgia.common.util.AppLanguage
 import ge.transitgeorgia.common.util.LocationUtil
 import ge.transitgeorgia.common.util.QRScanner
@@ -64,8 +68,31 @@ class MainActivity : ComponentActivity() {
         Mapbox.getInstance(this, BuildConfig.MAPBOX_TOKEN)
 
         setContent {
+            val shouldShowLanguagePrompt by viewModel.shouldPromptLanguageSelector.collectAsState()
+
             TbilisiPublicTransportTheme {
-                MainScreenContent()
+                if (shouldShowLanguagePrompt) {
+                    SelectLanguageDialog(
+                        onSelect = { lang ->
+                            runBlocking {
+                                viewModel.setLanguage(lang)
+                                Analytics.logLanguageSet(lang.name)
+                                if (language == AppLanguage.Language.ENG) {
+                                    TranslateDataWorker.start(this@MainActivity)
+                                }
+
+                                android.os.Handler().postDelayed({
+                                    val intent = Intent(this@MainActivity, MainActivity::class.java)
+                                    intent.flags =
+                                        Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    finish()
+                                    startActivity(intent)
+                                    Runtime.getRuntime().exit(0)
+                                }, 800)
+                            }
+                        }
+                    )
+                } else MainScreenContent()
             }
         }
     }

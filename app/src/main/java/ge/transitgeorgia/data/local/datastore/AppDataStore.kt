@@ -22,6 +22,11 @@ class AppDataStore(private val context: Context) {
     private val KEY_UPDATED_CITY = stringPreferencesKey("updated_city")
 
     // App Language
+    val isLanguageSet: Flow<Boolean>
+        get() = context.appDataStore.data.map {
+            !it[KEY_APP_LANGUAGE].isNullOrEmpty()
+        }
+
     val language: Flow<AppLanguage.Language>
         get() = context.appDataStore.data.map {
             AppLanguage.Language.values().find { l -> l.value == it[KEY_APP_LANGUAGE] }
