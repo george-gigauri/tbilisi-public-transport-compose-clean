@@ -33,11 +33,16 @@ object Analytics {
     const val EVENT_CLICK_QR_SCANNER = "click_qr_scanner"
     const val EVENT_VIEW_QR_SCANNER_PAGE = "view_qr_scanner_page"
     const val EVENT_OPEN_GMS_QR_SCANNER = "open_google_qr_scanner"
+    const val EVENT_OPEN_METRO_SCHEDULE = "open_metro_schedule"
 
     fun logAppLoaded() {
-
         val bundle = Bundle()
         Firebase.analytics.logEvent(EVENT_APP_LOADED, bundle)
+    }
+
+    fun logOpenMetroSchedule() {
+        val bundle = Bundle()
+        Firebase.analytics.logEvent(EVENT_OPEN_METRO_SCHEDULE, bundle)
     }
 
     fun logLocationPrompt() {

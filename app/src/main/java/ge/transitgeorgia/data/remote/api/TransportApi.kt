@@ -11,7 +11,7 @@ interface TransportApi {
     @GET("routers/ttc/routes")
     @Headers("Content-Type: application/json", "Accept: application/json")
     suspend fun getRoutes(
-        @Query("type") type: Int = 3,
+        @Query("type") type: Int? = null,
     ): Response<RouteResponse>
 
     @GET("routers/ttc/routeInfo")

@@ -29,6 +29,7 @@ import ge.transitgeorgia.R
 import ge.transitgeorgia.common.other.extensions.calculateTotalLengthInMeters
 import ge.transitgeorgia.common.util.DistanceCalculator
 import ge.transitgeorgia.domain.model.Bus
+import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.model.RouteStop
 import ge.transitgeorgia.ui.theme.DynamicWhite
@@ -41,6 +42,7 @@ import java.util.*
 fun LiveBusInfoBottomSheet(
     state: SheetState = SheetState(true, SheetValue.Hidden),
     userLocation: LatLng = LatLng(),
+    route: Route? = null,
     route1: RouteInfo = RouteInfo.empty(),
     route2: RouteInfo = RouteInfo.empty(),
     route1Buses: List<Bus> = emptyList(),
@@ -52,8 +54,12 @@ fun LiveBusInfoBottomSheet(
         onDismissRequest = { onCancel.invoke() }
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            if (route1.stops.isNotEmpty()) RouteDirectionInfo(Color.Green, route1)
-            if (route2.stops.isNotEmpty()) RouteDirectionInfo(Color.Red, route2)
+            if (route1.stops.isNotEmpty())
+                RouteDirectionInfo(Color.Green, route?.lastStation, route?.firstStation)
+
+            if (route2.stops.isNotEmpty())
+                RouteDirectionInfo(Color.Red, route?.firstStation, route?.lastStation)
+
             Spacer(modifier = Modifier.height(24.dp))
             TotalAvailableBusCount(route1Buses, route2Buses)
             Spacer(modifier = Modifier.height(24.dp))
@@ -106,7 +112,7 @@ fun RouteLength(route1: RouteInfo = RouteInfo.empty(), route2: RouteInfo = Route
 }
 
 @Composable
-fun RouteDirectionInfo(color: Color, route: RouteInfo) {
+fun RouteDirectionInfo(color: Color, startStation: String?, endStation: String?) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 12.dp)
@@ -120,7 +126,7 @@ fun RouteDirectionInfo(color: Color, route: RouteInfo) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Text(
-            text = "${route.stops.firstOrNull()?.name}  ➡️ ${route.stops.lastOrNull()?.name}"
+            text = "$startStation  ➡️  $endStation"
         )
     }
 }

@@ -29,10 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.R
+import ge.transitgeorgia.common.other.enums.TransportType
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.ui.theme.DynamicPrimary
@@ -47,20 +50,23 @@ fun ScheduleScreen(
     val error by viewModel.error.collectAsStateWithLifecycle(initialValue = null)
     val schedules by viewModel.data.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
+    val isForward by viewModel.isForward.collectAsStateWithLifecycle()
+    val isMetro = route.type == TransportType.METRO
 
     Scaffold(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                ScheduleTopBar(viewModel.routeNumber.toString(), viewModel.routeColor) {
+                ScheduleTopBar(if (isMetro) route.id else route.number, viewModel.routeColor) {
                     onFinishActivity()
                 }
 
                 DirectionHeader(
                     route = route,
-                    isForward = viewModel.isForward
-                ) {
-                    viewModel.isForward = !viewModel.isForward
-                }
+                    isForward = isForward,
+                    onDirectionChange = {
+                        viewModel.changeDirection()
+                    }
+                )
             }
         }
     ) {
@@ -83,7 +89,9 @@ fun ScheduleScreen(
         } else if (!isLoading && !error.isNullOrEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(text = error ?: "Unknown Error Occurred.")
@@ -112,7 +120,11 @@ private fun DirectionHeader(route: Route, isForward: Boolean, onDirectionChange:
             .padding(end = 8.dp, start = 16.dp)
     ) {
         Text(
-            text = "${stringResource(id = R.string.direction)}: ${if (isForward) route.firstStation else route.lastStation}",
+            text = buildAnnotatedString {
+                append("${stringResource(id = R.string.direction)}: ")
+                if (route.isMetro) append(if (isForward) route.lastStation else route.firstStation)
+                else append(if (isForward) route.firstStation else route.lastStation)
+            },
             modifier = Modifier.weight(1f)
         )
         Icon(
@@ -139,11 +151,23 @@ private fun StopScheduleItem(
             .padding(horizontal = 12.dp)
     ) {
 
+        val highlightedArrivalTime = when {
+            schedule.currentScheduledArrivalTime.length in 1..2 -> "${schedule.currentScheduledArrivalTime} ${
+                stringResource(
+                    id = R.string.min
+                )
+            }"
+
+            else -> schedule.currentScheduledArrivalTime
+        }
+
         Text(
-            text = schedule.currentScheduledArrivalTime,
+            text = highlightedArrivalTime,
             color = DynamicWhite,
             fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
             modifier = Modifier
+                .width(36.dp)
                 .align(Alignment.Top)
                 .padding(top = 24.dp)
         )

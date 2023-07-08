@@ -13,7 +13,7 @@
     <string name="km">კმ</string>
     <string name="direction">მიმართულება</string>
     <string name="min">წთ</string>
-    <string name="total_available_buses_text">ჯამში მოძრაობს %s ერთეული ავტობუსი.</string>
+    <string name="total_available_buses_text">სულ მოძრაობს %s ერთეული ავტობუსი.</string>
     <string name="settings">პარამეტრები</string>
     <string name="label_home_screen_if_location_is_off_part_one">უახლოესი გაჩერებები ვერ მოიძებნა თქვენს ადგილმდებარეობაზე არასაკმარისი ინფორმაციის გამო. თუ ლოკაცია გამორთული გაქვთ,</string>
     <string name="label_home_screen_if_location_is_off_part_two">ჩასართავად დააჭირეთ აქ.</string>
@@ -25,4 +25,5 @@
     <string name="more_by_developer">სხვა აპლიკაციები</string>
     <string name="route_length">მარშრუტის მანძილი (კმ)</string>
     <string name="schedule">განრიგი</string>
+    <string name="error_nothing_found">ვერაფერი მოიძებნა…</string>
 </resources>

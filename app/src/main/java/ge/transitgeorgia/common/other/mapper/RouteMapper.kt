@@ -1,6 +1,7 @@
 package ge.transitgeorgia.common.other.mapper
 
 import com.mapbox.mapboxsdk.geometry.LatLng
+import ge.transitgeorgia.common.other.enums.TransportType
 import ge.transitgeorgia.data.local.entity.RouteEntity
 import ge.transitgeorgia.data.remote.dto.RouteDto
 import ge.transitgeorgia.data.remote.dto.RouteInfoDto
@@ -10,24 +11,40 @@ import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.model.RouteStop
 
 fun RouteDto.toDomain(): Route {
+    val isMetro = this.type == TransportType.METRO
+    val metroLine = when (this.id.lowercase()) {
+        "metro_1" -> 1
+        "metro_2" -> 2
+        else -> 1
+    }
+
     return Route(
         this.id,
         "#${this.color}",
-        this.number,
-        this.longName,
-        this.startStop,
-        this.lastStop
+        if (isMetro) metroLine.toString() else this.number,
+        this.type,
+        if (isMetro) this.number else this.longName ?: "--- - ---",
+        this.startStop ?: "",
+        this.lastStop ?: ""
     )
 }
 
 fun Route.toEntity(): RouteEntity {
     return RouteEntity(
-        id, color, number, longName, firstStation, lastStation
+        id, color, number, type, longName, firstStation, lastStation
     )
 }
 
 fun RouteEntity.toDomain(): Route {
-    return Route(id, color, number, longName, firstStation, lastStation)
+    return Route(
+        id,
+        color,
+        number,
+        type,
+        longName,
+        firstStation,
+        lastStation
+    )
 }
 
 fun RouteInfoDto.toDomain(): RouteInfo {

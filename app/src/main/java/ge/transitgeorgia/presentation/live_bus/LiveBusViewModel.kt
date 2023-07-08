@@ -6,10 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.BuildConfig
+import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.datastore.AppDataStore
 import ge.transitgeorgia.data.local.db.AppDatabase
 import ge.transitgeorgia.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.domain.model.Bus
+import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import kotlinx.coroutines.async
@@ -31,6 +33,7 @@ class LiveBusViewModel @Inject constructor(
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
+    val route: MutableStateFlow<Route?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
@@ -40,11 +43,12 @@ class LiveBusViewModel @Inject constructor(
             fetchAvailableBuses()
         }
 
-    val routeNumber: Int? get() = savedStateHandle["route_number"]
+    val routeNumber: String? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
 
     init {
         viewModelScope.launch {
+            getRoute()
             listOf(
                 async { fetchRoutes() },
                 async { fetchAvailableBuses() },
@@ -53,9 +57,13 @@ class LiveBusViewModel @Inject constructor(
         }
     }
 
+    private suspend fun getRoute() {
+        route.value = routeNumber?.toIntOrNull()?.let { db.routeDao().getRoute(it)?.toDomain() }
+    }
+
     private fun increaseRouteVisitNumber() = viewModelScope.launch {
         val city = dataStore.city.first()
-        routeNumber?.let {
+        routeNumber?.toIntOrNull()?.let {
             if (!db.routeDao().isTrackingClicks(it, dataStore.city.first().id)) {
                 db.routeDao().insertClickEntity(
                     RouteClicksEntity(
@@ -74,11 +82,11 @@ class LiveBusViewModel @Inject constructor(
         try {
             isLoading.value = true
             error.value = null
-            if (routeNumber == null) throw NullPointerException("Route number is invalid!")
+            if (routeNumber.isNullOrEmpty()) throw NullPointerException("Route number is invalid!")
             else {
                 val routes = awaitAll(
-                    async { repository.getRouteByBus(routeNumber!!, true) },
-                    async { repository.getRouteByBus(routeNumber!!, false) }
+                    async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, true) },
+                    async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, false) }
                 )
                 route1.value = routes[0]
                 route2.value = routes[1]
@@ -94,13 +102,13 @@ class LiveBusViewModel @Inject constructor(
     }
 
     private fun fetchAvailableBuses() = viewModelScope.launch {
-        if (routeNumber == null) throw NullPointerException("Route number is MUST!")
+        if (routeNumber.isNullOrEmpty()) throw NullPointerException("Route number is MUST!")
 
         while (autoRefresh) {
             val busesAsync = awaitAll(
                 async {
                     try {
-                        repository.getBusPositions(routeNumber!!, true)
+                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         emptyList()
@@ -108,7 +116,7 @@ class LiveBusViewModel @Inject constructor(
                 },
                 async {
                     try {
-                        repository.getBusPositions(routeNumber!!, false)
+                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
                     } catch (e: Exception) {
                         e.printStackTrace()
                         emptyList()

@@ -27,6 +27,9 @@ interface RouteDao {
     @Query("SELECT * FROM route WHERE number=:routeNumber")
     suspend fun getRoute(routeNumber: Int): RouteEntity?
 
+    @Query("SELECT * FROM route WHERE id=:id")
+    suspend fun getRouteById(id: String): RouteEntity?
+
     @Query("SELECT * FROM route")
     fun getAllFlow(): Flow<List<RouteEntity>>
 

@@ -158,13 +158,27 @@ fun TimeTableScreen(
                         .padding(1.dp)
                 ) {
                     HeaderInformation()
-                    arrivalTimes.forEachIndexed { index, arrivalTime ->
-                        RouteTimeItem(
-                            context,
-                            arrivalTime,
-                            index == arrivalTimes.size - 1,
+
+                    if (arrivalTimes.isNotEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.error_nothing_found),
+                            textAlign = TextAlign.Center,
+                            color = DynamicWhite,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
                             modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp)
                         )
+                    } else {
+                        arrivalTimes.forEachIndexed { index, arrivalTime ->
+                            RouteTimeItem(
+                                context,
+                                arrivalTime,
+                                index == arrivalTimes.size - 1,
+                                modifier = Modifier
+                            )
+                        }
                     }
                 }
                 stopInfo?.let { StopMapLocation(it) }

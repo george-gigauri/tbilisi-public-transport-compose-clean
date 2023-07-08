@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
     private fun fetchTopRoutes() = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             db.routeDao().getTopRoutesFlow(dataStore.city.first().id).collectLatest {
-                topRoutes.value = it.take(4).map { it.toDomain() }
+                topRoutes.value = it.take(5).map { it.toDomain() }
             }
         }
     }

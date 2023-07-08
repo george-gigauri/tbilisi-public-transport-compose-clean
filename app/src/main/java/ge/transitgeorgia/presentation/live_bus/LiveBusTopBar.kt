@@ -26,12 +26,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.transitgeorgia.R
-import ge.transitgeorgia.domain.model.RouteInfo
 
 @Composable
 fun LiveBusTopBar(
     isReminderRunning: Boolean = false,
-    route: RouteInfo = RouteInfo.empty(),
     routeNumber: String = "---",
     routeColor: String = "#ff0584",
     onBackButtonClick: () -> Unit = { },

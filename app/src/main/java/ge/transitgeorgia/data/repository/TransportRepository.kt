@@ -74,7 +74,11 @@ class TransportRepository constructor(
 
     override suspend fun getSchedule(routeNumber: Int, isForward: Boolean): List<Schedule> =
         withContext(Dispatchers.IO) {
-            return@withContext api.getSchedule(routeNumber, if (isForward) 1 else 0).body()
+            return@withContext api.getSchedule(
+                routeNumber,
+                if (isForward) 1 else 0,
+                if (routeNumber in 1..2) 1 else 3
+            ).body()
                 ?.toDomain()
                 .orEmpty()
         }

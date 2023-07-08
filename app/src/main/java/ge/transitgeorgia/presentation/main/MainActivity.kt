@@ -16,6 +16,8 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
+import com.google.firebase.inappmessaging.ktx.inAppMessaging
+import com.google.firebase.ktx.Firebase
 import com.mapbox.mapboxsdk.Mapbox
 import dagger.hilt.android.AndroidEntryPoint
 import ge.transitgeorgia.BuildConfig
@@ -116,6 +118,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         Analytics.logAppLoaded()
+        Firebase.inAppMessaging.triggerEvent("whats_new")
     }
 
     override fun onDestroy() {

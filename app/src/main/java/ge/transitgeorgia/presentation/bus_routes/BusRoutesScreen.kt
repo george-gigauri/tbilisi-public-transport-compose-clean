@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +31,7 @@ import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
+import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -62,23 +64,32 @@ fun BusRoutesScreen(
 
 @Composable
 fun RouteItem(context: Context, index: Int, item: Route) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                val intent = Intent(context, LiveBusActivity::class.java)
-                intent.putExtra("route_number", item.number.toIntOrNull() ?: -1)
-                intent.putExtra("route_color", item.color)
-                context.startActivity(intent)
-                Analytics.logOpenRouteDetails(item.number.toIntOrNull() ?: -1)
+                if (item.isMetro) {
+                    Analytics.logOpenMetroSchedule()
+                    val intent = Intent(context, ScheduleActivity::class.java)
+                    intent.putExtra("route_number", item.number)
+                    intent.putExtra("route_color", item.color)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                } else {
+                    Analytics.logOpenRouteDetails(item.number.toIntOrNull() ?: -1)
+                    val intent = Intent(context, LiveBusActivity::class.java)
+                    intent.putExtra("route_number", item.number)
+                    intent.putExtra("route_color", item.color)
+                    context.startActivity(intent)
+                }
             }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "#${item.number}",
+            text = if (item.isMetro) "M" else "#${item.number}",
             modifier = Modifier
+                .widthIn(min = 65.dp)
                 .background(
                     Color(android.graphics.Color.parseColor(item.color)),
                     RoundedCornerShape(8.dp)
@@ -86,11 +97,13 @@ fun RouteItem(context: Context, index: Int, item: Route) {
                 .padding(vertical = 8.dp, horizontal = 12.dp),
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = item.longName, color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+            text = item.longName,
+            color = if (isSystemInDarkTheme()) Color.White else Color.Black,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             fontSize = 14.sp

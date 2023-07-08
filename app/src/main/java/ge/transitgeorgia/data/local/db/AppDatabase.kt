@@ -1,5 +1,6 @@
 package ge.transitgeorgia.data.local.db
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import ge.transitgeorgia.data.local.dao.BusStopDao
@@ -16,9 +17,11 @@ import ge.transitgeorgia.data.local.entity.RouteEntity
         RouteClicksEntity::class,
         FavoriteStopEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
-    autoMigrations = []
+    autoMigrations = [
+        AutoMigration(1, 2),
+    ]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun busStopDao(): BusStopDao

@@ -78,6 +78,7 @@ fun LiveBusScreen(
     val context = LocalContext.current
     var mbMap: MapboxMap? = remember { null }
 
+    val route by viewModel.route.collectAsStateWithLifecycle()
     val route1 by viewModel.route1.collectAsStateWithLifecycle()
     val route2 by viewModel.route2.collectAsStateWithLifecycle()
     val availableBuses by viewModel.availableBuses.collectAsStateWithLifecycle()
@@ -123,7 +124,8 @@ fun LiveBusScreen(
 
     // Check if reminder worker is running for current route
     DisposableEffect(key1 = Unit) {
-        val workInfo = BusDistanceReminderWorker.getWorkInfo(context, viewModel.routeNumber ?: 0)
+        val workInfo =
+            BusDistanceReminderWorker.getWorkInfo(context, route?.number?.toIntOrNull() ?: 0)
         val observer = Observer<List<WorkInfo>> {
             isReminderRunning = it.isNotEmpty() && (it.lastOrNull()?.state in listOf(
                 WorkInfo.State.ENQUEUED,
@@ -139,6 +141,7 @@ fun LiveBusScreen(
         LiveBusInfoBottomSheet(
             infoBottomSheetState,
             userLocation,
+            route,
             route1,
             route2,
             availableBuses.filter { it.isForward },
@@ -170,20 +173,19 @@ fun LiveBusScreen(
         topBar = {
             LiveBusTopBar(
                 isReminderRunning = isReminderRunning,
-                route = route1,
-                routeNumber = viewModel.routeNumber.toString(),
+                routeNumber = route?.number.orEmpty(),
                 routeColor = viewModel.routeColor,
                 onBackButtonClick = { currentActivity?.finish() },
                 onScheduleClick = {
                     val intent = Intent(context, ScheduleActivity::class.java)
-                    intent.putExtra("route_number", viewModel.routeNumber)
+                    intent.putExtra("route_number", route?.number)
                     intent.putExtra("route_color", viewModel.routeColor)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },
                 onNotifyClick = {
                     if (isReminderRunning) {
-                        BusDistanceReminderWorker.stop(context, viewModel.routeNumber)
+                        BusDistanceReminderWorker.stop(context, route?.number?.toIntOrNull() ?: -1)
                     } else {
                         if (notificationsPermission?.status == PermissionStatus.Granted) {
                             isNotifyMeDialogVisible = true

@@ -1,13 +1,17 @@
 package ge.transitgeorgia.data.repository
 
 import com.mapbox.mapboxsdk.geometry.LatLng
+import ge.transitgeorgia.common.util.WeekDay
 import ge.transitgeorgia.domain.model.ArrivalTime
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.model.BusStop
 import ge.transitgeorgia.domain.model.Route
 import ge.transitgeorgia.domain.model.RouteInfo
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.domain.model.Schedule
+import ge.transitgeorgia.domain.model.ScheduleStop
 import ge.transitgeorgia.domain.repository.ITransportRepository
+import java.util.UUID
 import kotlin.random.Random
 
 class FakeTransportRepository : ITransportRepository {
@@ -77,5 +81,45 @@ class FakeTransportRepository : ITransportRepository {
             ArrivalTime(496, "Gldani VIII M/D", Random.nextInt(15)),
             ArrivalTime(323, "Gldani's Lake", Random.nextInt(15)),
         ).sortedByDescending { it.time }
+    }
+
+    override suspend fun getSchedule(routeNumber: Int, isForward: Boolean): List<Schedule> {
+        return (0..(Random.nextInt(15))).map {
+            generateSchedule()
+        }
+    }
+
+    private fun generateSchedule(): Schedule {
+        return Schedule(
+            WeekDay.randomizedAsString(),
+            WeekDay.randomizedAsString(),
+            Random.nextBoolean(),
+            listOf(
+                ScheduleStop(
+                    UUID.randomUUID().toString(),
+                    UUID.randomUUID().toString(),
+                    Random.nextDouble(),
+                    Random.nextDouble(),
+                    listOf(
+                        "06:00",
+                        "06:30",
+                        "07:00",
+                        "07:45",
+                        "08:15",
+                        "09:00",
+                        "09:30",
+                        "10:01",
+                        "10:30",
+                        "11:25",
+                        "12:30",
+                        "13:00",
+                        "14:23",
+                        "15:18",
+                        "16:27",
+                        "18:00",
+                    )
+                )
+            )
+        )
     }
 }

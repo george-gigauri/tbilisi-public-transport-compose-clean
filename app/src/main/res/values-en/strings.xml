@@ -5,8 +5,8 @@
     <string name="favorite_stops">Favorite Stations</string>
     <string name="nearby_stops">Nearby Stations</string>
     <string name="see_all">See All</string>
-    <string name="search_route">Search Route...</string>
-    <string name="search_stop">Search station...</string>
+    <string name="search_route">Search Route…</string>
+    <string name="search_stop">Search station…</string>
     <string name="routes">Routes</string>
     <string name="stops">Stations</string>
     <string name="m">m</string>
@@ -25,4 +25,5 @@
     <string name="more_by_developer">More by Developer</string>
     <string name="route_length">Route Length in KM</string>
     <string name="schedule">Schedule</string>
+    <string name="error_nothing_found">Nothing found…</string>
 </resources>
