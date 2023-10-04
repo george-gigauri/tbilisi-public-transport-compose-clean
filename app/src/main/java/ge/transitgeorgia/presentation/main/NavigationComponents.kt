@@ -64,7 +64,7 @@ fun BottomNavigation(navController: NavHostController) {
     val currentDestination = backstackEntry?.destination
 
     NavigationBar(
-        modifier = Modifier.height(54.dp)
+        modifier = Modifier.height(54.dp),
     ) {
         MainNavigationScreen.all().forEach {
             val isSelected = it.screenName == currentDestination?.route
