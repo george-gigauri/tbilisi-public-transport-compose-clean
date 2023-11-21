@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Home</string>
+    <string name="top_routes">Top Routes</string>
+    <string name="favorite_stops">Favorite Stations</string>
+    <string name="nearby_stops">Nearby Stations</string>
+    <string name="see_all">See All</string>
+    <string name="search_route">Search Route…</string>
+    <string name="search_stop">Search station…</string>
+    <string name="routes">Routes</string>
+    <string name="stops">Stations</string>
+    <string name="m">m</string>
+    <string name="km">km</string>
+    <string name="direction">Direction</string>
+    <string name="min">Min</string>
+    <string name="total_available_buses_text">There are %s buses available at this moment.</string>
+    <string name="settings">Settings</string>
+    <string name="label_home_screen_if_location_is_off_part_one">The nearest stops could not be found due to insufficient information for your location. If you have location turned off,</string>
+    <string name="label_home_screen_if_location_is_off_part_two">Click here to turn location on.</string>
+    <string name="tbilisi">Tbilisi</string>
+    <string name="rustavi">Rustavi</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="app_language">App Language</string>
+    <string name="developer_contact">Contact Developer</string>
+    <string name="more_by_developer">More by Developer</string>
+    <string name="route_length">Route Length in KM</string>
+    <string name="schedule">Schedule</string>
+    <string name="error_nothing_found">Nothing found…</string>
+</resources>
