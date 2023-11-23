@@ -34,13 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ge.transitgeorgia.R
 import ge.transitgeorgia.common.other.enums.TransportType
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.presentation.R
+import ge.transitgeorgia.module.presentation.screen.schedule.ScheduleViewModel
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import ge.transitgeorgia.module.presentation.util.asMessage
 
 @Composable
 fun ScheduleScreen(
@@ -71,7 +72,7 @@ fun ScheduleScreen(
             }
         }
     ) {
-        if (!isLoading && error.isNullOrEmpty()) {
+        if (!isLoading && error == null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -87,7 +88,7 @@ fun ScheduleScreen(
                 }
                 Spacer(modifier = Modifier.height(85.dp))
             }
-        } else if (!isLoading && !error.isNullOrEmpty()) {
+        } else if (!isLoading && error != null) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -95,7 +96,7 @@ fun ScheduleScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(text = error ?: "Unknown Error Occurred.")
+                    Text(text = error.asMessage() ?: "Unknown Error Occurred.")
                     Spacer(modifier = Modifier.height(8.dp))
                     FilledTonalButton(onClick = { viewModel.refresh() }) {
                         Text(text = "თავიდან ცდა")

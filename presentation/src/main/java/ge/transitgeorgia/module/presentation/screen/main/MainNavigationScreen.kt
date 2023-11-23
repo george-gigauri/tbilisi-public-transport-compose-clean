@@ -1,7 +1,6 @@
-package ge.transitgeorgia.presentation.main
+package ge.transitgeorgia.module.presentation.screen.main
 
 import androidx.annotation.DrawableRes
-import ge.transitgeorgia.R
 import ge.transitgeorgia.module.presentation.R
 
 sealed class MainNavigationScreen(

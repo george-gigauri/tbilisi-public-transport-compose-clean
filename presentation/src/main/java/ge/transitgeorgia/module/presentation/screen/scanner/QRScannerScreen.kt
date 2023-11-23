@@ -42,7 +42,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
-import ge.transitgeorgia.R
 import ge.transitgeorgia.module.common.util.QrCodeAnalyzer
 import ge.transitgeorgia.module.presentation.R
 

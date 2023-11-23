@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import ge.transitgeorgia.module.common.util.AppLanguage
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
+import ge.transitgeorgia.module.presentation.screen.schedule.ScheduleViewModel
 import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

@@ -30,7 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.presentation.R
-import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
+import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

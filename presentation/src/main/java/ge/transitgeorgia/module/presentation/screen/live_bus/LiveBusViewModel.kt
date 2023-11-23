@@ -1,11 +1,9 @@
-package ge.transitgeorgia.presentation.live_bus
+package ge.transitgeorgia.module.presentation.screen.live_bus
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ge.transitgeorgia.BuildConfig
 import ge.transitgeorgia.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.repository.ITransportRepository
@@ -14,9 +12,12 @@ import ge.transitgeorgia.module.data.local.db.AppDatabase
 import ge.transitgeorgia.module.data.mapper.toDomain
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteInfo
+import ge.transitgeorgia.module.domain.util.ErrorType
+import ge.transitgeorgia.module.domain.util.ResultWrapper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.joinAll
@@ -32,7 +33,7 @@ class LiveBusViewModel @Inject constructor(
 ) : ViewModel() {
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val error: MutableStateFlow<String?> = MutableStateFlow(null)
+    val error: MutableSharedFlow<ErrorType?> = MutableSharedFlow()
     val route: MutableStateFlow<Route?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
@@ -79,26 +80,28 @@ class LiveBusViewModel @Inject constructor(
     }
 
     private fun fetchRoutes() = viewModelScope.launch {
-        try {
-            isLoading.value = true
-            error.value = null
-            if (routeNumber.isNullOrEmpty()) throw NullPointerException("Route number is invalid!")
-            else {
-                val routes = awaitAll(
-                    async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, true) },
-                    async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, false) }
-                )
-                route1.value = routes[0]
-                route2.value = routes[1]
+        isLoading.value = true
+        if (routeNumber.isNullOrEmpty()) {
+            throw NullPointerException("Route number is invalid!")
+        } else {
+            val routes = awaitAll(
+                async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, true) },
+                async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, false) }
+            )
+
+            when (val r = routes[0]) {
+                is ResultWrapper.Success -> route1.value = r.data
+                is ResultWrapper.Error -> error.emit(r.type)
+                else -> Unit
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.d("LiveBusViewModel", e.message ?: "Error while parsing data")
-            error.value = e.message
-        } finally {
-            error.value = null
-            isLoading.value = false
+
+            when (val r = routes[1]) {
+                is ResultWrapper.Success -> route2.value = r.data
+                is ResultWrapper.Error -> error.emit(r.type)
+                else -> Unit
+            }
         }
+        isLoading.value = false
     }
 
     private fun fetchAvailableBuses() = viewModelScope.launch {
@@ -107,27 +110,32 @@ class LiveBusViewModel @Inject constructor(
         while (autoRefresh) {
             val busesAsync = awaitAll(
                 async {
-                    try {
-                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        emptyList()
-                    }
+                    repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
                 },
                 async {
-                    try {
-                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        emptyList()
-                    }
+                    repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
                 }
             )
 
-            val bothBuses = busesAsync.flatten()
+            var busesForward: List<Bus> = emptyList()
+            var busesBackward: List<Bus> = emptyList()
+
+            when (val b = busesAsync[0]) {
+                is ResultWrapper.Success -> busesForward = b.data
+                is ResultWrapper.Error -> error.emit(b.type)
+                else -> Unit
+            }
+
+            when (val b = busesAsync[1]) {
+                is ResultWrapper.Success -> busesBackward = b.data
+                is ResultWrapper.Error -> error.emit(b.type)
+                else -> Unit
+            }
+
+            val bothBuses = listOf(busesForward, busesBackward).flatten()
             availableBuses.value = bothBuses
 
-            delay(if (BuildConfig.DEBUG) 25000 else 5999)
+            delay(5000)
         }
     }
 }

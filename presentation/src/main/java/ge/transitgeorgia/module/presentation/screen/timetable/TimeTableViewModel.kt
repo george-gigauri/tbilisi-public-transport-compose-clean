@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.timetable
+package ge.transitgeorgia.module.presentation.screen.timetable
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -11,18 +11,19 @@ import ge.transitgeorgia.domain.model.ArrivalTime
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
-import ge.transitgeorgia.module.data.mapper.toDomain
 import ge.transitgeorgia.module.domain.model.BusStop
+import ge.transitgeorgia.module.domain.util.ErrorType
+import ge.transitgeorgia.module.domain.util.ResultWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,7 +40,7 @@ class TimeTableViewModel @Inject constructor(
     val data: MutableStateFlow<List<ArrivalTime>> = MutableStateFlow(emptyList())
     val stop: MutableStateFlow<BusStop?> = MutableStateFlow(null)
     val isFavorite: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val error: MutableStateFlow<String?> = MutableStateFlow(null)
+    val error: MutableSharedFlow<ErrorType?> = MutableSharedFlow()
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -70,19 +71,16 @@ class TimeTableViewModel @Inject constructor(
         scope.coroutineContext.cancelChildren()
         scope.launch {
             isLoading.value = true
-            try {
-                repository.getTimeTable(stopId).let {
-                    data.value = it
+            repository.getTimeTable(stopId).let {
+                when (it) {
+                    is ResultWrapper.Success -> data.value = it.data
+                    is ResultWrapper.Error -> error.emit(it.type)
+                    else -> Unit
                 }
-            } catch (httpError: HttpException) {
-                error.value = httpError.message()
-            } catch (e: Exception) {
-                error.value = e.message ?: "Unknown Error"
-            } finally {
-                shouldShowLoading.value = false
-                isLoading.value = false
-                error.value = null
             }
+
+            shouldShowLoading.value = false
+            isLoading.value = false
         }
     }
 

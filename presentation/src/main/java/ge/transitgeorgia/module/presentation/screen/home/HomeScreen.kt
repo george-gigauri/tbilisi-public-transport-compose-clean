@@ -28,7 +28,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.mapbox.mapboxsdk.geometry.LatLng
-import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.domain.model.BusStop
@@ -36,9 +35,10 @@ import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.RouteItem
 import ge.transitgeorgia.module.presentation.screen.bus_stops.ItemBusStop
+import ge.transitgeorgia.module.presentation.screen.home.HomeViewModel
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
+import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
-import ge.transitgeorgia.presentation.main.MainNavigationScreen
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

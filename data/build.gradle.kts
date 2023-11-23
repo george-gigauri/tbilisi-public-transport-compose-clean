@@ -71,7 +71,7 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.0")
 
     // Dependency Injection
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
 
@@ -90,9 +90,10 @@ dependencies {
     // ML
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
-    implementation("com.google.mlkit:translate:17.0.1")
+    implementation("com.google.mlkit:translate:17.0.2")
 
     // Maps
     implementation("com.google.maps.android:android-maps-utils:3.4.0")
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
 }

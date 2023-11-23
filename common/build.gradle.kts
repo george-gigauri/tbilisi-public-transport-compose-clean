@@ -64,7 +64,7 @@ dependencies {
     api("com.google.firebase:firebase-crashlytics-ktx")
 
     // Maps
-    api("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
+    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
 
     // Camera
     implementation("androidx.camera:camera-camera2:1.3.0")
@@ -74,14 +74,14 @@ dependencies {
     // ML
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
-    implementation("com.google.mlkit:translate:17.0.1")
+    implementation("com.google.mlkit:translate:17.0.2")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.48")
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
-    implementation("androidx.hilt:hilt-work:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.hilt:hilt-work:1.1.0")
     kapt("com.google.dagger:hilt-compiler:2.48")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
+    kapt("androidx.hilt:hilt-compiler:1.1.0")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 

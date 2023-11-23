@@ -41,7 +41,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".presentation.live_bus.LiveBusActivity"
+            android:name=".module.presentation.screen.live_bus.LiveBusActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".module.presentation.screen.main.MainActivity"

@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.live_bus
+package ge.transitgeorgia.module.presentation.screen.live_bus
 
 import android.content.Context
 import android.location.Address
@@ -25,7 +25,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mapbox.mapboxsdk.geometry.LatLng
-import ge.transitgeorgia.R
 import ge.transitgeorgia.common.other.extensions.calculateTotalLengthInMeters
 import ge.transitgeorgia.common.util.DistanceCalculator
 import ge.transitgeorgia.domain.model.Bus

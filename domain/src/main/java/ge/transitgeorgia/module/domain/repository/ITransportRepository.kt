@@ -7,13 +7,14 @@ import ge.transitgeorgia.domain.model.Schedule
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteInfo
+import ge.transitgeorgia.module.domain.util.ResultWrapper
 
 interface ITransportRepository {
-    suspend fun getRoutes(): List<Route>
-    suspend fun getRouteByBus(busNumber: Int, isForward: Boolean = true): RouteInfo
-    suspend fun getBusStopsByBusNumber(busNumber: Int): List<RouteStop>
-    suspend fun getBusPositions(busNumber: Int, isForward: Boolean = true): List<Bus>
-    suspend fun getStops(): List<BusStop>
-    suspend fun getTimeTable(stopId: String): List<ArrivalTime>
-    suspend fun getSchedule(routeNumber: Int, isForward: Boolean): List<Schedule>
+    suspend fun getRoutes(): ResultWrapper<List<Route>>
+    suspend fun getRouteByBus(busNumber: Int, isForward: Boolean = true): ResultWrapper<RouteInfo>
+    suspend fun getBusStopsByBusNumber(busNumber: Int): ResultWrapper<List<RouteStop>>
+    suspend fun getBusPositions(busNumber: Int, isForward: Boolean = true): ResultWrapper<List<Bus>>
+    suspend fun getStops(): ResultWrapper<List<BusStop>>
+    suspend fun getTimeTable(stopId: String): ResultWrapper<List<ArrivalTime>>
+    suspend fun getSchedule(routeNumber: Int, isForward: Boolean): ResultWrapper<List<Schedule>>
 }

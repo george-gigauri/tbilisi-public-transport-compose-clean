@@ -22,6 +22,8 @@ import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
+import ge.transitgeorgia.module.domain.util.ResultWrapper
+import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -62,14 +64,18 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
         while (true) {
             delay(Random.nextInt(IntRange(7, 20)) * 1000L)
             try {
-                val result = repository.getTimeTable(stopId)
-                result.forEach {
-                    if (it.time <= arrivalTime && routes.contains(it.routeNumber) &&
-                        !notifiedRoutes.contains(it.routeNumber)
-                    ) {
-                        notifiedRoutes.add(it.routeNumber)
-                        notify(stopId, it.routeNumber, it.time)
+                when(val result = repository.getTimeTable(stopId)) {
+                    is ResultWrapper.Success -> {
+                        result.data.forEach {
+                            if (it.time <= arrivalTime && routes.contains(it.routeNumber) &&
+                                !notifiedRoutes.contains(it.routeNumber)
+                            ) {
+                                notifiedRoutes.add(it.routeNumber)
+                                notify(stopId, it.routeNumber, it.time)
+                            }
+                        }
                     }
+                    else -> Unit
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -113,10 +119,10 @@ class BusArrivalTimeReminderWorker @AssistedInject constructor(
         }
 
         val builder = NotificationCompat.Builder(context, "arrival-time-reminder")
-            .setSmallIcon(ge.transitgeorgia.R.mipmap.ic_launcher_round)
+            .setSmallIcon(R.mipmap.ic_launcher_round)
             .setAutoCancel(true)
-            .setContentTitle("$busNumber")
-            .setContentText("ავტობუსი #$busNumber მოვა $arrivalTime წუთში")
+            .setContentTitle("$busNumber მოსვლის დრო")
+            .setContentText("$arrivalTime წუთში")
             .setContentIntent(pendingIntent)
             .setVibrate(longArrayOf(1000, 500, 1000, 500, 2500))
             .setPriority(NotificationCompat.PRIORITY_HIGH)

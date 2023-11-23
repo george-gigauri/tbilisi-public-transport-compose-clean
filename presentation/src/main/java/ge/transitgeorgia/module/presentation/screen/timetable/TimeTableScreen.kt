@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.timetable
+package ge.transitgeorgia.module.presentation.screen.timetable
 
 import android.Manifest
 import android.content.Context
@@ -56,16 +56,17 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
-import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusArrivalTimeReminderWorker
 import ge.transitgeorgia.common.util.rawAsString
 import ge.transitgeorgia.domain.model.ArrivalTime
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.presentation.R
+import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
-import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
+import ge.transitgeorgia.presentation.timetable.ScheduleTimeTableDialog
+import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -219,7 +220,7 @@ fun HeaderInformation() {
         )
 
         Text(
-            text = stringResource(id = ge.transitgeorgia.R.string.direction),
+            text = stringResource(id = R.string.direction),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
@@ -229,7 +230,7 @@ fun HeaderInformation() {
         )
 
         Text(
-            text = stringResource(id = ge.transitgeorgia.R.string.min),
+            text = stringResource(id = R.string.min),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             color = Color.White,
@@ -254,7 +255,7 @@ fun RouteTimeItem(
             .height(IntrinsicSize.Min)
             .clickable {
                 val intent = Intent(context, LiveBusActivity::class.java)
-                intent.putExtra("route_number", item.routeNumber)
+                intent.putExtra("route_number", item.routeNumber.toString())
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
                 Analytics.logOpenRouteFromTimetable()

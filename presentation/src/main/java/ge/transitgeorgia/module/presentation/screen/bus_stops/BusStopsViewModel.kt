@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -39,18 +38,10 @@ class BusStopsViewModel @Inject constructor(
     val error: MutableSharedFlow<String?> = MutableSharedFlow()
 
     private fun load() = viewModelScope.launch {
-        try {
-            db.busStopDao().getStopsFlow().collectLatest {
-                val data = db.busStopDao().getStops().map { it.toDomain() }
-                result.value = data
-                stops.value = data
-            }
-        } catch (e: HttpException) {
-            error.emit(e.message())
-        } catch (e: Exception) {
-            error.emit("Unknown Error")
-        } finally {
-            isLoading.value = false
+        db.busStopDao().getStopsFlow().collectLatest {
+            val data = db.busStopDao().getStops().map { it.toDomain() }
+            result.value = data
+            stops.value = data
         }
     }
 

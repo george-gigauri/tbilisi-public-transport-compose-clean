@@ -19,8 +19,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.transitgeorgia.module.presentation.screen.BusRoutesScreen
 import ge.transitgeorgia.module.presentation.screen.bus_stops.BusStopsScreen
+import ge.transitgeorgia.module.presentation.screen.favorites.FavoritesScreen
+import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.presentation.bus_stops.BusStopsMapScreen
-import ge.transitgeorgia.presentation.favorites.FavoritesScreen
 import ge.transitgeorgia.presentation.home.HomeScreen
 import ge.transitgeorgia.presentation.settings.SettingsScreen
 

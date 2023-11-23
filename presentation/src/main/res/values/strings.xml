@@ -26,4 +26,8 @@
     <string name="route_length">მარშრუტის მანძილი (კმ)</string>
     <string name="schedule">განრიგი</string>
     <string name="error_nothing_found">ვერაფერი მოიძებნა…</string>
+    <string name="error_something_went_wrong">დაფიქსირდა უცხო ხარვეზი</string>
+    <string name="error_no_internet">ინტერნეტთან კავშირის პრობლემა. დაუკავშირდით ინტერნეტს და ახლიდან სცადეთ.</string>
+    <string name="error_timeout">მოთხოვნას დასჭირდა ზედმეტად დიდი დრო</string>
+    <string name="error_unknown">შეცდომა. შეცდომის დეტალები უცნობია.</string>
 </resources>

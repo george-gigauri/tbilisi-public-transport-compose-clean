@@ -26,7 +26,9 @@ import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
-import ge.transitgeorgia.presentation.live_bus.LiveBusActivity
+import ge.transitgeorgia.module.domain.util.ResultWrapper
+import ge.transitgeorgia.module.presentation.R
+import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -74,7 +76,13 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         while (!isDone) {
             try {
                 repository.getBusPositions(busNumber, isForward).let {
-                    isDone = process(it, location, distance)
+                    when (it) {
+                        is ResultWrapper.Success -> {
+                            isDone = process(it.data, location, distance)
+                        }
+
+                        else -> Unit
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -129,7 +137,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         }
 
         val builder = NotificationCompat.Builder(context, "distance-reminder")
-            .setSmallIcon(ge.transitgeorgia.R.mipmap.ic_launcher_round)
+            .setSmallIcon(R.mipmap.ic_launcher_round)
             .setAutoCancel(true)
             .setContentTitle("$busNumber")
             .setContentText("ავტობუსი [$busNumber] შენგან უკვე $distance მეტრშია!")

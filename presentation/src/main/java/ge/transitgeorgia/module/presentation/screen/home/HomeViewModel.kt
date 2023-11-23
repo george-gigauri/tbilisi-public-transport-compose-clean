@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.home
+package ge.transitgeorgia.module.presentation.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -71,7 +71,7 @@ class HomeViewModel @Inject constructor(
                 nearbyStops.value = it.map { i -> i.toDomain() }.sortedBy { b ->
                     val latLng = LatLng(b.lat, b.lng)
                     position.distanceTo(latLng)
-                }.take(10)
+                }.take(5)
             }
         }
     }

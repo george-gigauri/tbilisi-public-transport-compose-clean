@@ -2,8 +2,11 @@ package ge.transitgeorgia.presentation.bus_stops
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.location.Location
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +58,7 @@ import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
@@ -66,6 +70,7 @@ fun BusStopsMapScreen(
     val context = LocalContext.current
     val currentActivity = (context as? MainActivity)
     val lifecycleCoroutine = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_ANY) }
     var map: MapboxMap? = remember { null }
     val mapZoomScope = rememberCoroutineScope()
@@ -76,7 +81,7 @@ fun BusStopsMapScreen(
     val isDarkMode = isSystemInDarkTheme()
     var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) MapStyle.BUSPLORE_DARK else MapStyle.BUSPLORE_LIGHT) }
 
-    var userLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
+    var userLocation = remember { MutableStateFlow(Location(null)) }
 
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -89,10 +94,10 @@ fun BusStopsMapScreen(
         lifecycleEvent.value = event
     })
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = Unit, key2 = locationPermissionState.allPermissionsGranted) {
         if (locationPermissionState.allPermissionsGranted) {
             LocationUtil.getMyLocation(context, onSuccess = {
-                userLocation = LatLng(it.latitude, it.longitude)
+                userLocation.value = it
             }, onError = {
 
             })
@@ -100,121 +105,126 @@ fun BusStopsMapScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(factory = {
-            MapView(it).apply {
-                getMapAsync { m ->
-                    m.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            city.latLng,
-                            city.mapDefaultZoom
+        AndroidView(
+            update = {
+
+            },
+            factory = {
+                MapView(it).apply {
+                    getMapAsync { m ->
+                        m.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                city.latLng,
+                                city.mapDefaultZoom
+                            )
                         )
-                    )
-                    m.setStyle(mapStyle.style(it)) {
-                        if (locationPermissionState.allPermissionsGranted) {
-                            currentActivity?.let { c ->
-                                if (LocationUtil.isLocationTurnedOn(c)) {
-                                    m.locationComponent.activateLocationComponent(
-                                        LocationComponentActivationOptions
-                                            .builder(context, it)
-                                            .build()
-                                    )
-                                    m.locationComponent.isLocationComponentEnabled =
-                                        true
-                                } else {
-                                    LocationUtil.requestLocation(c) {
+
+                        m.setStyle(mapStyle.style(it)) {
+                            if (locationPermissionState.allPermissionsGranted) {
+                                currentActivity?.let { c ->
+                                    if (LocationUtil.isLocationTurnedOn(c)) {
                                         m.locationComponent.activateLocationComponent(
                                             LocationComponentActivationOptions
                                                 .builder(context, it)
                                                 .build()
                                         )
-                                        m.locationComponent.isLocationComponentEnabled =
-                                            true
-                                    }
-                                }
-                            }
-
-                            LocationUtil.getMyLocation(context, onSuccess = { l ->
-                                userLocation = LatLng(l.latitude, l.longitude)
-                            })
-                        } else {
-                            locationPermissionState.launchMultiplePermissionRequest()
-                        }
-                    }
-
-                    m.setOnMarkerClickListener {
-                        val intent = Intent(context, TimeTableActivity::class.java)
-                        intent.putExtra("stop_id", it.snippet)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        context.startActivity(intent)
-
-                        Analytics.logOpenTimetableFromRouteMap()
-                        return@setOnMarkerClickListener true
-                    }
-
-                    m.addOnCameraMoveListener {
-                        mapZoomScope.coroutineContext.cancelChildren()
-                        mapZoomScope.launch {
-                            delay(350)
-                            if (m.cameraPosition.zoom >= 12.5) {
-                                m.markers.forEach { it.remove() }
-
-                                val visibleBounds =
-                                    m.projection.visibleRegion.latLngBounds
-                                val visibleStops = stops.filter {
-                                    val latLng = LatLng(it.lat, it.lng)
-                                    visibleBounds.contains(latLng)
-                                }
-
-                                visibleStops.forEach {
-                                    MarkerOptions().apply {
-                                        position(LatLng(it.lat, it.lng))
-                                        snippet(it.code)
-                                        BitmapUtils.getBitmapFromDrawable(
-                                            ContextCompat.getDrawable(
-                                                context,
-                                                R.drawable.ic_marker_route_stop_backward
+                                    } else {
+                                        LocationUtil.requestLocation(c) {
+                                            m.locationComponent.activateLocationComponent(
+                                                LocationComponentActivationOptions
+                                                    .builder(context, it)
+                                                    .build()
                                             )
-                                        )?.let { bit ->
-                                            val smallMarker =
-                                                Bitmap.createScaledBitmap(
-                                                    bit,
-                                                    24.dpToPx(),
-                                                    24.dpToPx(),
-                                                    false
-                                                )
-                                            val smallMarkerIcon =
-                                                IconFactory.getInstance(context)
-                                                    .fromBitmap(smallMarker)
-
-                                            icon(smallMarkerIcon)
                                         }
-
-                                        m.addMarker(`this`)
                                     }
                                 }
 
+                                scope.launch {
+                                    userLocation.collectLatest {
+                                        m.markers.filter { m -> m.snippet == "MY" }
+                                            .forEach { r -> m.removeMarker(r) }
+                                        m.addMarker(createMyLocationMarker(context, it))
+                                    }
+                                }
                             } else {
-                                m.markers.forEach { it.remove() }
+                                locationPermissionState.launchMultiplePermissionRequest()
                             }
-                        }.start()
+                        }
+
+                        m.setOnMarkerClickListener { m ->
+                            val intent = Intent(context, TimeTableActivity::class.java)
+                            intent.putExtra("stop_id", m.snippet)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(intent)
+
+                            Analytics.logOpenTimetableFromRouteMap()
+                            return@setOnMarkerClickListener true
+                        }
+
+                        m.addOnCameraMoveListener {
+                            mapZoomScope.coroutineContext.cancelChildren()
+                            mapZoomScope.launch {
+                                delay(350)
+                                if (m.cameraPosition.zoom >= 12.5) {
+                                    m.markers.filter { it.snippet != "MY" }.forEach { it.remove() }
+
+                                    val visibleBounds =
+                                            m.projection.visibleRegion.latLngBounds
+                                    val visibleStops = stops.filter {
+                                        val latLng = LatLng(it.lat, it.lng)
+                                        visibleBounds.contains(latLng)
+                                    }
+
+                                    visibleStops.forEach {
+                                        MarkerOptions().apply {
+                                            position(LatLng(it.lat, it.lng))
+                                            snippet(it.code)
+                                            BitmapUtils.getBitmapFromDrawable(
+                                                ContextCompat.getDrawable(
+                                                    context,
+                                                    R.drawable.ic_marker_route_stop_backward
+                                                )
+                                            )?.let { bit ->
+                                                val smallMarker =
+                                                        Bitmap.createScaledBitmap(
+                                                            bit,
+                                                            24.dpToPx(),
+                                                            24.dpToPx(),
+                                                            false
+                                                        )
+                                                val smallMarkerIcon =
+                                                        IconFactory.getInstance(context)
+                                                            .fromBitmap(smallMarker)
+
+                                                icon(smallMarkerIcon)
+                                            }
+
+                                            m.addMarker(`this`)
+                                        }
+                                    }
+
+                                } else {
+                                    m.markers.filter { i -> i.snippet != "MY" }.forEach { it.remove() }
+                                }
+                            }.start()
+                        }
+
+                        map = m
                     }
 
-                    map = m
-                }
-
-                lifecycleCoroutine.launch {
-                    lifecycleEvent.collect {
-                        when (it) {
-                            Lifecycle.Event.ON_CREATE -> onCreate(null)
-                            Lifecycle.Event.ON_START -> onStart()
-                            Lifecycle.Event.ON_RESUME -> onResume()
-                            Lifecycle.Event.ON_DESTROY -> onDestroy()
-                            else -> Unit
+                    lifecycleCoroutine.launch {
+                        lifecycleEvent.collect {
+                            when (it) {
+                                Lifecycle.Event.ON_CREATE -> onCreate(null)
+                                Lifecycle.Event.ON_START -> onStart()
+                                Lifecycle.Event.ON_RESUME -> onResume()
+                                Lifecycle.Event.ON_DESTROY -> onDestroy()
+                                else -> Unit
+                            }
                         }
                     }
                 }
-            }
-        })
+            })
 
         // Button Move Zoom to user location
         Column(modifier = Modifier.align(Alignment.BottomEnd)) {
@@ -267,6 +277,41 @@ fun BusStopsMapScreen(
                     modifier = Modifier.size(32.dp)
                 )
             }
+        }
+    }
+}
+
+fun createMyLocationMarker(context: Context, l: Location): MarkerOptions {
+    return MarkerOptions().apply {
+        position(LatLng(l.latitude, l.longitude))
+        snippet("MY")
+        BitmapUtils.getBitmapFromDrawable(
+            ContextCompat.getDrawable(
+                context,
+                R.drawable.ic_my_location_marker
+            )
+        )?.let { bit ->
+            val matrix = Matrix()
+            matrix.postRotate(l.bearing)
+            val smallMarker = Bitmap.createScaledBitmap(
+                bit,
+                24.dpToPx(),
+                40.dpToPx(),
+                false
+            )
+            val rotatedBitmap = Bitmap.createBitmap(
+                smallMarker,
+                0,
+                0,
+                smallMarker.width,
+                smallMarker.height,
+                matrix,
+                true
+            )
+            val smallMarkerIcon = IconFactory.getInstance(context)
+                .fromBitmap(rotatedBitmap)
+
+            icon(smallMarkerIcon)
         }
     }
 }

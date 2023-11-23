@@ -8,6 +8,7 @@ import android.content.IntentSender.SendIntentException
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
+import android.os.Looper
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -15,6 +16,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.LocationSettingsStatusCodes
+import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.*
 
@@ -23,7 +25,7 @@ object LocationUtil {
     private var locationObserverScope = CoroutineScope(Dispatchers.Main)
 
     fun isLocationTurnedOn(context: Context): Boolean {
-        val manager = (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+        val manager = (context.getSystemService(LOCATION_SERVICE) as LocationManager)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             manager.isLocationEnabled
         } else {
@@ -43,7 +45,7 @@ object LocationUtil {
         builder.setAlwaysShow(true)
 
         val result: Task<LocationSettingsResponse> =
-            LocationServices.getSettingsClient(context).checkLocationSettings(builder.build())
+                LocationServices.getSettingsClient(context).checkLocationSettings(builder.build())
 
         result.addOnCompleteListener { task ->
             onTurnedOn.invoke()
@@ -59,6 +61,7 @@ object LocationUtil {
                         } catch (e: SendIntentException) {
                         } catch (e: ClassCastException) {
                         }
+
                     LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {}
                 }
             }
@@ -71,14 +74,15 @@ object LocationUtil {
         onSuccess: (Location) -> Unit = { },
         onError: () -> Unit = {}
     ) {
-        (context.getSystemService(Context.LOCATION_SERVICE) as LocationManager)
+        LocationServices.getFusedLocationProviderClient(context)
             .requestLocationUpdates(
-                LocationManager.PASSIVE_PROVIDER,
-                5000L,
-                3.5f
-            ) {
-                onSuccess.invoke(it)
-            }
+                LocationRequest.Builder(
+                    PRIORITY_HIGH_ACCURACY,
+                    100L,
+                ).setWaitForAccurateLocation(true).build(),
+                { p0 -> onSuccess(p0) },
+                Looper.getMainLooper()
+            )
     }
 
     @SuppressLint("MissingPermission")

@@ -20,10 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ge.transitgeorgia.BuildConfig
-import ge.transitgeorgia.R
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.common.util.AppLanguage
+import ge.transitgeorgia.module.presentation.BuildConfig
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.screen.settings.TopBar
