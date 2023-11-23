@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name" translatable="false">BUSPLORE</string>
+    <string name="home">მთავარი</string>
+    <string name="top_routes">ტოპ მარშრუტები</string>
+    <string name="favorite_stops">ფავორიტი გაჩერებები</string>
+    <string name="nearby_stops">უახლოესი გაჩერებები</string>
+    <string name="see_all">ყველას ნახვა</string>
+    <string name="search_route">მარშრუტის ძიება…</string>
+    <string name="search_stop">გაჩერების ძიება…</string>
+    <string name="routes">მარშრუტები</string>
+    <string name="stops">გაჩერებები</string>
+    <string name="m">მ</string>
+    <string name="km">კმ</string>
+    <string name="direction">მიმართულება</string>
+    <string name="min">წთ</string>
+    <string name="total_available_buses_text">სულ მოძრაობს %s ერთეული ავტობუსი.</string>
+    <string name="settings">პარამეტრები</string>
+    <string name="label_home_screen_if_location_is_off_part_one">უახლოესი გაჩერებები ვერ მოიძებნა თქვენს ადგილმდებარეობაზე არასაკმარისი ინფორმაციის გამო. თუ ლოკაცია გამორთული გაქვთ,</string>
+    <string name="label_home_screen_if_location_is_off_part_two">ჩასართავად დააჭირეთ აქ.</string>
+    <string name="tbilisi">თბილისი</string>
+    <string name="rustavi">რუსთავი</string>
+    <string name="dark_mode">მუქი რეჟიმი</string>
+    <string name="app_language">აპის ენა</string>
+    <string name="developer_contact">დეველოპერთან კონტაქტი</string>
+    <string name="more_by_developer">სხვა აპლიკაციები</string>
+    <string name="route_length">მარშრუტის მანძილი (კმ)</string>
+    <string name="schedule">განრიგი</string>
+    <string name="error_nothing_found">ვერაფერი მოიძებნა…</string>
+    <string name="error_something_went_wrong">დაფიქსირდა უცხო ხარვეზი</string>
+    <string name="error_no_internet">ინტერნეტთან კავშირის პრობლემა. დაუკავშირდით ინტერნეტს და ახლიდან სცადეთ.</string>
+    <string name="error_timeout">მოთხოვნას დასჭირდა ზედმეტად დიდი დრო</string>
+    <string name="error_unknown">შეცდომა. შეცდომის დეტალები უცნობია.</string>
+</resources>
