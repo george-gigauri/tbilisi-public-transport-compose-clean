@@ -1,5 +1,8 @@
 buildscript {
 
+    val properties = java.util.Properties()
+    properties.load(java.io.FileInputStream(project.rootProject.file("local.properties")))
+
     repositories {
         google()
         mavenCentral()
@@ -10,7 +13,7 @@ buildscript {
             }
             credentials {
                 username = "mapbox"
-                password = "sk.eyJ1IjoiZ2VvcmdlZ2lnYXVyaSIsImEiOiJjbG9ibzgxZzQwdzE4MmlxcGc1MjZubWJzIn0.EM1yDd44FQLGvuZBakwFpg"
+                password = properties.getProperty("MAPBOX_TOKEN")
             }
         }
     }
@@ -24,8 +27,8 @@ buildscript {
     }
 }
 
-val appVersionCode: Int by extra { 2 }
-val appVersionName: String by extra { "1.1.0" }
+val appVersionCode: Int by extra { 14 }
+val appVersionName: String by extra { "1.7.0" }
 
 //
 //plugins {

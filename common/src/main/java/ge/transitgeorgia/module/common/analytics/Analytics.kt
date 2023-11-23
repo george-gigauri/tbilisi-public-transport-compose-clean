@@ -8,6 +8,7 @@ object Analytics {
 
     const val EVENT_APP_LOADED = "app_loaded"
     const val EVENT_LOCATION_PROMPT = "location_prompt"
+    const val EVENT_LANGUAGE_SET = "set_app_language"
     const val EVENT_OPEN_ALL_STOPS = "open_all_stops"
     const val EVENT_SEARCH_STOPS = "search_stops"
     const val EVENT_OPEN_STOP_TIMETABLE = "open_stop_timetable"
@@ -37,6 +38,12 @@ object Analytics {
 
     fun logAppLoaded() {
         val bundle = Bundle()
+        Firebase.analytics.logEvent(EVENT_APP_LOADED, bundle)
+    }
+
+    fun logLanguageSet(languageValue: String) {
+        val bundle = Bundle()
+        bundle.putString("language", languageValue)
         Firebase.analytics.logEvent(EVENT_APP_LOADED, bundle)
     }
 

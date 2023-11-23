@@ -34,6 +34,11 @@ class AppDataStore(private val context: Context) {
         }
     }
 
+    val isLanguageSet: Flow<Boolean>
+        get() = context.appDataStore.data.map {
+            it[KEY_APP_LANGUAGE] != null
+        }
+
     // Data Last Updated At
     val dataLastUpdatedAt: Flow<Long?>
         get() = context.appDataStore.data.map {
