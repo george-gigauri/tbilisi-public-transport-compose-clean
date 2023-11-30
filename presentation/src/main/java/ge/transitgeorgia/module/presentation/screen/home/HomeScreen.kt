@@ -132,8 +132,8 @@ fun FavoriteRoutes(routes: List<Route>) {
     Column {
         Header(text = stringResource(id = R.string.top_routes))
         Spacer(modifier = Modifier.height(8.dp))
-        routes.forEachIndexed { index, route ->
-            RouteItem(context = context, index = index, item = route)
+        routes.forEach { route ->
+            RouteItem(context = context, item = route)
         }
     }
 }

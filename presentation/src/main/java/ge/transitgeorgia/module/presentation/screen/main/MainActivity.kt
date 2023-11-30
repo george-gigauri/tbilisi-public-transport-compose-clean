@@ -102,13 +102,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkForUpdate() {
-        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                if (appUpdateInfo.isFlexibleUpdateAllowed) {
-                    startFlexibleInAppUpdate(appUpdateInfo)
-                }
-                if (appUpdateInfo.isImmediateUpdateAllowed) {
-                    startImmediateInAppUpdate(appUpdateInfo)
+        if (!BuildConfig.DEBUG) {
+            appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    if (appUpdateInfo.isFlexibleUpdateAllowed) {
+                        startFlexibleInAppUpdate(appUpdateInfo)
+                    }
+                    if (appUpdateInfo.isImmediateUpdateAllowed) {
+                        startImmediateInAppUpdate(appUpdateInfo)
+                    }
                 }
             }
         }

@@ -1,7 +1,7 @@
 package ge.transitgeorgia.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import ge.transitgeorgia.common.other.enums.TransportType
+import ge.transitgeorgia.module.common.other.enums.TransportType
 
 data class RouteDto(
     @SerializedName("Id") val id: String,

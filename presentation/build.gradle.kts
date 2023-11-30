@@ -89,7 +89,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.1")
     implementation("androidx.compose.ui:ui:1.5.4")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
-    implementation("androidx.compose.material3:material3:1.2.0-alpha11")
+    implementation("androidx.compose.material3:material3:1.2.0-alpha12")
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.28.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")

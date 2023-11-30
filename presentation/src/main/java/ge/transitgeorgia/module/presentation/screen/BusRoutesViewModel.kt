@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.module.data.local.db.AppDatabase
 import ge.transitgeorgia.module.data.mapper.toDomain
 import ge.transitgeorgia.module.domain.model.Route
+import ge.transitgeorgia.module.domain.model.RouteTransportType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
@@ -21,6 +22,7 @@ class BusRoutesViewModel @Inject constructor(
 ) : ViewModel() {
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val transportType: MutableStateFlow<RouteTransportType> = MutableStateFlow(RouteTransportType.ALL)
     val data: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val routes: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -57,11 +59,22 @@ class BusRoutesViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 routes.value = if (keyword.isNotEmpty()) {
                     data.value.filter {
-                        it.number.startsWith(keyword) || it.longName.lowercase()
-                            .contains(keyword.lowercase())
+                        it.number.startsWith(keyword) ||
+                                it.longName.lowercase().contains(keyword.lowercase()) ||
+                                it.firstStation.lowercase().contains(keyword.lowercase()) ||
+                                it.lastStation.lowercase().contains(keyword.lowercase())
                     }
                 } else data.value
             }
+        }
+    }
+
+    fun setTransportType(type: RouteTransportType) {
+        this.transportType.value = type
+        if (type == RouteTransportType.ALL) {
+            fetchRoutes()
+        } else {
+            routes.value = data.value.filter { it.type == type }.filter { routes.value.contains(it) }
         }
     }
 }

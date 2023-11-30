@@ -30,4 +30,8 @@
     <string name="error_no_internet">ინტერნეტთან კავშირის პრობლემა. დაუკავშირდით ინტერნეტს და ახლიდან სცადეთ.</string>
     <string name="error_timeout">მოთხოვნას დასჭირდა ზედმეტად დიდი დრო</string>
     <string name="error_unknown">შეცდომა. შეცდომის დეტალები უცნობია.</string>
+    <string name="all">ყველა</string>
+    <string name="metro">მეტრო</string>
+    <string name="bus">ავტობუსი</string>
+    <string name="microbus">მიკროავტობუსი</string>
 </resources>

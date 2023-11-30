@@ -8,13 +8,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,8 +30,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.domain.model.Route
+import ge.transitgeorgia.module.domain.model.RouteTransportType
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
+import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
+import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import ge.transitgeorgia.module.presentation.util.string
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -39,6 +44,7 @@ fun BusRoutesScreen(
     viewModel: BusRoutesViewModel = hiltViewModel()
 ) {
     val routes by viewModel.routes.collectAsStateWithLifecycle()
+    val transportType by viewModel.transportType.collectAsStateWithLifecycle()
     val context: Context = LocalContext.current
 
     LaunchedEffect(key1 = Unit) {
@@ -50,12 +56,33 @@ fun BusRoutesScreen(
     ) {
         Box(modifier = Modifier.padding(top = 54.dp)) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                itemsIndexed(routes) { index, item ->
-                    RouteItem(context, index, item)
+
+//                item {
+//                    LazyRow(
+//                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+//                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+//                    ) {
+//                        items(RouteTransportType.values()) {
+//                            TransportCategory(
+//                                category = it,
+//                                isSelected = transportType == it,
+//                                onSelect = { rtt ->
+//                                    viewModel.setTransportType(rtt)
+//                                })
+//                        }
+//                    }
+//                }
+
+                items(routes) { item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        RouteItem(context, item)
+                    }
                 }
             }
         }
@@ -63,7 +90,33 @@ fun BusRoutesScreen(
 }
 
 @Composable
-fun RouteItem(context: Context, index: Int, item: Route) {
+fun TransportCategory(
+    category: RouteTransportType,
+    isSelected: Boolean,
+    onSelect: (c: RouteTransportType) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(100))
+            .clickable { onSelect(category) }
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer else DynamicPrimary,
+                RoundedCornerShape(100)
+            )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = category.string(),
+            color = if (isSelected) DynamicWhite else DynamicWhite.copy(alpha = 0.8f),
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun RouteItem(context: Context, item: Route) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

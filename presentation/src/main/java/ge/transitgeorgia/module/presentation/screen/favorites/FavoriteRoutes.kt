@@ -3,7 +3,7 @@ package ge.transitgeorgia.presentation.favorites
 import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ge.transitgeorgia.module.domain.model.Route
@@ -20,8 +20,8 @@ fun FavoriteRoutes(
             .fillMaxSize()
             .then(modifier)
     ) {
-        itemsIndexed(routes) { index, item ->
-            RouteItem(context = context, index = index, item = item)
+        items(routes) { item ->
+            RouteItem(context = context, item = item)
         }
     }
 }

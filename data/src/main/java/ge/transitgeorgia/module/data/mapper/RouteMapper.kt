@@ -1,14 +1,15 @@
 package ge.transitgeorgia.module.data.mapper
 
 import com.mapbox.mapboxsdk.geometry.LatLng
-import ge.transitgeorgia.common.other.enums.TransportType
 import ge.transitgeorgia.data.local.entity.RouteEntity
 import ge.transitgeorgia.data.remote.dto.RouteDto
 import ge.transitgeorgia.data.remote.dto.RouteInfoDto
 import ge.transitgeorgia.data.remote.dto.RouteStopDto
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.module.common.other.enums.TransportType
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteInfo
+import ge.transitgeorgia.module.domain.model.RouteTransportType
 
 fun RouteDto.toDomain(): Route {
     val isMetro = this.type == TransportType.METRO
@@ -18,11 +19,18 @@ fun RouteDto.toDomain(): Route {
         else -> 1
     }
 
+    val type = when(this.color.lowercase()) {
+        "ff505b" -> RouteTransportType.METRO
+        "117a65" -> RouteTransportType.BUS
+        "1f618d" -> RouteTransportType.MICRO_BUS
+        else -> RouteTransportType.fromTransportType(this.type)
+    }
+
     return Route(
         this.id,
         "#${this.color}",
         if (isMetro) metroLine.toString() else this.number,
-        this.type,
+        type,
         if (isMetro) this.number else this.longName ?: "--- - ---",
         this.startStop ?: "",
         this.lastStop ?: ""
@@ -30,6 +38,13 @@ fun RouteDto.toDomain(): Route {
 }
 
 fun Route.toEntity(): RouteEntity {
+    val type = when(this.color.lowercase()) {
+        "#ff505b" -> RouteTransportType.METRO
+        "#117a65" -> RouteTransportType.BUS
+        "#1f618d" -> RouteTransportType.MICRO_BUS
+        else -> this.type
+    }
+
     return RouteEntity(
         id, color, number, type, longName, firstStation, lastStation
     )

@@ -34,9 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import ge.transitgeorgia.common.other.enums.TransportType
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.module.domain.model.Route
+import ge.transitgeorgia.module.domain.model.RouteTransportType
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.schedule.ScheduleViewModel
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
@@ -53,7 +53,7 @@ fun ScheduleScreen(
     val schedules by viewModel.data.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     val isForward by viewModel.isForward.collectAsStateWithLifecycle()
-    val isMetro = route.type == TransportType.METRO
+    val isMetro = route.type == RouteTransportType.METRO
 
     Scaffold(
         topBar = {
