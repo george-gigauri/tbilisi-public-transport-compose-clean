@@ -41,6 +41,12 @@ jobs:
           chmod +x gradlew
           ./gradlew bundleRelease
 
+      - name: Debug Information
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of app/build/outputs/bundle/release/:"
+          ls -R app/build/outputs/bundle/release/
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
