@@ -38,7 +38,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "MAPBOX_TOKEN", "")//getSecretKeys()["MAPBOX_TOKEN"])
+        buildConfigField("String", "MAPBOX_TOKEN", getSecretKeys()["MAPBOX_TOKEN"].toString())
     }
 
     buildTypes {
