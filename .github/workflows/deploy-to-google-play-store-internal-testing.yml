@@ -17,8 +17,19 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
+      - name: Write MAPBOX_TOKEN in local.properties
+        run: echo 'MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}' > local.properties
+
+      - name: Create google-services.json
+        run: touch app/src/google-services.json
+
+      - name: Add google-services.json
+        run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/src/google-services.json
+
       - name: Build with Gradle
-        run: ./gradlew assembleRelease
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
   deploy:
     name: Deploy
