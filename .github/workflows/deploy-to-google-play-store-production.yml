@@ -24,10 +24,11 @@ jobs:
           echo 'KEY_PASSWORD=${{ secrets.PROJECT_KEY_PASSWORD }}' >> local.properties
           echo 'KEY_ALIAS=${{ secrets.PROJECT_KEY_ALIAS }}' >> local.properties
 
-      - name: Decode Keystore
-        run: |
-          touch app/keystore_file.jks
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore_file.jks
+      - name: Create Keystore File
+        run: touch app/keystore_file.jks
+
+      - name: Decode and Encode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore_file.jks
 
       - name: Create google-services.json
         run: touch app/src/google-services.json
