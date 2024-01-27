@@ -19,10 +19,10 @@ jobs:
 
       - name: Fill local.properties
         run: |
-          echo 'MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}' > local.properties
-          echo 'STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' > local.properties
-          echo 'KEY_PASSWORD=${{ secrets.PROJECT_KEY_PASSWORD }}' > local.properties
-          echo 'KEY_ALIAS=${{ secrets.PROJECT_KEY_ALIAS }}' > local.properties
+          echo 'MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}' >> local.properties
+          echo 'STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' >> local.properties
+          echo 'KEY_PASSWORD=${{ secrets.PROJECT_KEY_PASSWORD }}' >> local.properties
+          echo 'KEY_ALIAS=${{ secrets.PROJECT_KEY_ALIAS }}' >> local.properties
 
       - name: Decode Keystore
         run: |
