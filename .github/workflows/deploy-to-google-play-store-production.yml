@@ -39,7 +39,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew bundleRelease
 
   deploy:
     name: Deploy
