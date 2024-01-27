@@ -30,6 +30,7 @@ android {
         applicationId = "ge.transitgeorgia"
         minSdk = 21
         targetSdk = 34
+        buildToolsVersion = "34.0.0"
         versionCode = appVersionCode
         versionName = appVersionName
 
@@ -38,7 +39,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "MAPBOX_TOKEN", "\"" + getSecretKeys()["MAPBOX_TOKEN"] + "\"")
+        buildConfigField("String", "MAPBOX_TOKEN", "" + getSecretKeys()["MAPBOX_TOKEN"] + "")
     }
 
     buildTypes {
@@ -61,7 +62,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
     packagingOptions {
         resources {

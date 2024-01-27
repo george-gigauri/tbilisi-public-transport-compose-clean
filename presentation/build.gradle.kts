@@ -21,6 +21,7 @@ android {
 
     defaultConfig {
         minSdk = 21
+        buildToolsVersion = "34.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
@@ -32,7 +33,7 @@ android {
         val appVersionCode: Int by rootProject.extra
         val appVersionName: String by rootProject.extra
 
-        buildConfigField("String", "MAPBOX_TOKEN", "\"" + getSecretKeys().getProperty("MAPBOX_TOKEN") + "\"")
+        buildConfigField("String", "MAPBOX_TOKEN", "" + getSecretKeys().getProperty("MAPBOX_TOKEN") + "")
         buildConfigField("Integer", "VERSION_CODE", "$appVersionCode")
         buildConfigField("String", "VERSION_NAME", "\"$appVersionName\"")
     }
