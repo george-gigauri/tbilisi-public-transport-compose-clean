@@ -17,8 +17,16 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Write MAPBOX_TOKEN in local.properties
-        run: echo 'MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}' > local.properties
+      - name: Fill local.properties
+        run: |
+          echo 'MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}' > local.properties
+          echo 'STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' > local.properties
+          echo 'KEY_PASSWORD=${{ secrets.PROJECT_KEY_PASSWORD }}' > local.properties
+          echo 'KEY_ALIAS=${{ secrets.PROJECT_KEY_ALIAS }}' > local.properties
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore_file.keystore
 
       - name: Create google-services.json
         run: touch app/src/google-services.json

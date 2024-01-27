@@ -23,6 +23,15 @@ android {
     namespace = "ge.transitgeorgia"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            storeFile = File("keystore_file.keystore")
+            storePassword = getSecretKeys()["STORE_PASSWORD"] as? String
+            keyPassword = getSecretKeys()["KEY_PASSWORD"] as? String
+            keyAlias = getSecretKeys()["KEY_ALIAS"] as? String
+        }
+    }
+
     defaultConfig {
         val appVersionCode: Int by rootProject.extra
         val appVersionName: String by rootProject.extra
@@ -47,6 +56,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
