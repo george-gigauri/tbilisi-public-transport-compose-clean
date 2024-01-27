@@ -47,7 +47,7 @@ jobs:
           track: qa
           status: completed
           inAppUpdatePriority: 0
-          userFraction: 0.1
+          userFraction: 1.0
           whatsNewDirectory: distribution/whatsnew
       - name: Start Deploying to Production
         uses: r0adkll/upload-google-play@v1
