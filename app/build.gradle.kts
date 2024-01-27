@@ -39,7 +39,9 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "MAPBOX_TOKEN", "\"" + getSecretKeys()["MAPBOX_TOKEN"] + "\"")
+        val mapboxToken = getSecretKeys()["MAPBOX_TOKEN"]
+
+        buildConfigField("String", "MAPBOX_TOKEN", "\"${mapboxToken}\"")
     }
 
     buildTypes {

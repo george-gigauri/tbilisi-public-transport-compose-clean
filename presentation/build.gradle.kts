@@ -32,8 +32,9 @@ android {
 
         val appVersionCode: Int by rootProject.extra
         val appVersionName: String by rootProject.extra
+        val mapboxToken = getSecretKeys()["MAPBOX_TOKEN"]
 
-        buildConfigField("String", "MAPBOX_TOKEN", "" + getSecretKeys().getProperty("MAPBOX_TOKEN").toString() + "")
+        buildConfigField("String", "MAPBOX_TOKEN", "\"${mapboxToken}\"")
         buildConfigField("Integer", "VERSION_CODE", "$appVersionCode")
         buildConfigField("String", "VERSION_NAME", "\"$appVersionName\"")
     }
