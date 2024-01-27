@@ -26,11 +26,6 @@ jobs:
       - name: Add google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/src/google-services.json
 
-      - name: Clean Project
-        run: |
-          chmod +x gradlew
-          ./gradlew clean :assembleRelease
-
       - name: Build with Gradle
         run: |
           chmod +x gradlew
