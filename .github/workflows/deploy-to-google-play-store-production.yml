@@ -54,6 +54,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: release-artifact
+          path: app/build/outputs/bundle/release/
       - name: Debug Information
         run: |
           echo "Current directory: $(pwd)"
