@@ -92,14 +92,13 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0-rc01")
     implementation("androidx.navigation:navigation-compose:2.7.6")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.28.0")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-location:21.1.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.maps.android:android-maps-utils:3.4.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.28.0")
     implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
-
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.8.1")
