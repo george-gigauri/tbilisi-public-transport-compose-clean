@@ -41,12 +41,6 @@ jobs:
           chmod +x gradlew
           ./gradlew bundleRelease
 
-      - name: Debug Information
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Contents of app/build/outputs/bundle/release/:"
-          ls -R app/build/outputs/bundle/release/
-
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -54,6 +48,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: Debug Information
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of app/build/outputs/bundle/release/"
+          ls -R app/build/outputs/bundle/release/
       - name: Start Deploying to Internal Testing
         uses: r0adkll/upload-google-play@v1
         with:
