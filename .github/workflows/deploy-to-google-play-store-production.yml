@@ -45,9 +45,7 @@ jobs:
           packageName: ge.transitgeorgia
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: qa
-          status: completed
           inAppUpdatePriority: 0
-          userFraction: "1.0"
           whatsNewDirectory: distribution/whatsnew
       - name: Start Deploying to Production
         uses: r0adkll/upload-google-play@v1
@@ -56,7 +54,5 @@ jobs:
           packageName: ge.transitgeorgia
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: production
-          status: inProgress
           inAppUpdatePriority: 0
-          userFraction: "0.1"
           whatsNewDirectory: distribution/whatsnew
