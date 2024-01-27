@@ -1,9 +1,8 @@
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("dagger.hilt.android.plugin")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -66,14 +65,14 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // Room
-    implementation("androidx.room:room-ktx:2.6.0")
-    api("androidx.room:room-runtime:2.6.0")
-    kapt("androidx.room:room-compiler:2.6.0")
+    implementation("androidx.room:room-ktx:2.6.1")
+    api("androidx.room:room-runtime:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     // Dependency Injection
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
+    ksp("com.google.dagger:hilt-compiler:2.48")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
