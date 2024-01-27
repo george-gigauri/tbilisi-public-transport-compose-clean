@@ -26,7 +26,8 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore_file.keystore
+          touch app/keystore_file.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore_file.keystore
 
       - name: Create google-services.json
         run: touch app/src/google-services.json
