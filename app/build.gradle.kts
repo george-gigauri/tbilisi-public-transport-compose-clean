@@ -25,7 +25,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = File("app/app/keystore_file.keystore")
+            storeFile = File("keystore_file.jks")
             storePassword = getSecretKeys()["STORE_PASSWORD"] as? String
             keyPassword = getSecretKeys()["KEY_PASSWORD"] as? String
             keyAlias = getSecretKeys()["KEY_ALIAS"] as? String
