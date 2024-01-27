@@ -41,6 +41,12 @@ jobs:
           chmod +x gradlew
           ./gradlew bundleRelease
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-artifact
+          path: app/build/outputs/bundle/release/app-release.aab
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
