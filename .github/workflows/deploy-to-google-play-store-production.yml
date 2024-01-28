@@ -78,6 +78,9 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Contents of app/build/outputs/bundle/release/"
           ls -R app/build/outputs/bundle/release/
+          echo "Contents of distribution/"
+          ls -a distribution/
+
       - name: Start Deploying to Internal Testing
         uses: r0adkll/upload-google-play@v1
         with:
