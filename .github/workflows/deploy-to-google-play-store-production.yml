@@ -97,3 +97,4 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: ge.transitgeorgia
           track: production
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab

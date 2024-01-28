@@ -28,5 +28,5 @@ buildscript {
     }
 }
 
-val appVersionCode: Int by extra { 18 }
-val appVersionName: String by extra { "1.7.4" }
+val appVersionCode: Int by extra { 19 }
+val appVersionName: String by extra { "1.7.5" }
