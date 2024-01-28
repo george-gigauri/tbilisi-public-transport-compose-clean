@@ -47,6 +47,12 @@ jobs:
           name: release-artifact
           path: app/build/outputs/bundle/release/app-release.aab
 
+      - name: Upload Essential Files
+        uses: actions/upload-artifact@v2
+        with:
+          name: distribution-files
+          path: distribution/whatsnew
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -54,11 +60,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
       - name: Download Artifact
         uses: actions/download-artifact@v2
         with:
           name: release-artifact
           path: app/build/outputs/bundle/release/
+
+      - name: Download Essential Files
+        uses: actions/download-artifact@v2
+        with:
+          name: distribution-files
+          path: distribution/whatsnew
+
       - name: Debug Information
         run: |
           echo "Current directory: $(pwd)"
