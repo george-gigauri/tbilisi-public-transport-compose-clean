@@ -35,6 +35,7 @@ class ScheduleViewModel @Inject constructor(
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val error: MutableSharedFlow<ErrorType> = MutableSharedFlow()
+    val scheduleData: MutableStateFlow<List<Schedule>> = MutableStateFlow(emptyList())
     val data: MutableStateFlow<List<CurrentTimeStationSchedule>> = MutableStateFlow(emptyList())
     val route: MutableStateFlow<Route> = MutableStateFlow(Route.empty())
     val isForward: MutableStateFlow<Boolean> = MutableStateFlow(true)
@@ -48,10 +49,9 @@ class ScheduleViewModel @Inject constructor(
         route.value = db.routeDao().getRoute(routeNumber?.toIntOrNull() ?: -1)?.toDomain()
             ?: Route.empty()
 
-        var result: List<Schedule> = emptyList()
         val rw = repository.getSchedule(routeNumber?.toIntOrNull() ?: -1, isForward.value)
         when (rw) {
-            is ResultWrapper.Success -> result = rw.data
+            is ResultWrapper.Success -> scheduleData.value = rw.data
             is ResultWrapper.Error -> error.emit(rw.type)
             else -> Unit
         }
@@ -62,30 +62,39 @@ class ScheduleViewModel @Inject constructor(
         val currentHourAndMinute = currentTimeFormatter.format(currentTime)
         val currentWeekDay = currentDateTime.dayOfWeek
 
-        val currentWeekDaySchedules = result.find {
+        val currentWeekDaySchedules = scheduleData.value.find {
             val from = DayOfWeek.valueOf(it.fromDay.uppercase())
             val to = DayOfWeek.valueOf(it.toDay.uppercase())
             currentWeekDay >= from && currentWeekDay <= to
         }?.stops?.map {
 
-            val soonest = it.arrivalTimes.filter { hhmm ->
-                currentHourAndMinute <= hhmm
-            }.minOrNull() ?: "---"
+            try {
+                val soonest = it.arrivalTimes.filter { hhmm ->
+                    currentHourAndMinute <= hhmm
+                }.minOrNull() ?: "---"
 
-            val converteddatee = LocalDateTime.of(
-                LocalDate.now(),
-                LocalTime.of(soonest.split(":")[0].toInt(), soonest.split(":")[1].toInt())
-            ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val converteddatee = LocalDateTime.of(
+                    LocalDate.now(),
+                    LocalTime.of(soonest.split(":")[0].toInt(), soonest.split(":")[1].toInt())
+                ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-            val interval = (converteddatee - System.currentTimeMillis()) / 60 / 1000
-            val isIntervalLessThan30Minutes = interval <= 30
+                val interval = (converteddatee - System.currentTimeMillis()) / 60 / 1000
+                val isIntervalLessThan30Minutes = interval <= 30
 
-            CurrentTimeStationSchedule(
-                if (isIntervalLessThan30Minutes) "$interval" else soonest,
-                it.id,
-                it.name,
-                it.arrivalTimes //.filter { time -> currentHourAndMinute < time && time != soonest }
-            )
+                CurrentTimeStationSchedule(
+                    if (isIntervalLessThan30Minutes) "$interval" else soonest,
+                    it.id,
+                    it.name,
+                    it.arrivalTimes.filter { time -> currentHourAndMinute < time && time != soonest }
+                )
+            } catch (e: Exception) {
+                CurrentTimeStationSchedule(
+                    "---",
+                    it.id,
+                    it.name,
+                    it.arrivalTimes
+                )
+            }
         }
 
         data.value = currentWeekDaySchedules.orEmpty()

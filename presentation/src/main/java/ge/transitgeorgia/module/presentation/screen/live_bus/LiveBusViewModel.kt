@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.common.util.LatLngUtil
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
 import ge.transitgeorgia.module.data.mapper.toDomain
@@ -37,7 +38,9 @@ class LiveBusViewModel @Inject constructor(
     val route: MutableStateFlow<Route?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
+    val previousBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
+
     var autoRefresh: Boolean = true
         set(value) {
             field = value
@@ -132,10 +135,25 @@ class LiveBusViewModel @Inject constructor(
                 else -> Unit
             }
 
-            val bothBuses = listOf(busesForward, busesBackward).flatten()
+            val bothBuses = listOf(busesForward, busesBackward).flatten().map { b ->
+                b.apply {
+                    previousBuses.value.find { pb -> pb.number == b.number }?.let { pb ->
+                        this.bearing = LatLngUtil.calculateBearing(
+                            pb.lat,
+                            pb.lng,
+                            this.lat,
+                            this.lng
+                        )
+                    }
+                }
+            }
+
+            if (!previousBuses.value.containsAll(bothBuses)) {
+                previousBuses.value = availableBuses.value
+            }
             availableBuses.value = bothBuses
 
-            delay(5000)
+            delay(8000)
         }
     }
 }

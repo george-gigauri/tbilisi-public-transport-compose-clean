@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.location.Location
 import android.os.Build
 import android.widget.Toast
@@ -131,7 +132,7 @@ fun LiveBusScreen(
     // Check if reminder worker is running for current route
     DisposableEffect(key1 = Unit) {
         val workInfo =
-                BusDistanceReminderWorker.getWorkInfo(context, route?.number?.toIntOrNull() ?: 0)
+            BusDistanceReminderWorker.getWorkInfo(context, route?.number?.toIntOrNull() ?: 0)
         val observer = Observer<List<WorkInfo>> {
             isReminderRunning = it.isNotEmpty() && (it.lastOrNull()?.state in listOf(
                 WorkInfo.State.ENQUEUED,
@@ -226,7 +227,8 @@ fun LiveBusScreen(
 
                 AndroidView(
                     update = {
-                        mbMap?.markers?.filter { i -> i.snippet == "MY" }?.forEach { i -> mbMap?.removeMarker(i) }
+                        mbMap?.markers?.filter { i -> i.snippet == "MY" }
+                            ?.forEach { i -> mbMap?.removeMarker(i) }
                         mbMap?.addMarker(createMyLocationMarker(it.context, userLocation))
                     },
                     factory = {
@@ -285,7 +287,7 @@ fun LiveBusScreen(
                                                 .forEach { it.remove() }
 
                                             val visibleBounds =
-                                                    map.projection.visibleRegion.latLngBounds
+                                                map.projection.visibleRegion.latLngBounds
                                             val visibleStops = arrayListOf<RouteStop>().apply {
                                                 addAll(route1.stops.filter { rs ->
                                                     val latLng = LatLng(rs.lat, rs.lng)
@@ -315,15 +317,15 @@ fun LiveBusScreen(
                                                         )
                                                     )?.let { bit ->
                                                         val smallMarker =
-                                                                Bitmap.createScaledBitmap(
-                                                                    bit,
-                                                                    18.dpToPx(),
-                                                                    18.dpToPx(),
-                                                                    false
-                                                                )
+                                                            Bitmap.createScaledBitmap(
+                                                                bit,
+                                                                18.dpToPx(),
+                                                                18.dpToPx(),
+                                                                false
+                                                            )
                                                         val smallMarkerIcon =
-                                                                IconFactory.getInstance(context)
-                                                                    .fromBitmap(smallMarker)
+                                                            IconFactory.getInstance(context)
+                                                                .fromBitmap(smallMarker)
 
                                                         icon(smallMarkerIcon)
                                                     }
@@ -345,7 +347,11 @@ fun LiveBusScreen(
 
                                     viewModel.route1.collectLatest { ri ->
                                         map.addPolyline(PolylineOptions().apply {
-                                            this.color(Color.Green.toArgb())
+                                            this.color(
+                                                if (viewModel.route1.value.isMicroBus) {
+                                                    Color(0xFF0094FF).toArgb()
+                                                } else Color.Green.toArgb()
+                                            )
                                             this.width(5f)
                                             addAll(ri.polyline)
                                         })
@@ -373,19 +379,19 @@ fun LiveBusScreen(
                                         }
 
                                         val firstLatLng =
-                                                LatLng(
-                                                    firstStation?.lat ?: 0.0,
-                                                    firstStation?.lng ?: 0.0
-                                                )
+                                            LatLng(
+                                                firstStation?.lat ?: 0.0,
+                                                firstStation?.lng ?: 0.0
+                                            )
                                         val lastLatLng =
-                                                LatLng(
-                                                    lastStation?.lat ?: 0.0,
-                                                    lastStation?.lng ?: 0.0
-                                                )
+                                            LatLng(
+                                                lastStation?.lat ?: 0.0,
+                                                lastStation?.lng ?: 0.0
+                                            )
                                         val latLngBounds =
-                                                LatLngBounds.Builder().include(firstLatLng)
-                                                    .include(lastLatLng)
-                                                    .build()
+                                            LatLngBounds.Builder().include(firstLatLng)
+                                                .include(lastLatLng)
+                                                .build()
 
                                         map.moveCamera(
                                             CameraUpdateFactory.newLatLngZoom(
@@ -425,34 +431,80 @@ fun LiveBusScreen(
 
                                 availableBusesScope.launch {
                                     viewModel.availableBuses.collectLatest { buses ->
-                                        map.markers.filter { m -> m.snippet == "bus" }
-                                            .forEach { m ->
-                                                m.remove()
-                                            }
+                                        map.markers.filter { m -> m.snippet == "bus" || m.snippet == "bus_bg" }
+                                            .map { m -> m.remove() }
+
+                                        if (viewModel.route2.value.polyline.isEmpty()) {
+                                            map.addMarkers(buses.map { b ->
+                                                MarkerOptions().apply {
+                                                    BitmapUtils.getBitmapFromDrawable(
+                                                        ContextCompat.getDrawable(
+                                                            context,
+                                                            R.drawable.marker_microbus_bg
+                                                        )
+                                                    )?.let { bit ->
+                                                        val matrix = Matrix()
+                                                        matrix.postRotate(
+                                                            b.bearing?.toFloat() ?: 0f
+                                                        )
+                                                        val smallMarker =
+                                                            Bitmap.createScaledBitmap(
+                                                                bit,
+                                                                40.dpToPx(),
+                                                                40.dpToPx(),
+                                                                false
+                                                            )
+                                                        val rotatedBitmap = Bitmap.createBitmap(
+                                                            smallMarker,
+                                                            0,
+                                                            0,
+                                                            smallMarker.width,
+                                                            smallMarker.height,
+                                                            matrix,
+                                                            true
+                                                        )
+                                                        val smallMarkerIcon =
+                                                            IconFactory.getInstance(context)
+                                                                .fromBitmap(rotatedBitmap)
+
+                                                        icon(smallMarkerIcon)
+                                                        snippet("bus_bg")
+                                                    }
+                                                    position(LatLng(b.lat, b.lng))
+                                                }
+                                            })
+                                        }
 
                                         map.addMarkers(buses.map { b ->
                                             MarkerOptions().apply {
                                                 BitmapUtils.getBitmapFromDrawable(
                                                     ContextCompat.getDrawable(
                                                         context,
-                                                        if (b.isForward) R.drawable.ic_marker_bus_forward else R.drawable.ic_marker_bus_backwards
+                                                        if (b.isForward) {
+                                                            if (viewModel.route1.value.isMicroBus) {
+                                                                R.drawable.marker_microbus
+                                                            } else {
+                                                                R.drawable.ic_marker_bus_forward
+                                                            }
+                                                        } else {
+                                                            R.drawable.ic_marker_bus_backwards
+                                                        }
                                                     )
                                                 )?.let { bit ->
                                                     val smallMarker =
-                                                            Bitmap.createScaledBitmap(
-                                                                bit,
-                                                                28.dpToPx(),
-                                                                28.dpToPx(),
-                                                                false
-                                                            )
+                                                        Bitmap.createScaledBitmap(
+                                                            bit,
+                                                            28.dpToPx(),
+                                                            28.dpToPx(),
+                                                            false
+                                                        )
                                                     val smallMarkerIcon =
-                                                            IconFactory.getInstance(context)
-                                                                .fromBitmap(smallMarker)
+                                                        IconFactory.getInstance(context)
+                                                            .fromBitmap(smallMarker)
 
                                                     icon(smallMarkerIcon)
                                                     snippet("bus")
                                                 }
-
                                                 position(LatLng(b.lat, b.lng))
                                             }
                                         })

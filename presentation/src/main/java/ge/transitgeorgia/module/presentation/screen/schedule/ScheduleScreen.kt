@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.schedule
+package ge.transitgeorgia.module.presentation.screen.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,38 +18,49 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteTransportType
 import ge.transitgeorgia.module.presentation.R
-import ge.transitgeorgia.module.presentation.screen.schedule.ScheduleViewModel
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import ge.transitgeorgia.module.presentation.theme.Purple40
 import ge.transitgeorgia.module.presentation.util.asMessage
+import ge.transitgeorgia.presentation.schedule.ScheduleTopBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
     viewModel: ScheduleViewModel,
     onFinishActivity: () -> Unit
 ) {
+    var isFullScheduleSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var selectedStopId: String? by rememberSaveable { mutableStateOf(null) }
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle(initialValue = null)
+    val scheduleData by viewModel.scheduleData.collectAsStateWithLifecycle()
     val schedules by viewModel.data.collectAsStateWithLifecycle()
     val route by viewModel.route.collectAsStateWithLifecycle()
     val isForward by viewModel.isForward.collectAsStateWithLifecycle()
@@ -72,6 +83,17 @@ fun ScheduleScreen(
             }
         }
     ) {
+
+        if (isFullScheduleSheetVisible) {
+            FullScheduleBottomSheet(
+                selectedStopId,
+                scheduleData,
+                onCancel = {
+                    isFullScheduleSheetVisible = false
+                }
+            )
+        }
+
         if (!isLoading && error == null) {
             Column(
                 modifier = Modifier
@@ -83,7 +105,11 @@ fun ScheduleScreen(
                     StopScheduleItem(
                         schedule = item,
                         isFirst = index == 0,
-                        isLast = index == schedules.lastIndex
+                        isLast = index == schedules.lastIndex,
+                        onSeeMoreClick = {
+                            selectedStopId = item.stopName
+                            isFullScheduleSheetVisible = true
+                        }
                     )
                 }
                 Spacer(modifier = Modifier.height(85.dp))
@@ -144,7 +170,8 @@ private fun DirectionHeader(route: Route, isForward: Boolean, onDirectionChange:
 private fun StopScheduleItem(
     schedule: CurrentTimeStationSchedule,
     isFirst: Boolean,
-    isLast: Boolean
+    isLast: Boolean,
+    onSeeMoreClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -201,12 +228,25 @@ private fun StopScheduleItem(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .clickable {
+                    onSeeMoreClick()
+                }
                 .align(Alignment.Top)
                 .padding(top = 16.dp)
         ) {
             Text(text = schedule.stopName, fontWeight = FontWeight.Bold, color = DynamicWhite)
             Text(
-                text = schedule.futureScheduledArrivalTimes.joinToString(",  "),
+                text = buildAnnotatedString {
+                    append(schedule.futureScheduledArrivalTimes.joinToString(",  "))
+                    withStyle(
+                        style = SpanStyle(
+                            color = Purple40,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ) {
+                        append(stringResource(id = R.string.label_see_more_schedule))
+                    }
+                },
                 fontWeight = FontWeight.Normal,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 4.dp)

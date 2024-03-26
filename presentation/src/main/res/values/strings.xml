@@ -34,4 +34,6 @@
     <string name="metro">მეტრო</string>
     <string name="bus">ავტობუსი</string>
     <string name="microbus">მიკროავტობუსი</string>
+    <string name="label_see_more_schedule">...სრული ვერსია</string>
+    <string name="label_stop_name">გაჩერება</string>
 </resources>

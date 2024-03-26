@@ -5,5 +5,6 @@ data class Bus(
     val nextStopId: String,
     val isForward: Boolean,
     val lat: Double,
-    val lng: Double
+    val lng: Double,
+    var bearing: Double? = null
 )

@@ -1,5 +1,6 @@
 package ge.transitgeorgia.data.repository
 
+import android.util.Log
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.common.other.mapper.toEntity
 import ge.transitgeorgia.data.remote.api.TransportApi
@@ -38,8 +39,10 @@ class TransportRepository constructor(
                 }
             )
         } catch (e: HttpException) {
+            e.printStackTrace()
             ResultWrapper.Error(ErrorType.Http(e.code(), e.message()))
         } catch (e: Exception) {
+            e.printStackTrace()
             ResultWrapper.Error(ErrorType.Unknown(e.message))
         }
     }

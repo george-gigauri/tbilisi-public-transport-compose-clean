@@ -9,7 +9,10 @@ data class RouteInfo(
     val number: Int,
     val longName: String,
     val polyline: List<LatLng>,
-    val stops: List<RouteStop>
+    val stops: List<RouteStop>,
+    val isBus: Boolean,
+    val isMetro: Boolean,
+    val isMicroBus: Boolean
 ) {
 
     fun polylineContains(latLng: LatLng): Boolean {
@@ -26,7 +29,15 @@ data class RouteInfo(
 
     companion object {
         fun empty(): RouteInfo {
-            return RouteInfo("#ffffff", -1, "", emptyList(), emptyList())
+            return RouteInfo(
+                "#ffffff",
+                -1, "",
+                emptyList(),
+                emptyList(),
+                true,
+                false,
+                false
+            )
         }
     }
 }

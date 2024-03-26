@@ -19,7 +19,7 @@ fun RouteDto.toDomain(): Route {
         else -> 1
     }
 
-    val type = when(this.color.lowercase()) {
+    val type = when(this.color) {
         "ff505b" -> RouteTransportType.METRO
         "117a65" -> RouteTransportType.BUS
         "1f618d" -> RouteTransportType.MICRO_BUS
@@ -28,7 +28,7 @@ fun RouteDto.toDomain(): Route {
 
     return Route(
         this.id,
-        "#${this.color}",
+        if (isMetro) "#FF4433" else "#${this.color}",
         if (isMetro) metroLine.toString() else this.number,
         type,
         if (isMetro) this.number else this.longName ?: "--- - ---",
@@ -73,7 +73,10 @@ fun RouteInfoDto.toDomain(): RouteInfo {
                 LatLng(latLng[1].toDoubleOrNull() ?: 0.0, latLng[0].toDoubleOrNull() ?: 0.0)
             }
         } else emptyList(),
-        this.stops.map { it.toDomain() }
+        this.stops.map { it.toDomain() },
+        true,
+        color == "ff505b",
+        color == "1f618d",
     )
 }
 
