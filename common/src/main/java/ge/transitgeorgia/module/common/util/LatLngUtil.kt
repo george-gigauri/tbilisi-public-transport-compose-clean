@@ -12,15 +12,12 @@ object LatLngUtil {
         lat2: Double,
         lon2: Double
     ): Double {
-        val deltaLon = lon2 - lon1
+        val latitude1 = Math.toRadians(lat1)
+        val latitude2 = Math.toRadians(lat2)
+        val longDiff = Math.toRadians(lon2 - lon1)
+        val y = sin(longDiff) * cos(latitude2)
+        val x = cos(latitude1) * sin(latitude2) - sin(latitude1) * cos(latitude2) * cos(longDiff)
 
-        val y = sin(deltaLon) * cos(lat2)
-        val x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(deltaLon)
-
-        var bearing = atan2(y, x)
-        bearing = Math.toDegrees(bearing)
-        bearing = (bearing + 360) % 360
-
-        return bearing
+        return (Math.toDegrees(atan2(y, x)) + 360) % 360
     }
 }

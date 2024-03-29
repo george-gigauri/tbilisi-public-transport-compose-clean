@@ -88,13 +88,5 @@ jobs:
           packageName: ge.transitgeorgia
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal
-          inAppUpdatePriority: 0
+          inAppUpdatePriority: 5
           whatsNewDirectory: distribution/whatsnew
-
-      - name: Promote to Production
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: ge.transitgeorgia
-          track: production
-          releaseFiles: app/build/outputs/bundle/release/app-release.aab

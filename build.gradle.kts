@@ -20,13 +20,13 @@ buildscript {
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.3.1")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.48")
-        classpath("com.google.gms:google-services:4.4.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
+        classpath("com.google.gms:google-services:4.4.1")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
         classpath("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.22-1.0.17")
     }
 }
 
-val appVersionCode: Int by extra { 20 }
-val appVersionName: String by extra { "1.8.0" }
+val appVersionCode: Int by extra { 21 }
+val appVersionName: String by extra { "1.8.1" }

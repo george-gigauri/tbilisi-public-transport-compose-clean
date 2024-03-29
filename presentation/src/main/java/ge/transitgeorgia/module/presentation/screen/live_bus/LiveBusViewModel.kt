@@ -44,7 +44,6 @@ class LiveBusViewModel @Inject constructor(
     var autoRefresh: Boolean = true
         set(value) {
             field = value
-            fetchAvailableBuses()
         }
 
     val routeNumber: String? get() = savedStateHandle["route_number"]
@@ -153,7 +152,7 @@ class LiveBusViewModel @Inject constructor(
             }
             availableBuses.value = bothBuses
 
-            delay(8000)
+            delay(if (route1.value.isMicroBus) 25000 else 10500)
         }
     }
 }

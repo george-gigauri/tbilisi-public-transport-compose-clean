@@ -264,18 +264,22 @@ fun LiveBusScreen(
                                 }
 
                                 map.setOnMarkerClickListener {
-                                    val stopId = arrayListOf<RouteStop>().apply {
-                                        addAll(route1.stops)
-                                        addAll(route2.stops)
-                                    }.find { s -> LatLng(s.lat, s.lng) == it.position }?.id
+                                    return@setOnMarkerClickListener if (
+                                        it.snippet == "stop"
+                                    ) {
+                                        val stopId = arrayListOf<RouteStop>().apply {
+                                            addAll(route1.stops)
+                                            addAll(route2.stops)
+                                        }.find { s -> LatLng(s.lat, s.lng) == it.position }?.id
 
-                                    val intent = Intent(context, TimeTableActivity::class.java)
-                                    intent.putExtra("stop_id", stopId)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(intent)
+                                        val intent = Intent(context, TimeTableActivity::class.java)
+                                        intent.putExtra("stop_id", stopId)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                        context.startActivity(intent)
 
-                                    Analytics.logOpenTimetableFromRouteMap()
-                                    return@setOnMarkerClickListener true
+                                        Analytics.logOpenTimetableFromRouteMap()
+                                        true
+                                    } else false
                                 }
 
                                 map.addOnCameraMoveListener {
@@ -434,47 +438,6 @@ fun LiveBusScreen(
                                         map.markers.filter { m -> m.snippet == "bus" || m.snippet == "bus_bg" }
                                             .map { m -> m.remove() }
 
-                                        if (viewModel.route2.value.polyline.isEmpty()) {
-                                            map.addMarkers(buses.map { b ->
-                                                MarkerOptions().apply {
-                                                    BitmapUtils.getBitmapFromDrawable(
-                                                        ContextCompat.getDrawable(
-                                                            context,
-                                                            R.drawable.marker_microbus_bg
-                                                        )
-                                                    )?.let { bit ->
-                                                        val matrix = Matrix()
-                                                        matrix.postRotate(
-                                                            b.bearing?.toFloat() ?: 0f
-                                                        )
-                                                        val smallMarker =
-                                                            Bitmap.createScaledBitmap(
-                                                                bit,
-                                                                40.dpToPx(),
-                                                                40.dpToPx(),
-                                                                false
-                                                            )
-                                                        val rotatedBitmap = Bitmap.createBitmap(
-                                                            smallMarker,
-                                                            0,
-                                                            0,
-                                                            smallMarker.width,
-                                                            smallMarker.height,
-                                                            matrix,
-                                                            true
-                                                        )
-                                                        val smallMarkerIcon =
-                                                            IconFactory.getInstance(context)
-                                                                .fromBitmap(rotatedBitmap)
-
-                                                        icon(smallMarkerIcon)
-                                                        snippet("bus_bg")
-                                                    }
-                                                    position(LatLng(b.lat, b.lng))
-                                                }
-                                            })
-                                        }
-
                                         map.addMarkers(buses.map { b ->
                                             MarkerOptions().apply {
                                                 BitmapUtils.getBitmapFromDrawable(
@@ -508,6 +471,48 @@ fun LiveBusScreen(
                                                 position(LatLng(b.lat, b.lng))
                                             }
                                         })
+
+                                        // Bg
+                                        if (viewModel.route2.value.polyline.isEmpty()) {
+                                            map.addMarkers(buses.map { b ->
+                                                MarkerOptions().apply {
+                                                    BitmapUtils.getBitmapFromDrawable(
+                                                        ContextCompat.getDrawable(
+                                                            context,
+                                                            R.drawable.marker_microbus_bg
+                                                        )
+                                                    )?.let { bit ->
+                                                        val matrix = Matrix()
+                                                        matrix.postRotate(
+                                                            b.bearing?.toFloat() ?: 0f
+                                                        )
+                                                        val smallMarker =
+                                                            Bitmap.createScaledBitmap(
+                                                                bit,
+                                                                46.dpToPx(),
+                                                                46.dpToPx(),
+                                                                false
+                                                            )
+                                                        val rotatedBitmap = Bitmap.createBitmap(
+                                                            smallMarker,
+                                                            0,
+                                                            0,
+                                                            smallMarker.width,
+                                                            smallMarker.height,
+                                                            matrix,
+                                                            true
+                                                        )
+                                                        val smallMarkerIcon =
+                                                            IconFactory.getInstance(context)
+                                                                .fromBitmap(rotatedBitmap)
+
+                                                        icon(smallMarkerIcon)
+                                                        snippet("bus_bg")
+                                                    }
+                                                    position(LatLng(b.lat, b.lng))
+                                                }
+                                            })
+                                        }
                                     }
                                 }
                             }
