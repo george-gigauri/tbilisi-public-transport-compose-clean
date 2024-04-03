@@ -2,7 +2,7 @@ package ge.transitgeorgia.module.data.local.dao
 
 import androidx.room.*
 import ge.transitgeorgia.common.other.enums.SupportedCity
-import ge.transitgeorgia.data.local.entity.RouteClicksEntity
+import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.data.local.entity.RouteEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -38,6 +38,9 @@ interface RouteDao {
 
     @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
     fun getTopRoutesFlow(cityId: String = SupportedCity.TBILISI.id): Flow<List<RouteEntity>>
+
+    @Query("UPDATE route_click_count SET clicks=0 WHERE routeNumber=:routeNumber")
+    suspend fun deleteTopRoute(routeNumber: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertClickEntity(clicksEntity: RouteClicksEntity)

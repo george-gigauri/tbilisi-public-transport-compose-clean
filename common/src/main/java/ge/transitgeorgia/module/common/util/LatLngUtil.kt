@@ -1,5 +1,7 @@
 package ge.transitgeorgia.module.common.util
 
+import android.location.Location
+import android.location.LocationManager
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -11,13 +13,16 @@ object LatLngUtil {
         lon1: Double,
         lat2: Double,
         lon2: Double
-    ): Double {
-        val latitude1 = Math.toRadians(lat1)
-        val latitude2 = Math.toRadians(lat2)
-        val longDiff = Math.toRadians(lon2 - lon1)
-        val y = sin(longDiff) * cos(latitude2)
-        val x = cos(latitude1) * sin(latitude2) - sin(latitude1) * cos(latitude2) * cos(longDiff)
+    ): Float {
+        val l1 = Location(LocationManager.NETWORK_PROVIDER)
+        val l2 = Location(LocationManager.NETWORK_PROVIDER)
 
-        return (Math.toDegrees(atan2(y, x)) + 360) % 360
+        l1.latitude = lat1
+        l1.longitude = lon1
+
+        l2.latitude = lat2
+        l2.longitude = lon2
+
+        return l2.bearingTo(l1)
     }
 }

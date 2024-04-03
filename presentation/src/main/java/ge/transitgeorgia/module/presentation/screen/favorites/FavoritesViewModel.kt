@@ -29,6 +29,10 @@ class FavoritesViewModel @Inject constructor(
         loadAll()
     }
 
+    fun deleteRoute(routeNumber: String) = viewModelScope.launch {
+        db.routeDao().deleteTopRoute(routeNumber.toIntOrNull() ?: 0)
+    }
+
     private fun loadAll() {
         viewModelScope.launch {
             db.busStopDao().getFavoritesFlow(dataStore.city.first().id).onEach {

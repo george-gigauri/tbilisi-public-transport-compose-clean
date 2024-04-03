@@ -1,10 +1,11 @@
 package ge.transitgeorgia.module.presentation.screen.live_bus
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ge.transitgeorgia.data.local.entity.RouteClicksEntity
+import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.util.LatLngUtil
@@ -123,13 +124,13 @@ class LiveBusViewModel @Inject constructor(
             var busesBackward: List<Bus> = emptyList()
 
             when (val b = busesAsync[0]) {
-                is ResultWrapper.Success -> busesForward = b.data
+                is ResultWrapper.Success -> busesForward = b.data.sortedByDescending { it.lng }
                 is ResultWrapper.Error -> error.emit(b.type)
                 else -> Unit
             }
 
             when (val b = busesAsync[1]) {
-                is ResultWrapper.Success -> busesBackward = b.data
+                is ResultWrapper.Success -> busesBackward = b.data.sortedByDescending { it.lng }
                 is ResultWrapper.Error -> error.emit(b.type)
                 else -> Unit
             }
@@ -137,12 +138,16 @@ class LiveBusViewModel @Inject constructor(
             val bothBuses = listOf(busesForward, busesBackward).flatten().map { b ->
                 b.apply {
                     previousBuses.value.find { pb -> pb.number == b.number }?.let { pb ->
-                        this.bearing = LatLngUtil.calculateBearing(
-                            pb.lat,
-                            pb.lng,
-                            this.lat,
-                            this.lng
-                        )
+                        if (this.lat != pb.lat && this.lng != pb.lng) {
+                            this.bearing = LatLngUtil.calculateBearing(
+                                pb.lat,
+                                pb.lng,
+                                this.lat,
+                                this.lng
+                            ).toDouble().also {
+                                Log.d("Calculated Bearing", "${this.nextStopId}:  $it")
+                            }
+                        }
                     }
                 }
             }
@@ -152,7 +157,7 @@ class LiveBusViewModel @Inject constructor(
             }
             availableBuses.value = bothBuses
 
-            delay(if (route1.value.isMicroBus) 25000 else 10500)
+            delay(if (route1.value.isMicroBus) 30000 else 8000)
         }
     }
 }

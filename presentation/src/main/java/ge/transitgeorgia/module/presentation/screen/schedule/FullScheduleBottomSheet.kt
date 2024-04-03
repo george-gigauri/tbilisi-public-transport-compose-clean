@@ -1,6 +1,7 @@
 package ge.transitgeorgia.module.presentation.screen.schedule
 
 import android.icu.util.Calendar.WeekData
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ge.transitgeorgia.domain.model.Schedule
 import ge.transitgeorgia.module.presentation.R
+import ge.transitgeorgia.module.presentation.theme.DynamicBlack
+import ge.transitgeorgia.module.presentation.theme.DynamicGray
+import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
+import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
@@ -36,6 +41,7 @@ fun FullScheduleBottomSheet(
 ) {
 
     ModalBottomSheet(
+        containerColor = DynamicPrimary,
         sheetState = state,
         onDismissRequest = { onCancel.invoke() }
     ) {
@@ -51,13 +57,13 @@ fun FullScheduleBottomSheet(
                 Text(
                     text = stringResource(id = R.string.label_stop_name),
                     fontSize = 12.sp,
-                    color = Color.DarkGray
+                    color = DynamicGray
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stopName ?: "---",
                     fontSize = 15.sp,
-                    color = Color.Black,
+                    color = DynamicBlack,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -73,14 +79,14 @@ fun FullScheduleBottomSheet(
                     } else "$dayFrom - $dayTo",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Blue
+                    color = DynamicBlack
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = s.stops.find { it.name == stopName }?.arrivalTimes?.joinToString(", ")
                         ?: "---",
                     fontSize = 15.sp,
-                    color = Color.DarkGray
+                    color = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
