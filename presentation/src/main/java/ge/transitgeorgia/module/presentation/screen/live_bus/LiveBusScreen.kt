@@ -458,11 +458,15 @@ fun LiveBusScreen(
                                                     )
                                                 )?.let { bit ->
 
+                                                    val iconSize = if (viewModel.route2.value.stops.isEmpty()) {
+                                                        32.dpToPx()
+                                                    } else 24.dpToPx()
+
                                                     val markerIconBitmap =
                                                         Bitmap.createScaledBitmap(
                                                             bit,
-                                                            25.dpToPx(),
-                                                            25.dpToPx(),
+                                                            iconSize,
+                                                            iconSize,
                                                             false
                                                         )
 
@@ -474,32 +478,32 @@ fun LiveBusScreen(
                                                             )
                                                         )?.let { bitmap ->
                                                             val matrix = Matrix()
-                                                            matrix.postRotate(
+                                                            matrix.setRotate(
                                                                 b.bearing?.toFloat() ?: 0f
                                                             )
-                                                            Bitmap.createBitmap(
-                                                               bitmap,
-                                                                0,
-                                                                0,
+                                                            Bitmap.createScaledBitmap(
+                                                                bitmap,
                                                                 48.dpToPx(),
                                                                 48.dpToPx(),
-                                                                matrix,
                                                                 false
-                                                            )
+                                                            ).let { nmbtmp ->
+                                                                BitmapUtil.rotateBitmap(nmbtmp, b.bearing?.toFloat() ?: 0f)
+                                                            }
                                                         } ?: Bitmap.createBitmap(
                                                             0,
                                                             0,
-                                                            Bitmap.Config.ALPHA_8
+                                                            Bitmap.Config.ARGB_8888
                                                         )
 
-                                                    val markerIconFull = if (viewModel.route2.value.stops.isEmpty()){
-                                                        BitmapUtil.combineBitmaps(
-                                                            markerIconBgBitmap,
+                                                    val markerIconFull =
+                                                        if (viewModel.route2.value.stops.isEmpty() && b.bearing != null) {
+                                                            BitmapUtil.combineBitmaps(
+                                                                markerIconBgBitmap,
+                                                                markerIconBitmap
+                                                            )
+                                                        } else {
                                                             markerIconBitmap
-                                                        )
-                                                    } else {
-                                                        markerIconBitmap
-                                                    }
+                                                        }
 
                                                     IconFactory.getInstance(context)
                                                         .fromBitmap(markerIconFull).let {

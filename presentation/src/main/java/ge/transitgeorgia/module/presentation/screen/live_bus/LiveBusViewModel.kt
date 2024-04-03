@@ -110,7 +110,7 @@ class LiveBusViewModel @Inject constructor(
     private fun fetchAvailableBuses() = viewModelScope.launch {
         if (routeNumber.isNullOrEmpty()) throw NullPointerException("Route number is MUST!")
 
-        while (autoRefresh) {
+        while (true) {
             val busesAsync = awaitAll(
                 async {
                     repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
@@ -137,7 +137,7 @@ class LiveBusViewModel @Inject constructor(
 
             val bothBuses = listOf(busesForward, busesBackward).flatten().map { b ->
                 b.apply {
-                    previousBuses.value.find { pb -> pb.number == b.number }?.let { pb ->
+                    previousBuses.value.find { pb -> pb.nextStopId == b.nextStopId }?.let { pb ->
                         if (this.lat != pb.lat && this.lng != pb.lng) {
                             this.bearing = LatLngUtil.calculateBearing(
                                 pb.lat,

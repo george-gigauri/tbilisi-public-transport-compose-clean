@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +74,8 @@ fun FavoriteRoutes(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
-                    modifier
+                    tint = Color.White,
+                    modifier = modifier
                         .size(42.dp)
                         .clip(CircleShape)
                         .background(DynamicRed, CircleShape)
