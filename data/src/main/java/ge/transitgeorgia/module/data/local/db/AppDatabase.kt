@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import ge.transitgeorgia.data.local.entity.BusStopEntity
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
-import ge.transitgeorgia.data.local.entity.RouteClicksEntity
+import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.data.local.entity.RouteEntity
 import ge.transitgeorgia.module.data.local.dao.BusStopDao
 import ge.transitgeorgia.module.data.local.dao.RouteDao

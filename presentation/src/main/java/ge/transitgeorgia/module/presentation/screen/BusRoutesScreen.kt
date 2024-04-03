@@ -44,6 +44,7 @@ fun BusRoutesScreen(
     viewModel: BusRoutesViewModel = hiltViewModel()
 ) {
     val routes by viewModel.routes.collectAsStateWithLifecycle()
+    val searchKeywordValue by viewModel.searchKeyword.collectAsStateWithLifecycle()
     val transportType by viewModel.transportType.collectAsStateWithLifecycle()
     val context: Context = LocalContext.current
 
@@ -52,7 +53,11 @@ fun BusRoutesScreen(
     }
 
     Scaffold(
-        topBar = { TopBar(viewModel::searchRoute) }
+        topBar = {
+            TopBar(
+                searchKeywordValue
+            ) { viewModel.searchRoute(it) }
+        }
     ) {
         Box(modifier = Modifier.padding(top = 54.dp)) {
             LazyColumn(
@@ -116,7 +121,7 @@ fun TransportCategory(
 }
 
 @Composable
-fun RouteItem(context: Context, item: Route) {
+fun RouteItem(context: Context, item: Route, modifier: Modifier = Modifier) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -136,7 +141,8 @@ fun RouteItem(context: Context, item: Route) {
                     context.startActivity(intent)
                 }
             }
-            .padding(vertical = 12.dp),
+            .padding(vertical = 12.dp)
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -165,8 +171,10 @@ fun RouteItem(context: Context, item: Route) {
 }
 
 @Composable
-fun TopBar(onSearchKeywordChange: (String) -> Unit) {
-    var searchKeywordValue by remember { mutableStateOf("") }
+fun TopBar(
+    searchKeywordValue: String?,
+    onSearchKeywordChange: (String) -> Unit
+) {
 
     Box(
         modifier = Modifier
@@ -193,9 +201,8 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
             ) {
 
                 BasicTextField(
-                    value = searchKeywordValue,
+                    value = searchKeywordValue ?: "",
                     onValueChange = {
-                        searchKeywordValue = it
                         onSearchKeywordChange.invoke(it)
                         Analytics.logSearchRoutes()
                     },
@@ -210,7 +217,7 @@ fun TopBar(onSearchKeywordChange: (String) -> Unit) {
                         .align(Alignment.CenterStart)
                 )
 
-                if (searchKeywordValue.isEmpty()) {
+                if (searchKeywordValue.isNullOrEmpty()) {
                     Text(
                         text = stringResource(id = R.string.search_route),
                         color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)

@@ -1,4 +1,4 @@
-package ge.transitgeorgia.data.local.entity
+package ge.transitgeorgia.module.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

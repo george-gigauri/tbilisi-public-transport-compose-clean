@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,7 +26,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
-import ge.transitgeorgia.presentation.favorites.FavoriteRoutes
 import ge.transitgeorgia.presentation.favorites.FavoriteStops
 import ge.transitgeorgia.presentation.favorites.FavoritesViewModel
 
@@ -53,7 +54,10 @@ fun FavoritesScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
         when (selectedTabIndex) {
-            0 -> FavoriteRoutes(context, routes, Modifier.padding(horizontal = 16.dp))
+            0 -> FavoriteRoutes(context, routes, Modifier.padding(horizontal = 8.dp), onDelete = {
+                viewModel.deleteRoute(it.number)
+            })
+
             1 -> FavoriteStops(context, stops, Modifier.padding(horizontal = 16.dp))
         }
     }

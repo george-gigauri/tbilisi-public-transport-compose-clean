@@ -7,11 +7,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+val DynamicGray: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
 val DynamicPrimary: Color
     @Composable get() = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
 
 val DynamicWhite: Color
     @Composable get() = if (isSystemInDarkTheme()) Color.White else Color.Black
+
+val DynamicBlack: Color
+    @Composable get() = if (!isSystemInDarkTheme()) Color.Black else Color.White
+
+val DynamicRed: Color
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFCA0040) else Color(0xFFFF0051)
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)

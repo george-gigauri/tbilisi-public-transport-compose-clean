@@ -21,6 +21,7 @@ class BusRoutesViewModel @Inject constructor(
     private val db: AppDatabase
 ) : ViewModel() {
 
+    val searchKeyword: MutableStateFlow<String?> = MutableStateFlow(null)
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val transportType: MutableStateFlow<RouteTransportType> = MutableStateFlow(RouteTransportType.ALL)
     val data: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
@@ -57,6 +58,7 @@ class BusRoutesViewModel @Inject constructor(
         searchJob?.cancelChildren()
         searchJob = viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                searchKeyword.value = if (keyword.isEmpty() || keyword.isBlank()) null else keyword
                 routes.value = if (keyword.isNotEmpty()) {
                     data.value.filter {
                         it.number.startsWith(keyword) ||
