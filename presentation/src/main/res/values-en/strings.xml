@@ -36,4 +36,7 @@
     <string name="microbus">Microbus</string>
     <string name="label_see_more_schedule">...See More</string>
     <string name="label_stop_name">Stop Name</string>
+    <string name="message_delete_route_from_favorites">Are you sure you want to delete this route from favorites?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

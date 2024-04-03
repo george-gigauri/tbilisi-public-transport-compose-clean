@@ -33,11 +33,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import ge.transitgeorgia.module.domain.model.Route
+import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.RouteItem
 import ge.transitgeorgia.module.presentation.theme.DynamicBlack
 import ge.transitgeorgia.module.presentation.theme.DynamicGray
@@ -97,7 +99,7 @@ fun FavoriteRoutes(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Are you sure you want to delete this route from favorites?",
+                    text = stringResource(id = R.string.message_delete_route_from_favorites),
                     color = DynamicBlack,
                     fontSize = 15.sp
                 )
@@ -109,13 +111,15 @@ fun FavoriteRoutes(
                 ) {
 
                     Text(
-                        text = "No",
+                        text = stringResource(id = R.string.no),
                         color = DynamicGray,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
-                        modifier=Modifier.clip(RoundedCornerShape(100)).clickable {
-                            isDeleteRouteDialogVisible = false
-                        }
+                        modifier= Modifier
+                            .clip(RoundedCornerShape(100))
+                            .clickable {
+                                isDeleteRouteDialogVisible = false
+                            }
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(onClick = {
@@ -123,7 +127,7 @@ fun FavoriteRoutes(
                         isDeleteRouteDialogVisible = false
                     }) {
                         Text(
-                            text = "Yes",
+                            text = stringResource(id = R.string.yes),
                             color= DynamicWhite,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp

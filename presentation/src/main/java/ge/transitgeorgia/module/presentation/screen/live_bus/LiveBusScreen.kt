@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Matrix
 import android.location.Location
 import android.os.Build
@@ -36,6 +37,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
+import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.annotations.PolylineOptions
@@ -50,6 +52,7 @@ import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.dpToPx
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.module.common.util.BitmapUtil
 import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.common.util.MapStyle
 import ge.transitgeorgia.module.common.util.style
@@ -454,65 +457,59 @@ fun LiveBusScreen(
                                                         }
                                                     )
                                                 )?.let { bit ->
-                                                    val smallMarker =
+
+                                                    val markerIconBitmap =
                                                         Bitmap.createScaledBitmap(
                                                             bit,
-                                                            28.dpToPx(),
-                                                            28.dpToPx(),
+                                                            25.dpToPx(),
+                                                            25.dpToPx(),
                                                             false
                                                         )
-                                                    val smallMarkerIcon =
-                                                        IconFactory.getInstance(context)
-                                                            .fromBitmap(smallMarker)
 
-                                                    icon(smallMarkerIcon)
+                                                    val markerIconBgBitmap =
+                                                        BitmapUtils.getBitmapFromDrawable(
+                                                            ContextCompat.getDrawable(
+                                                                context,
+                                                                R.drawable.marker_microbus_bg
+                                                            )
+                                                        )?.let { bitmap ->
+                                                            val matrix = Matrix()
+                                                            matrix.postRotate(
+                                                                b.bearing?.toFloat() ?: 0f
+                                                            )
+                                                            Bitmap.createBitmap(
+                                                               bitmap,
+                                                                0,
+                                                                0,
+                                                                48.dpToPx(),
+                                                                48.dpToPx(),
+                                                                matrix,
+                                                                false
+                                                            )
+                                                        } ?: Bitmap.createBitmap(
+                                                            0,
+                                                            0,
+                                                            Bitmap.Config.ALPHA_8
+                                                        )
+
+                                                    val markerIconFull = if (viewModel.route2.value.stops.isEmpty()){
+                                                        BitmapUtil.combineBitmaps(
+                                                            markerIconBgBitmap,
+                                                            markerIconBitmap
+                                                        )
+                                                    } else {
+                                                        markerIconBitmap
+                                                    }
+
+                                                    IconFactory.getInstance(context)
+                                                        .fromBitmap(markerIconFull).let {
+                                                            icon(it)
+                                                        }
                                                     snippet("bus")
                                                 }
                                                 position(LatLng(b.lat, b.lng))
                                             }
                                         })
-
-                                        // Bg
-                                        if (viewModel.route2.value.polyline.isEmpty()) {
-                                            map.addMarkers(buses.map { b ->
-                                                MarkerOptions().apply {
-                                                    BitmapUtils.getBitmapFromDrawable(
-                                                        ContextCompat.getDrawable(
-                                                            context,
-                                                            R.drawable.marker_microbus_bg
-                                                        )
-                                                    )?.let { bit ->
-                                                        val matrix = Matrix()
-                                                        matrix.postRotate(
-                                                            b.bearing?.toFloat() ?: 0f
-                                                        )
-                                                        val smallMarker =
-                                                            Bitmap.createScaledBitmap(
-                                                                bit,
-                                                                46.dpToPx(),
-                                                                46.dpToPx(),
-                                                                false
-                                                            )
-                                                        val rotatedBitmap = Bitmap.createBitmap(
-                                                            smallMarker,
-                                                            0,
-                                                            0,
-                                                            smallMarker.width,
-                                                            smallMarker.height,
-                                                            matrix,
-                                                            true
-                                                        )
-                                                        val smallMarkerIcon =
-                                                            IconFactory.getInstance(context)
-                                                                .fromBitmap(rotatedBitmap)
-
-                                                        icon(smallMarkerIcon)
-                                                        snippet("bus_bg")
-                                                    }
-                                                    position(LatLng(b.lat, b.lng))
-                                                }
-                                            })
-                                        }
                                     }
                                 }
                             }

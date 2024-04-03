@@ -36,4 +36,7 @@
     <string name="microbus">მიკროავტობუსი</string>
     <string name="label_see_more_schedule">...სრული ვერსია</string>
     <string name="label_stop_name">გაჩერება</string>
+    <string name="message_delete_route_from_favorites">წაიშალოს ეს მარშრუტი ფავორიტებიდან?</string>
+    <string name="yes">კი</string>
+    <string name="no">არა</string>
 </resources>

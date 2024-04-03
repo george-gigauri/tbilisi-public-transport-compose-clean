@@ -23,6 +23,6 @@ object LatLngUtil {
         l2.latitude = lat2
         l2.longitude = lon2
 
-        return l2.bearingTo(l1)
+        return l1.bearingTo(l2)
     }
 }
