@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class LiveBusViewModel @Inject constructor(
@@ -39,6 +40,7 @@ class LiveBusViewModel @Inject constructor(
     val route: MutableStateFlow<Route?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
+    val isCircular: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val previousBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
 
@@ -104,6 +106,8 @@ class LiveBusViewModel @Inject constructor(
                 else -> Unit
             }
         }
+        isCircular.value = (route1.value.stops.isNotEmpty() && route2.value.stops.isEmpty()) ||
+                (route1.value.stops.isEmpty() && route2.value.stops.isNotEmpty())
         isLoading.value = false
     }
 
@@ -116,7 +120,9 @@ class LiveBusViewModel @Inject constructor(
                     repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
                 },
                 async {
-                    repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
+                    if (!isCircular.value) {
+                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
+                    } else ResultWrapper.Success(emptyList())
                 }
             )
 
@@ -144,20 +150,28 @@ class LiveBusViewModel @Inject constructor(
                                 pb.lng,
                                 this.lat,
                                 this.lng
-                            ).toDouble().also {
-                                Log.d("Calculated Bearing", "${this.nextStopId}:  $it")
-                            }
+                            ).toDouble()
                         }
                     }
                 }
             }
 
+            if (previousBuses.value.isEmpty()) {
+                previousBuses.value = bothBuses
+            }
+
             if (!previousBuses.value.containsAll(bothBuses)) {
                 previousBuses.value = availableBuses.value
             }
-            availableBuses.value = bothBuses
+            availableBuses.value = bothBuses.map {
+                it.apply {
+                    this.bearing = it.bearing ?: previousBuses.value.find { ib ->
+                        ib.lat == this.lat && ib.lng == this.lng
+                    }.let { i -> i?.bearing }
+                }
+            }
 
-            delay(if (route1.value.isMicroBus) 30000 else 8000)
+            delay(if (route1.value.isMicroBus) 30000 else Random.nextLong(3000, 10000))
         }
     }
 }

@@ -28,7 +28,7 @@ fun RouteDto.toDomain(): Route {
 
     return Route(
         this.id,
-        if (isMetro) "#FF4433" else "#${this.color}",
+        if (isMetro) "#FF4433" else if(this.color != null) "#${this.color}" else "#04BF6E",
         if (isMetro) metroLine.toString() else this.number,
         type,
         if (isMetro) this.number else this.longName ?: "--- - ---",

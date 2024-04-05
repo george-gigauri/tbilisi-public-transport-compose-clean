@@ -355,7 +355,7 @@ fun LiveBusScreen(
                                     viewModel.route1.collectLatest { ri ->
                                         map.addPolyline(PolylineOptions().apply {
                                             this.color(
-                                                if (viewModel.route2.value.stops.isEmpty()) {
+                                                if (viewModel.isCircular.value) {
                                                     Color(0xFF0094FF).toArgb()
                                                 } else Color.Green.toArgb()
                                             )
@@ -447,8 +447,10 @@ fun LiveBusScreen(
                                                     ContextCompat.getDrawable(
                                                         context,
                                                         if (b.isForward) {
-                                                            if (viewModel.route2.value.stops.isEmpty()) {
+                                                            if (viewModel.route1.value.isMicroBus) {
                                                                 R.drawable.marker_microbus
+                                                            } else if(!viewModel.route1.value.isMicroBus && viewModel.isCircular.value) {
+                                                                R.drawable.marker_bus
                                                             } else {
                                                                 R.drawable.ic_marker_bus_forward
                                                             }
