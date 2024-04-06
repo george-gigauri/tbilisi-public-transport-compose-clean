@@ -160,9 +160,8 @@ class LiveBusViewModel @Inject constructor(
                 previousBuses.value = bothBuses
             }
 
-            if (!previousBuses.value.containsAll(bothBuses)) {
-                previousBuses.value = availableBuses.value
-            }
+            previousBuses.value = availableBuses.value
+
             availableBuses.value = bothBuses.map {
                 it.apply {
                     this.bearing = it.bearing ?: previousBuses.value.find { ib ->
@@ -171,7 +170,7 @@ class LiveBusViewModel @Inject constructor(
                 }
             }
 
-            delay(if (route1.value.isMicroBus) 30000 else Random.nextLong(3000, 10000))
+            delay(if (route1.value.isMicroBus) 30000 else Random.nextLong(5000, 10000))
         }
     }
 }

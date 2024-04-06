@@ -9,6 +9,7 @@ import android.graphics.Matrix
 import android.location.Location
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -438,6 +439,7 @@ fun LiveBusScreen(
 
                                 availableBusesScope.launch {
                                     viewModel.availableBuses.collectLatest { buses ->
+
                                         map.markers.filter { m -> m.snippet == "bus" || m.snippet == "bus_bg" }
                                             .map { m -> m.remove() }
 
@@ -449,7 +451,7 @@ fun LiveBusScreen(
                                                         if (b.isForward) {
                                                             if (viewModel.route1.value.isMicroBus) {
                                                                 R.drawable.marker_microbus
-                                                            } else if(!viewModel.route1.value.isMicroBus && viewModel.isCircular.value) {
+                                                            } else if (!viewModel.route1.value.isMicroBus && viewModel.isCircular.value) {
                                                                 R.drawable.marker_bus
                                                             } else {
                                                                 R.drawable.ic_marker_bus_forward
@@ -460,9 +462,10 @@ fun LiveBusScreen(
                                                     )
                                                 )?.let { bit ->
 
-                                                    val iconSize = if (viewModel.route2.value.stops.isEmpty()) {
-                                                        32.dpToPx()
-                                                    } else 24.dpToPx()
+                                                    val iconSize =
+                                                        if (viewModel.route2.value.stops.isEmpty()) {
+                                                            32.dpToPx()
+                                                        } else 24.dpToPx()
 
                                                     val markerIconBitmap =
                                                         Bitmap.createScaledBitmap(
@@ -489,7 +492,10 @@ fun LiveBusScreen(
                                                                 48.dpToPx(),
                                                                 false
                                                             ).let { nmbtmp ->
-                                                                BitmapUtil.rotateBitmap(nmbtmp, b.bearing?.toFloat() ?: 0f)
+                                                                BitmapUtil.rotateBitmap(
+                                                                    nmbtmp,
+                                                                    b.bearing?.toFloat() ?: 0f
+                                                                )
                                                             }
                                                         } ?: Bitmap.createBitmap(
                                                             0,
