@@ -4,12 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Matrix
 import android.location.Location
 import android.os.Build
 import android.widget.Toast
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +36,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
-import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.annotations.PolylineOptions
@@ -60,7 +57,7 @@ import ge.transitgeorgia.module.common.util.style
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.util.ComposableLifecycle
 import ge.transitgeorgia.module.presentation.util.asMessage
-import ge.transitgeorgia.presentation.bus_stops.createMyLocationMarker
+import ge.transitgeorgia.module.presentation.screen.bus_stops.createMyLocationMarker
 import ge.transitgeorgia.presentation.live_bus.LiveBusScheduleNotificationDialog
 import ge.transitgeorgia.presentation.live_bus.LiveBusTopBar
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity

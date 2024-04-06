@@ -1,12 +1,17 @@
-package ge.transitgeorgia.presentation.bus_stops
+package ge.transitgeorgia.module.presentation.screen.bus_stops
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
 import android.location.Location
+import android.preference.PreferenceManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,9 +32,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,9 +48,6 @@ import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.dpToPx
@@ -51,15 +55,24 @@ import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.common.util.MapStyle
 import ge.transitgeorgia.module.common.util.style
 import ge.transitgeorgia.module.presentation.R
-import ge.transitgeorgia.module.presentation.screen.bus_stops.BusStopsViewModel
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.util.ComposableLifecycle
 import ge.transitgeorgia.presentation.timetable.TimeTableActivity
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import org.osmdroid.api.IMapController
+import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay
+import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlayOptions
+import org.osmdroid.views.overlay.simplefastpoint.SimplePointTheme
+import org.osmdroid.views.overlay.simplefastpoint.StyledLabelledGeoPoint
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
@@ -67,12 +80,13 @@ import kotlinx.coroutines.launch
 fun BusStopsMapScreen(
     viewModel: BusStopsViewModel = hiltViewModel()
 ) {
+
     val context = LocalContext.current
     val currentActivity = (context as? MainActivity)
     val lifecycleCoroutine = rememberCoroutineScope()
     val scope = rememberCoroutineScope()
     val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_ANY) }
-    var map: MapboxMap? = remember { null }
+    var mapController: IMapController? = remember { null }
     val mapZoomScope = rememberCoroutineScope()
 
     val stops by viewModel.stops.collectAsStateWithLifecycle()
@@ -94,6 +108,11 @@ fun BusStopsMapScreen(
         lifecycleEvent.value = event
     })
 
+    LaunchedEffect(key1 = Unit) {
+        Configuration.getInstance()
+            .load(context, PreferenceManager.getDefaultSharedPreferences(context))
+    }
+
     LaunchedEffect(key1 = Unit, key2 = locationPermissionState.allPermissionsGranted) {
         if (locationPermissionState.allPermissionsGranted) {
             LocationUtil.getMyLocation(context, onSuccess = {
@@ -107,122 +126,78 @@ fun BusStopsMapScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             update = {
+                stops.map { s ->
+                    StyledLabelledGeoPoint(s.lat, s.lng, 0.0, s.name)
+                }.let { markers ->
+                    SimplePointTheme(markers, true, true)
+                }.let { pt ->
+                    val textStyle = Paint()
+                    textStyle.style = Paint.Style.FILL_AND_STROKE
+                    textStyle.strokeWidth = 1.2f
+                    textStyle.color = androidx.compose.ui.graphics.Color(0xFF000000).toArgb()
+                    textStyle.textSize = 32f
 
+                    val pointStyle = Paint()
+                    pointStyle.style = Paint.Style.FILL_AND_STROKE
+                    pointStyle.color = Color.parseColor("#0094ff")
+                    pointStyle.strokeWidth = 10f
+
+                    val opt = SimpleFastPointOverlayOptions()
+                        .setSymbol(SimpleFastPointOverlayOptions.Shape.CIRCLE)
+                        .setMinZoomShowLabels(7)
+                        .setMaxNShownLabels(5)
+                        .setPointStyle(pointStyle)
+                        .setLabelPolicy(SimpleFastPointOverlayOptions.LabelPolicy.DENSITY_THRESHOLD)
+                        .setAlgorithm(SimpleFastPointOverlayOptions.RenderingAlgorithm.MAXIMUM_OPTIMIZATION)
+                        .setRadius(20f)
+                        .setIsClickable(true)
+                        .setCellSize(80)
+                        .setTextStyle(textStyle)
+
+                    val sfpo = SimpleFastPointOverlay(pt, opt)
+
+                    sfpo.setOnClickListener { points, point ->
+                        val intent = Intent(context, TimeTableActivity::class.java)
+                        intent.putExtra("stop_id", stops[point].code)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        context.startActivity(intent)
+
+                        Analytics.logOpenTimetableFromRouteMap()
+                    }
+                    it.overlays.add(sfpo)
+                }
             },
             factory = {
-                MapView(it).apply {
-                    getMapAsync { m ->
-                        m.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                city.latLng,
-                                city.mapDefaultZoom
-                            )
+                org.osmdroid.views.MapView(it).apply {
+                    this.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
+                    this.getLocalVisibleRect(Rect())
+                    this.setMultiTouchControls(true)
+
+                    mapController = this.controller
+                    mapController?.animateTo(
+                        GeoPoint(
+                            city.latLng.latitude,
+                            city.latLng.longitude
                         )
+                    )
+                    mapController?.setZoom(city.mapDefaultZoom)
 
-                        m.setStyle(mapStyle.style(it)) {
-                            if (locationPermissionState.allPermissionsGranted) {
-                                currentActivity?.let { c ->
-                                    if (LocationUtil.isLocationTurnedOn(c)) {
-                                        m.locationComponent.activateLocationComponent(
-                                            LocationComponentActivationOptions
-                                                .builder(context, it)
-                                                .build()
-                                        )
-                                    } else {
-                                        LocationUtil.requestLocation(c) {
-                                            m.locationComponent.activateLocationComponent(
-                                                LocationComponentActivationOptions
-                                                    .builder(context, it)
-                                                    .build()
-                                            )
-                                        }
-                                    }
-                                }
-
-                                scope.launch {
-                                    userLocation.collectLatest {
-                                        m.markers.filter { m -> m.snippet == "MY" }
-                                            .forEach { r -> m.removeMarker(r) }
-                                        m.addMarker(createMyLocationMarker(context, it))
-                                    }
-                                }
-                            } else {
-                                locationPermissionState.launchMultiplePermissionRequest()
-                            }
-                        }
-
-                        m.setOnMarkerClickListener { m ->
-                            val intent = Intent(context, TimeTableActivity::class.java)
-                            intent.putExtra("stop_id", m.snippet)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-
-                            Analytics.logOpenTimetableFromRouteMap()
-                            return@setOnMarkerClickListener true
-                        }
-
-                        m.addOnCameraMoveListener {
-                            mapZoomScope.coroutineContext.cancelChildren()
-                            mapZoomScope.launch {
-                                delay(350)
-                                if (m.cameraPosition.zoom >= 12.5) {
-                                    m.markers.filter { it.snippet != "MY" }.forEach { it.remove() }
-
-                                    val visibleBounds =
-                                            m.projection.visibleRegion.latLngBounds
-                                    val visibleStops = stops.filter {
-                                        val latLng = LatLng(it.lat, it.lng)
-                                        visibleBounds.contains(latLng)
-                                    }
-
-                                    visibleStops.forEach {
-                                        MarkerOptions().apply {
-                                            position(LatLng(it.lat, it.lng))
-                                            snippet(it.code)
-                                            BitmapUtils.getBitmapFromDrawable(
-                                                ContextCompat.getDrawable(
-                                                    context,
-                                                    R.drawable.ic_marker_route_stop_backward
-                                                )
-                                            )?.let { bit ->
-                                                val smallMarker =
-                                                        Bitmap.createScaledBitmap(
-                                                            bit,
-                                                            24.dpToPx(),
-                                                            24.dpToPx(),
-                                                            false
-                                                        )
-                                                val smallMarkerIcon =
-                                                        IconFactory.getInstance(context)
-                                                            .fromBitmap(smallMarker)
-
-                                                icon(smallMarkerIcon)
-                                            }
-
-                                            m.addMarker(`this`)
-                                        }
-                                    }
-
-                                } else {
-                                    m.markers.filter { i -> i.snippet != "MY" }.forEach { it.remove() }
-                                }
-                            }.start()
-                        }
-
-                        map = m
+                    MyLocationNewOverlay(GpsMyLocationProvider(it), this).apply {
+                        this.enableMyLocation()
+                        this.isDrawAccuracyEnabled = true
+                    }.also { o ->
+                        this.overlays.add(o)
                     }
 
-                    lifecycleCoroutine.launch {
-                        lifecycleEvent.collect {
-                            when (it) {
-                                Lifecycle.Event.ON_CREATE -> onCreate(null)
-                                Lifecycle.Event.ON_START -> onStart()
-                                Lifecycle.Event.ON_RESUME -> onResume()
-                                Lifecycle.Event.ON_DESTROY -> onDestroy()
-                                else -> Unit
-                            }
+                    this.addMapListener(object : MapListener {
+                        override fun onScroll(event: ScrollEvent?): Boolean {
+                            return true
                         }
-                    }
+
+                        override fun onZoom(event: ZoomEvent?): Boolean {
+                            return true
+                        }
+                    })
                 }
             })
 
@@ -237,8 +212,7 @@ fun BusStopsMapScreen(
                     }
 
                     LocationUtil.getLastKnownLocation(context)?.let {
-                        val latLng = LatLng(it.latitude, it.longitude)
-                        map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0), 1500)
+                        mapController?.animateTo(GeoPoint(it.latitude, it.longitude), 18.5, 1200)
                     }
                 },
                 modifier = Modifier
@@ -254,29 +228,29 @@ fun BusStopsMapScreen(
             }
 
             // Change Map Style
-            FilledTonalIconButton(
-                onClick = {
-                    mapStyle = when (mapStyle) {
-                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
-                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
-                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
-                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
-                        else -> MapStyle.TERRAIN
-                    }
-                    map?.setStyle(mapStyle.style(context))
-                },
-                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
-                modifier = Modifier
-                    .size(85.dp)
-                    .padding(12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_map),
-                    contentDescription = null,
-                    tint = colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+//           FilledTonalIconButton(
+//                onClick = {
+//                    mapStyle = when (mapStyle) {
+//                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
+//                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
+//                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
+//                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
+//                        else -> MapStyle.TERRAIN
+//                    }
+//                    //  map?.setStyle(mapStyle.style(context))
+//                },
+//                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
+//                modifier = Modifier
+//                    .size(85.dp)
+//                    .padding(12.dp)
+//            ) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.ic_map),
+//                    contentDescription = null,
+//                    tint = colorScheme.primary,
+//                    modifier = Modifier.size(32.dp)
+//                )
+//            }
         }
     }
 }
