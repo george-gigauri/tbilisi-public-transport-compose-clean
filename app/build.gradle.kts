@@ -89,6 +89,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.compose.runtime:runtime:1.6.4")
     api(project(path = ":presentation"))
+    api(project(path = ":domain"))
+    api(project(path = ":common"))
+    api(project(path = ":data"))
 
     // Dependency Injection (Dagger Hilt)
     implementation("com.google.dagger:hilt-android:2.50")

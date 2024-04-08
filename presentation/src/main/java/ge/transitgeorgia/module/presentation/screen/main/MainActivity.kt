@@ -1,5 +1,7 @@
 package ge.transitgeorgia.module.presentation.screen.main
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -28,6 +30,7 @@ import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.QRScanner
 import ge.transitgeorgia.module.common.util.AppLanguage
 import ge.transitgeorgia.module.common.util.LocationUtil
+import ge.transitgeorgia.module.common.util.MyContextWrapper
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.presentation.BuildConfig
 import ge.transitgeorgia.module.presentation.worker.TranslateDataWorker
@@ -84,7 +87,7 @@ class MainActivity : ComponentActivity() {
                             runBlocking {
                                 viewModel.setLanguage(lang)
                                 Analytics.logLanguageSet(lang.name)
-                                if (language == AppLanguage.Language.ENG) {
+                                if (lang == AppLanguage.Language.ENG) {
                                     TranslateDataWorker.start(this@MainActivity)
                                 }
 
@@ -134,16 +137,6 @@ class MainActivity : ComponentActivity() {
             this,
             AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build()
         )
-    }
-
-    private fun alertUpdateDownloadComplete() {
-        AlertDialog.Builder(this)
-            .setCancelable(false)
-            .setTitle("Update Completed")
-            .setMessage("განახლება ჩამოტვირთულია. გადატვირთეთ აპლიკაცია მის დასაინსტალირებლად.")
-            .setPositiveButton("გადატვირთვა") { _, _ ->
-                appUpdateManager.completeUpdate()
-            }.show()
     }
 
     override fun onResume() {

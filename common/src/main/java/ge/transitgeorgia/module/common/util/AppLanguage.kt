@@ -1,9 +1,14 @@
 package ge.transitgeorgia.module.common.util
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.content.res.Resources
+import android.util.DisplayMetrics
 import ge.transitgeorgia.module.common.R
 import java.util.Locale
+
 
 object AppLanguage {
 
@@ -18,14 +23,13 @@ object AppLanguage {
     }
 
     fun updateLanguage(context: Context, language: String) {
-        context.resources.apply {
-            val locale = Locale(language)
-            val config = Configuration(configuration)
-
-            context.createConfigurationContext(configuration)
-            Locale.setDefault(locale)
-            config.setLocale(locale)
-            context.resources.updateConfiguration(config, displayMetrics)
-        }
+        val myLocale = Locale(language)
+        val res: Resources = context.resources
+        val dm: DisplayMetrics = res.displayMetrics
+        val conf: Configuration = res.configuration
+        conf.locale = myLocale
+        Locale.setDefault(myLocale)
+        conf.setLayoutDirection(myLocale)
+        res.updateConfiguration(conf, dm)
     }
 }
