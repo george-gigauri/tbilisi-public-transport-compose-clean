@@ -3,8 +3,10 @@ package ge.transitgeorgia.module.presentation.util
 import android.graphics.Paint
 import ge.transitgeorgia.common.util.dpToPx
 import org.osmdroid.api.IGeoPoint
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay
 import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlayOptions
 import org.osmdroid.views.overlay.simplefastpoint.SimplePointTheme
@@ -45,17 +47,19 @@ fun createSimpleCircleMarker(
 }
 
 fun MapView.centerMapBetweenPoints(point1: GeoPoint, point2: GeoPoint, padding: Int) {
-    val midpointLat = (point1.latitude + point2.latitude) / 2
-    val midpointLon = (point1.longitude + point2.longitude) / 2
-    val midpoint = GeoPoint(midpointLat, midpointLon)
+    var minLat = point1.latitude
+    var maxLat = point2.latitude
+    var minLong = point1.longitude
+    var maxLong = point2.longitude
 
-    val distance = point1.distanceToAsDouble(point2)
+    val boundingBox = BoundingBox(maxLat, maxLong, minLat, minLong)
+    zoomToBoundingBox(boundingBox.increaseByScale(2.1f), true)
+}
 
-    val zoomLevel = calculateZoomLevel(this, distance, padding)
-
-    // Set the center point and zoom level of the map
-    controller.setCenter(midpoint)
-    controller.setZoom(zoomLevel)
+fun MapView.centerAndZoomPolyline(polyline: Polyline) {
+    post {
+        zoomToBoundingBox(polyline.bounds.increaseByScale(1.5f), true)
+    }
 }
 
 fun calculateZoomLevel(mapView: MapView, distance: Double, padding: Int): Double {

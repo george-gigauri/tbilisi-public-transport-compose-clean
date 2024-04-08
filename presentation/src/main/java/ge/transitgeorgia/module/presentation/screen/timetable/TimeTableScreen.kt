@@ -3,9 +3,9 @@ package ge.transitgeorgia.module.presentation.screen.timetable
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,10 +51,6 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.mapbox.mapboxsdk.annotations.MarkerOptions
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.Style
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusArrivalTimeReminderWorker
@@ -66,8 +62,12 @@ import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.presentation.timetable.ScheduleTimeTableDialog
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TimeTableScreen(
     viewModel: TimeTableViewModel = hiltViewModel()
@@ -305,16 +305,13 @@ fun RouteTimeItem(
 
 @Composable
 private fun StopMapLocation(stop: BusStop) {
-    val context = LocalContext.current
-    val mapStyle = Style.Builder().fromJson(context.resources.rawAsString(R.raw.map_style_outdoor))
-
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "[ID:${stop?.code}] ${stop?.name.orEmpty()}",
+            text = "[ID:${stop.code}] ${stop.name}",
             color = DynamicWhite,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
@@ -330,17 +327,20 @@ private fun StopMapLocation(stop: BusStop) {
                 .wrapContentHeight()
         ) {
             AndroidView(factory = {
-                MapView(it).also { mv ->
-                    mv.getMapAsync { map ->
-                        map.uiSettings.isScrollGesturesEnabled = false
-                        map.setMaxZoomPreference(17.0)
-                        map.setMinZoomPreference(12.0)
-                        map.uiSettings.isLogoEnabled = false
-                        map.setStyle(mapStyle)
-                        val stopPosition = LatLng(stop?.lat ?: 0.0, stop?.lng ?: 0.0)
-                        map.addMarker(MarkerOptions().apply { position(stopPosition) })
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(stopPosition, 15.0))
-                    }
+                MapView(it).apply {
+                    val point = GeoPoint(stop.lat, stop.lng)
+                    this.setTileSource(TileSourceFactory.MAPNIK)
+                    this.getLocalVisibleRect(Rect())
+                    this.setMultiTouchControls(true)
+                    this.controller.animateTo(point, 18.5, 200)
+
+                    this.overlays.add(
+                        Marker(this).apply {
+                            this.setDefaultIcon()
+                            this.position = point
+                            this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                        }
+                    )
                 }
             }, modifier = Modifier.height(350.dp))
         }

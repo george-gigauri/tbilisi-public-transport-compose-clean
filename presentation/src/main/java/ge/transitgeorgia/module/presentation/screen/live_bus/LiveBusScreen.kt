@@ -63,6 +63,7 @@ import ge.transitgeorgia.presentation.live_bus.LiveBusScheduleNotificationDialog
 import ge.transitgeorgia.presentation.live_bus.LiveBusTopBar
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.util.centerAndZoomPolyline
 import ge.transitgeorgia.module.presentation.util.centerMapBetweenPoints
 import kotlinx.coroutines.launch
 import org.osmdroid.api.IMapController
@@ -336,6 +337,14 @@ fun LiveBusScreen(
                                 this.isDrawAccuracyEnabled = true
                             }.also { o ->
                                 this.overlays.add(o)
+                            }
+
+                            Polyline(this).apply {
+                                this.setPoints(route1.polyline.map { l ->
+                                    GeoPoint(l.latitude, l.longitude)
+                                })
+                            }.also { p ->
+                                this.centerAndZoomPolyline(p)
                             }
 
                             addMapListener(object : MapListener {

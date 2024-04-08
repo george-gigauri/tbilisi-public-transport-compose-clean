@@ -72,7 +72,6 @@ class MainActivity : ComponentActivity() {
         }
 
         viewModel.load()
-        Mapbox.getInstance(this, BuildConfig.MAPBOX_TOKEN)
 
         Configuration.getInstance()
             .load(this, PreferenceManager.getDefaultSharedPreferences(this))
