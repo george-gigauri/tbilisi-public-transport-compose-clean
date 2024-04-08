@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.timetable
+package ge.transitgeorgia.module.presentation.screen.timetable
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,7 +14,6 @@ import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTheme
 class TimeTableActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Mapbox.getInstance(this, BuildConfig.MAPBOX_TOKEN)
         setContent {
             TbilisiPublicTransportTheme {
                 TimeTableScreen()

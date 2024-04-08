@@ -3,10 +3,12 @@ package ge.transitgeorgia.module.presentation.screen.main
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.google.android.gms.tasks.Task
@@ -37,6 +39,7 @@ import ge.transitgeorgia.presentation.main.SelectLanguageDialog
 import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.osmdroid.config.Configuration
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -70,6 +73,9 @@ class MainActivity : ComponentActivity() {
 
         viewModel.load()
         Mapbox.getInstance(this, BuildConfig.MAPBOX_TOKEN)
+
+        Configuration.getInstance()
+            .load(this, PreferenceManager.getDefaultSharedPreferences(this))
 
         setContent {
             val shouldShowLanguagePrompt by viewModel.shouldPromptLanguageSelector.collectAsState()

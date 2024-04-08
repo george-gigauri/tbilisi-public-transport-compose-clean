@@ -9,10 +9,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.RectF
 import android.location.Location
-import android.preference.PreferenceManager
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,23 +17,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,27 +37,22 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.dpToPx
 import ge.transitgeorgia.module.common.util.LocationUtil
-import ge.transitgeorgia.module.common.util.MapStyle
-import ge.transitgeorgia.module.common.util.style
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.util.ComposableLifecycle
-import ge.transitgeorgia.presentation.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.osmdroid.api.IMapController
-import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay
@@ -83,19 +69,14 @@ fun BusStopsMapScreen(
 
     val context = LocalContext.current
     val currentActivity = (context as? MainActivity)
-    val lifecycleCoroutine = rememberCoroutineScope()
-    val scope = rememberCoroutineScope()
     val lifecycleEvent = remember { MutableStateFlow(Lifecycle.Event.ON_ANY) }
+
     var mapController: IMapController? = remember { null }
-    val mapZoomScope = rememberCoroutineScope()
 
     val stops by viewModel.stops.collectAsStateWithLifecycle()
     val city by viewModel.city.collectAsStateWithLifecycle()
 
-    val isDarkMode = isSystemInDarkTheme()
-    var mapStyle by rememberSaveable { mutableStateOf(if (isDarkMode) MapStyle.BUSPLORE_DARK else MapStyle.BUSPLORE_LIGHT) }
-
-    var userLocation = remember { MutableStateFlow(Location(null)) }
+    val userLocation = remember { MutableStateFlow(Location(null)) }
 
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -107,11 +88,6 @@ fun BusStopsMapScreen(
     ComposableLifecycle(onEvent = { s, event ->
         lifecycleEvent.value = event
     })
-
-    LaunchedEffect(key1 = Unit) {
-        Configuration.getInstance()
-            .load(context, PreferenceManager.getDefaultSharedPreferences(context))
-    }
 
     LaunchedEffect(key1 = Unit, key2 = locationPermissionState.allPermissionsGranted) {
         if (locationPermissionState.allPermissionsGranted) {

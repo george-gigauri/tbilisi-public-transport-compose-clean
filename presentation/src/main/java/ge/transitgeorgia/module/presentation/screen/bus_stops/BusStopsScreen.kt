@@ -38,7 +38,7 @@ import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.presentation.scanner.QRScannerActivity
-import ge.transitgeorgia.presentation.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
 import java.text.DecimalFormat
 
 @Composable

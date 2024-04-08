@@ -66,7 +66,6 @@ import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.presentation.timetable.ScheduleTimeTableDialog
-import ge.transitgeorgia.presentation.timetable.TimeTableActivity
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable

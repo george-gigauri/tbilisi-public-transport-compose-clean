@@ -24,7 +24,7 @@ import ge.transitgeorgia.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
 import ge.transitgeorgia.module.domain.util.ResultWrapper
 import ge.transitgeorgia.module.presentation.R
-import ge.transitgeorgia.presentation.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext

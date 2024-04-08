@@ -9,7 +9,7 @@ import androidx.core.view.WindowCompat
 import com.google.mlkit.vision.barcode.common.Barcode
 import dagger.hilt.android.AndroidEntryPoint
 import ge.transitgeorgia.common.analytics.Analytics
-import ge.transitgeorgia.presentation.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
 
 @AndroidEntryPoint
 class QRScannerActivity : ComponentActivity() {

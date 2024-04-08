@@ -38,7 +38,7 @@
             android:exported="false" />
         <activity android:name=".presentation.scanner.QRScannerActivity" />
         <activity
-            android:name=".presentation.timetable.TimeTableActivity"
+            android:name=".module.presentation.screen.timetable.TimeTableActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
