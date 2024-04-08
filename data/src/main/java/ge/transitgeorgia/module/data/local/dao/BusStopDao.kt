@@ -1,7 +1,7 @@
 package ge.transitgeorgia.module.data.local.dao
 
 import androidx.room.*
-import ge.transitgeorgia.common.other.enums.SupportedCity
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.data.local.entity.BusStopEntity
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
 import kotlinx.coroutines.flow.Flow

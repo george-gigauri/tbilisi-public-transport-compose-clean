@@ -1,24 +1,25 @@
-package ge.transitgeorgia.common.util
+package ge.transitgeorgia.module.common.util
 
-import com.mapbox.mapboxsdk.geometry.LatLng
+import org.osmdroid.util.GeoPoint
 
 object DistanceCalculator {
 
-    fun getNearestLatLng(myLocation: LatLng, list: List<LatLng>): DistanceLatLng? {
-        return list.minByOrNull { it.distanceTo(myLocation) }?.let {
-            DistanceLatLng(it.distanceTo(myLocation), it)
+    fun getNearestLatLng(myLocation: GeoPoint, list: List<GeoPoint>): DistanceLatLng? {
+        return list.minByOrNull { it.distanceToAsDouble(myLocation) }?.let {
+            DistanceLatLng(it.distanceToAsDouble(myLocation), it.latitude, it.longitude)
         }
     }
 
-    fun sortByNearest(myLocation: LatLng, list: List<LatLng>): List<DistanceLatLng> {
-        return list.sortedBy { it.distanceTo(myLocation) }.map {
-            DistanceLatLng(it.distanceTo(myLocation), it)
+    fun sortByNearest(myLocation: GeoPoint, list: List<GeoPoint>): List<DistanceLatLng> {
+        return list.sortedBy { it.distanceToAsDouble(myLocation) }.map {
+            DistanceLatLng(it.distanceToAsDouble(myLocation), it.latitude, it.longitude)
         }
     }
 
 
     data class DistanceLatLng(
         val distance: Double,
-        val latLng: LatLng
+        val latitude: Double,
+        val longitude: Double
     )
 }

@@ -2,7 +2,7 @@ package ge.transitgeorgia.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ge.transitgeorgia.common.other.enums.SupportedCity
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 
 @Entity(tableName = "favorite_stop")
 data class FavoriteStopEntity(

@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ge.transitgeorgia.common.other.enums.SupportedCity
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 
 @Composable

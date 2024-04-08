@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.analytics.Analytics
-import ge.transitgeorgia.common.other.enums.SupportedCity
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.module.data.di.AppModule
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore

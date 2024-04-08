@@ -35,10 +35,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.mapbox.mapboxsdk.annotations.IconFactory
-import com.mapbox.mapboxsdk.annotations.MarkerOptions
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.utils.BitmapUtils
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.dpToPx
 import ge.transitgeorgia.module.common.util.LocationUtil
@@ -152,8 +148,8 @@ fun BusStopsMapScreen(
                     mapController = this.controller
                     mapController?.animateTo(
                         GeoPoint(
-                            city.latLng.latitude,
-                            city.latLng.longitude
+                            city.lat,
+                            city.lng
                         )
                     )
                     mapController?.setZoom(city.mapDefaultZoom)
@@ -202,66 +198,6 @@ fun BusStopsMapScreen(
                     modifier = Modifier.size(32.dp)
                 )
             }
-
-            // Change Map Style
-//           FilledTonalIconButton(
-//                onClick = {
-//                    mapStyle = when (mapStyle) {
-//                        MapStyle.BUSPLORE_LIGHT -> MapStyle.STANDARD_LIGHT
-//                        MapStyle.STANDARD_LIGHT -> MapStyle.TERRAIN
-//                        MapStyle.TERRAIN -> MapStyle.BUSPLORE_DARK
-//                        MapStyle.BUSPLORE_DARK -> MapStyle.BUSPLORE_LIGHT
-//                        else -> MapStyle.TERRAIN
-//                    }
-//                    //  map?.setStyle(mapStyle.style(context))
-//                },
-//                colors = IconButtonDefaults.filledIconButtonColors(containerColor = colorScheme.primaryContainer),
-//                modifier = Modifier
-//                    .size(85.dp)
-//                    .padding(12.dp)
-//            ) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.ic_map),
-//                    contentDescription = null,
-//                    tint = colorScheme.primary,
-//                    modifier = Modifier.size(32.dp)
-//                )
-//            }
-        }
-    }
-}
-
-fun createMyLocationMarker(context: Context, l: Location): MarkerOptions {
-    return MarkerOptions().apply {
-        position(LatLng(l.latitude, l.longitude))
-        snippet("MY")
-        BitmapUtils.getBitmapFromDrawable(
-            ContextCompat.getDrawable(
-                context,
-                R.drawable.ic_my_location_marker
-            )
-        )?.let { bit ->
-            val matrix = Matrix()
-            matrix.postRotate(l.bearing)
-            val smallMarker = Bitmap.createScaledBitmap(
-                bit,
-                24.dpToPx(),
-                40.dpToPx(),
-                false
-            )
-            val rotatedBitmap = Bitmap.createBitmap(
-                smallMarker,
-                0,
-                0,
-                smallMarker.width,
-                smallMarker.height,
-                matrix,
-                true
-            )
-            val smallMarkerIcon = IconFactory.getInstance(context)
-                .fromBitmap(rotatedBitmap)
-
-            icon(smallMarkerIcon)
         }
     }
 }

@@ -6,16 +6,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-            credentials {
-                username = "mapbox"
-                password = properties.getProperty("MAPBOX_TOKEN")
-            }
-        }
     }
 
     dependencies {
@@ -28,5 +18,5 @@ buildscript {
     }
 }
 
-val appVersionCode: Int by extra { 26 }
-val appVersionName: String by extra { "1.8.6" }
+val appVersionCode: Int by extra { 27 }
+val appVersionName: String by extra { "1.8.7" }

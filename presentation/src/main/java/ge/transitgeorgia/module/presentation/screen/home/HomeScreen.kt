@@ -27,7 +27,6 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
-import com.mapbox.mapboxsdk.geometry.LatLng
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.domain.model.BusStop
@@ -39,6 +38,7 @@ import ge.transitgeorgia.module.presentation.screen.home.HomeViewModel
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import org.osmdroid.util.GeoPoint
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -54,7 +54,7 @@ fun HomeScreen(
     val nearbyStops by viewModel.nearbyStops.collectAsStateWithLifecycle()
 
     var isLocationEnabled by rememberSaveable { mutableStateOf(false) }
-    var userLocation by rememberSaveable { mutableStateOf(LatLng()) }
+    var userLocation by rememberSaveable { mutableStateOf(GeoPoint(0.0, 0.0)) }
 
 
     val locationPermissionState = rememberMultiplePermissionsState(
@@ -65,7 +65,7 @@ fun HomeScreen(
         onPermissionsResult = {
             if (it.all { i -> i.value }) {
                 LocationUtil.getMyLocation(context, onSuccess = { loc ->
-                    userLocation = LatLng(loc.latitude, loc.longitude)
+                    userLocation = GeoPoint(loc.latitude, loc.longitude)
                     viewModel.fetchNearbyStops(userLocation)
                 })
             }
@@ -89,7 +89,7 @@ fun HomeScreen(
         if (locationPermissionState.allPermissionsGranted) {
             if (LocationUtil.isLocationTurnedOn(context)) {
                 LocationUtil.getLastKnownLocation(context)?.let {
-                    val newLatLng = LatLng(it.latitude, it.longitude)
+                    val newLatLng = GeoPoint(it.latitude, it.longitude)
                     userLocation = newLatLng
                     viewModel.fetchNearbyStops(userLocation)
                 }
@@ -155,7 +155,7 @@ fun NearbyStops(
     navController: NavController,
     stops: List<BusStop>,
     isLocationEnabled: Boolean,
-    userLocation: LatLng,
+    userLocation: GeoPoint,
 ) {
     val activity = (LocalContext.current as? MainActivity)
 
@@ -168,7 +168,12 @@ fun NearbyStops(
 
         if (isLocationEnabled) {
             stops.forEach {
-                ItemBusStop(context, it, true, userLocation.distanceTo(LatLng(it.lat, it.lng)))
+                ItemBusStop(
+                    context,
+                    it,
+                    true,
+                    userLocation.distanceToAsDouble(GeoPoint(it.lat, it.lng))
+                )
             }
         } else {
             Spacer(modifier = Modifier.height(16.dp))

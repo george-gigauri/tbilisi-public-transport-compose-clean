@@ -47,16 +47,10 @@ android {
 dependencies {
 
     implementation(project(path = ":common"))
-    implementation("androidx.core:core-ktx:1.12.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("javax.inject:javax.inject:1")
-
-    // Maps
-    implementation("com.google.maps.android:android-maps-utils:3.4.0")
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
 }

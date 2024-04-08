@@ -1,11 +1,11 @@
 package ge.transitgeorgia.module.data.mapper
 
-import com.mapbox.mapboxsdk.geometry.LatLng
 import ge.transitgeorgia.data.local.entity.RouteEntity
 import ge.transitgeorgia.data.remote.dto.RouteDto
 import ge.transitgeorgia.data.remote.dto.RouteInfoDto
 import ge.transitgeorgia.data.remote.dto.RouteStopDto
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.module.common.model.LatLngPoint
 import ge.transitgeorgia.module.common.other.enums.TransportType
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteInfo
@@ -70,7 +70,7 @@ fun RouteInfoDto.toDomain(): RouteInfo {
         if (this.shape.isNotEmpty()) {
             this.shape.replace(" ", "").split(",").map {
                 val latLng = it.trim().split(":")
-                LatLng(latLng[1].toDoubleOrNull() ?: 0.0, latLng[0].toDoubleOrNull() ?: 0.0)
+                LatLngPoint(latLng[1].toDoubleOrNull() ?: 0.0, latLng[0].toDoubleOrNull() ?: 0.0)
             }
         } else emptyList(),
         this.stops.map { it.toDomain() },

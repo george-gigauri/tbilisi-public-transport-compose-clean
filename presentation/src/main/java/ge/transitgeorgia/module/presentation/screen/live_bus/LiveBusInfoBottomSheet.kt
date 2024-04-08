@@ -24,15 +24,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mapbox.mapboxsdk.geometry.LatLng
-import ge.transitgeorgia.common.other.extensions.calculateTotalLengthInMeters
-import ge.transitgeorgia.common.util.DistanceCalculator
+import ge.transitgeorgia.module.common.other.extensions.calculateTotalLengthInMeters
+import ge.transitgeorgia.module.common.util.DistanceCalculator
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.module.common.ext.calculateTotalLengthInMeters
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteInfo
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import org.osmdroid.util.GeoPoint
 import java.text.DecimalFormat
 import java.util.*
 
@@ -41,7 +42,7 @@ import java.util.*
 @Composable
 fun LiveBusInfoBottomSheet(
     state: SheetState = SheetState(true, SheetValue.Hidden),
-    userLocation: LatLng = LatLng(),
+    userLocation: GeoPoint = GeoPoint(0.0, 0.0),
     route: Route? = null,
     route1: RouteInfo = RouteInfo.empty(),
     route2: RouteInfo = RouteInfo.empty(),
@@ -175,7 +176,7 @@ fun TotalAvailableBusCount(route1Buses: List<Bus>, route2Buses: List<Bus>) {
 
 @Composable
 fun NearestBusStopInfo(
-    location: LatLng,
+    location: GeoPoint,
     route1Stops: List<RouteStop>,
     route2Stops: List<RouteStop>
 ) {
@@ -187,9 +188,12 @@ fun NearestBusStopInfo(
         if (location.latitude != 0.0 && location.longitude != 0.0) {
             nearestStop = DistanceCalculator.getNearestLatLng(
                 location,
-                route1Stops.plus(route2Stops).map { LatLng(it.lat, it.lng) }
+                route1Stops.plus(route2Stops).map { GeoPoint(it.lat, it.lng) }
             )
-            address = getNearestStopAddress(context, nearestStop?.latLng)
+            address = getNearestStopAddress(
+                context,
+                GeoPoint(nearestStop?.latitude ?: 0.0, nearestStop?.longitude ?: 0.0)
+            )
         }
     }
 
@@ -207,7 +211,7 @@ fun NearestBusStopInfo(
     }
 }
 
-private fun getNearestStopAddress(context: Context, point: LatLng?): String {
+private fun getNearestStopAddress(context: Context, point: GeoPoint?): String {
     val addresses: List<Address>?
     val geocoder: Geocoder = Geocoder(context, Locale.getDefault())
 

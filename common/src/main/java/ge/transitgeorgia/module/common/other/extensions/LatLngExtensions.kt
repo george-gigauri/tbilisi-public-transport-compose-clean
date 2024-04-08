@@ -1,17 +1,17 @@
-package ge.transitgeorgia.common.other.extensions
+package ge.transitgeorgia.module.common.other.extensions
 
-import com.mapbox.mapboxsdk.geometry.LatLng
+import org.osmdroid.util.GeoPoint
 
-fun List<LatLng>.calculateTotalLengthInMeters(): Double {
+fun List<GeoPoint>.calculateTotalLengthInMeters(): Double {
     var result = 0.0
 
     forEachIndexed { index, latLng ->
         if (index < lastIndex - 1) {
-            result += latLng.distanceTo(get(index + 1))
+            result += latLng.distanceToAsDouble(get(index + 1))
         }
 
         if (index == lastIndex) {
-            result += get(lastIndex - 1).distanceTo(latLng)
+            result += get(lastIndex - 1).distanceToAsDouble(latLng)
         }
     }
 

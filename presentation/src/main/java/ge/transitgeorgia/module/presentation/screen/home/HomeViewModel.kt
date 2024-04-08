@@ -2,9 +2,8 @@ package ge.transitgeorgia.module.presentation.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ge.transitgeorgia.common.other.enums.SupportedCity
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.osmdroid.util.GeoPoint
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,12 +65,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun fetchNearbyStops(position: LatLng) = viewModelScope.launch {
+    fun fetchNearbyStops(position: GeoPoint) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             db.busStopDao().getStopsFlow().collectLatest {
                 nearbyStops.value = it.map { i -> i.toDomain() }.sortedBy { b ->
-                    val latLng = LatLng(b.lat, b.lng)
-                    position.distanceTo(latLng)
+                    val latLng = GeoPoint(b.lat, b.lng)
+                    position.distanceToAsDouble(latLng)
                 }.take(5)
             }
         }

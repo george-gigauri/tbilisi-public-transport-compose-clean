@@ -48,7 +48,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
-import com.mapbox.mapboxsdk.geometry.LatLng
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.dpToPx
@@ -146,7 +145,7 @@ fun LiveBusScreen(
     if (infoBottomSheetState.isVisible) {
         LiveBusInfoBottomSheet(
             infoBottomSheetState,
-            LatLng(userLocation.latitude, userLocation.longitude),
+            GeoPoint(userLocation.latitude, userLocation.longitude),
             route,
             route1,
             route2,
@@ -166,7 +165,7 @@ fun LiveBusScreen(
                 BusDistanceReminderWorker.start(
                     context,
                     route1.number,
-                    LatLng(userLocation.latitude, userLocation.longitude),
+                    GeoPoint(userLocation.latitude, userLocation.longitude),
                     distance,
                     isForward
                 )

@@ -90,7 +90,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.28.0")
-    implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.1")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")

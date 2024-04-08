@@ -19,12 +19,12 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.common.model.LatLngPoint
 import ge.transitgeorgia.module.common.other.Const
 import ge.transitgeorgia.module.domain.util.ResultWrapper
 import ge.transitgeorgia.module.presentation.R
@@ -32,6 +32,7 @@ import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.osmdroid.util.GeoPoint
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -48,7 +49,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
 
         val busNumber = params.inputData.getInt("route_number", -1)
         val userLocation = params.inputData.getDoubleArray("user_lat_lng")?.let {
-            LatLng(it.first(), it.last())
+            GeoPoint(it.first(), it.last())
         }
         val distance = params.inputData.getInt("distance", 0)
         val isForward = params.inputData.getBoolean("is_forward", true)
@@ -68,7 +69,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
     private suspend fun fetch(
         busNumber: Int,
         isForward: Boolean,
-        location: LatLng,
+        location: GeoPoint,
         distance: Int
     ) = withContext(Dispatchers.IO) {
         var isDone = false
@@ -92,16 +93,16 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun process(buses: List<Bus>, location: LatLng, distance: Int): Boolean {
+    private suspend fun process(buses: List<Bus>, location: GeoPoint, distance: Int): Boolean {
         val thatOneBus = buses.find {
-            val latLng = LatLng(it.lat, it.lng)
-            val realDistance = latLng.distanceTo(location)
+            val latLng = GeoPoint(it.lat, it.lng)
+            val realDistance = latLng.distanceToAsDouble(location)
             realDistance <= distance
         }
 
         if (thatOneBus != null) {
-            val latLng = LatLng(thatOneBus.lat, thatOneBus.lng)
-            notify(thatOneBus.number, location.distanceTo(latLng))
+            val latLng = GeoPoint(thatOneBus.lat, thatOneBus.lng)
+            notify(thatOneBus.number, location.distanceToAsDouble(latLng))
         }
 
         return thatOneBus != null
@@ -152,7 +153,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
         fun start(
             context: Context,
             busNumber: Int,
-            userLocation: LatLng,
+            userLocation: GeoPoint,
             distance: Int,
             isForward: Boolean
         ) {
