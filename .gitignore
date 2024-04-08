@@ -15,3 +15,7 @@
 .cxx
 local.properties
 gradle.properties
+*.apk
+*.aab
+*.jks
+app/keystore_file.jks
