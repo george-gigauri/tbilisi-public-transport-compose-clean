@@ -111,11 +111,19 @@ fun LiveBusScreen(
     )
 
     val infoBottomSheetState = rememberModalBottomSheetState()
+    val askFavoriteBottomSheetState = rememberModalBottomSheetState()
     val infoBottomSheetScope = rememberCoroutineScope()
+    val askFavoriteBottomSheetScope = rememberCoroutineScope()
 
     var isNotifyMeDialogVisible by rememberSaveable { mutableStateOf(false) }
+    val shouldShowAskToAddToFavorites by viewModel.shouldShowAddToFavoriteRoutesDialog.collectAsStateWithLifecycle()
+    var isAddToFavoritesConsentVisible by rememberSaveable { mutableStateOf(false) }
 
     var userLocation by remember { mutableStateOf(Location(null)) }
+
+    LaunchedEffect(key1 = shouldShowAskToAddToFavorites) {
+        isAddToFavoritesConsentVisible = shouldShowAskToAddToFavorites
+    }
 
     LaunchedEffect(key1 = Unit) {
         if (locationPermissionState.allPermissionsGranted) {
@@ -139,6 +147,24 @@ fun LiveBusScreen(
         }
         workInfo.observeForever(observer)
         onDispose { workInfo.removeObserver(observer) }
+    }
+
+    // Bottom Sheet Ask To Add To Favorites
+    if (isAddToFavoritesConsentVisible) {
+        AskAddToFavoritesBottomSheet(
+            state = askFavoriteBottomSheetState,
+            onAccept = {
+                viewModel.addToFavoriteRoutes()
+                isAddToFavoritesConsentVisible = false
+            },
+            onCancel = {
+                viewModel.rejectAddToFavorites()
+                isAddToFavoritesConsentVisible = false
+                askFavoriteBottomSheetScope.launch {
+                    askFavoriteBottomSheetState.hide()
+                }
+            }
+        )
     }
 
     // Bottom Sheet of Information

@@ -40,14 +40,11 @@ class LiveBusViewModel @Inject constructor(
     val route: MutableStateFlow<Route?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
+    val isFavoriteRoute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val shouldShowAddToFavoriteRoutesDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isCircular: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val previousBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
-
-    var autoRefresh: Boolean = true
-        set(value) {
-            field = value
-        }
 
     val routeNumber: String? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
@@ -63,6 +60,20 @@ class LiveBusViewModel @Inject constructor(
         }
     }
 
+    fun addToFavoriteRoutes() = viewModelScope.launch {
+        routeNumber?.toIntOrNull()?.let {
+            val city = dataStore.city.first()
+            db.routeDao().setClickCount(it, city.id, 10)
+        }
+    }
+
+    fun rejectAddToFavorites() = viewModelScope.launch {
+        routeNumber?.toIntOrNull()?.let {
+            val city = dataStore.city.first()
+            db.routeDao().setClickCount(it, city.id, 1)
+        }
+    }
+
     private suspend fun getRoute() {
         route.value = routeNumber?.toIntOrNull()?.let { db.routeDao().getRoute(it)?.toDomain() }
     }
@@ -75,12 +86,20 @@ class LiveBusViewModel @Inject constructor(
                     RouteClicksEntity(
                         null,
                         it,
-                        0,
+                        1,
                         city.id
                     )
                 )
             }
-            db.routeDao().increaseClickCount(it, city.id)
+            db.routeDao().getClickCount(it, city.id).let { clicks ->
+                isFavoriteRoute.value = clicks >= 10
+                delay(1500)
+                shouldShowAddToFavoriteRoutesDialog.value =
+                    ((clicks % 5L) == 0L) && !isFavoriteRoute.value
+            }
+            if (!isFavoriteRoute.value) {
+                db.routeDao().increaseClickCount(it, city.id)
+            }
         }
     }
 

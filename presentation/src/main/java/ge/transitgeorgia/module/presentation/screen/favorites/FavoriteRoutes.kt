@@ -102,7 +102,7 @@ fun FavoriteRoutes(
             ) {
                 Text(
                     text = stringResource(id = R.string.message_delete_route_from_favorites),
-                    color = DynamicBlack,
+                    color = DynamicWhite,
                     fontSize = 15.sp
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -130,7 +130,7 @@ fun FavoriteRoutes(
                     }) {
                         Text(
                             text = stringResource(id = R.string.yes),
-                            color= DynamicWhite,
+                            color = DynamicBlack,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp
                         )

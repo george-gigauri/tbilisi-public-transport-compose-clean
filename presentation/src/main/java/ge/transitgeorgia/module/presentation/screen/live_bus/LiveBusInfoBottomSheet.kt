@@ -54,7 +54,11 @@ fun LiveBusInfoBottomSheet(
         sheetState = state,
         onDismissRequest = { onCancel.invoke() }
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 56.dp)
+        ) {
             if (route1.stops.isNotEmpty())
                 RouteDirectionInfo(Color.Green, route?.lastStation, route?.firstStation)
 
