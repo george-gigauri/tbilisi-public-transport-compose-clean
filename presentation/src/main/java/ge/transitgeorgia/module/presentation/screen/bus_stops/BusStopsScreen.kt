@@ -68,9 +68,8 @@ fun BusStopsScreen(
             )
         }
     ) {
-        it.calculateBottomPadding()
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            Spacer(modifier = Modifier.height(54.dp))
+            Spacer(modifier = Modifier.height(it.calculateTopPadding()))
             LazyColumn {
                 items(stops) {
                     ItemBusStop(context, it)

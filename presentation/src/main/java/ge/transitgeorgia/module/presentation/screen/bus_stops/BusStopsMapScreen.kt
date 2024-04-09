@@ -30,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -141,7 +142,7 @@ fun BusStopsMapScreen(
             },
             factory = {
                 org.osmdroid.views.MapView(it).apply {
-                    this.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
+                    this.setTileSource(TileSourceFactory.MAPNIK)
                     this.getLocalVisibleRect(Rect())
                     this.setMultiTouchControls(true)
 
@@ -156,7 +157,12 @@ fun BusStopsMapScreen(
 
                     MyLocationNewOverlay(GpsMyLocationProvider(it), this).apply {
                         this.enableMyLocation()
-                        this.isDrawAccuracyEnabled = true
+                        this.setDirectionIcon(
+                            ContextCompat.getDrawable(context, R.drawable.marker_my_location)
+                                ?.toBitmap(26.dpToPx(), 42.dpToPx())
+                        )
+                        this.setDirectionAnchor(.5f, .5f)
+                        this.isDrawAccuracyEnabled = false
                     }.also { o ->
                         this.overlays.add(o)
                     }

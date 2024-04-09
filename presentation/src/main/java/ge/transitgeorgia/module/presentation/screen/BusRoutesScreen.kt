@@ -59,7 +59,7 @@ fun BusRoutesScreen(
             ) { viewModel.searchRoute(it) }
         }
     ) {
-        Box(modifier = Modifier.padding(top = 54.dp)) {
+        Box(modifier = Modifier.padding(top = it.calculateTopPadding())) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -176,69 +176,81 @@ fun TopBar(
     onSearchKeywordChange: (String) -> Unit
 ) {
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-            .padding(horizontal = 16.dp, vertical = 2.dp)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                .padding(horizontal = 16.dp, vertical = 2.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 4.dp)
-                    .background(
-                        if (isSystemInDarkTheme()) Color.DarkGray.copy(alpha = 0.5f)
-                        else Color.LightGray.copy(alpha = 0.5f),
-                        RoundedCornerShape(100)
-                    )
-                    .padding(start = 8.dp)
-                    .fillMaxHeight()
-                    .weight(1f)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-
-                BasicTextField(
-                    value = searchKeywordValue ?: "",
-                    onValueChange = {
-                        onSearchKeywordChange.invoke(it)
-                        Analytics.logSearchRoutes()
-                    },
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = 15.sp,
-                        color = if (isSystemInDarkTheme()) Color.White else Color.Black,
-                    ),
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 12.dp)
-                        .align(Alignment.CenterStart)
-                )
+                        .padding(vertical = 4.dp)
+                        .background(
+                            if (isSystemInDarkTheme()) Color.DarkGray.copy(alpha = 0.5f)
+                            else Color.LightGray.copy(alpha = 0.5f),
+                            RoundedCornerShape(100)
+                        )
+                        .padding(start = 8.dp)
+                        .fillMaxHeight()
+                        .weight(1f)
+                ) {
 
-                if (searchKeywordValue.isNullOrEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.search_route),
-                        color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
-                        else Color.DarkGray.copy(alpha = 0.5f),
-                        maxLines = 1,
+                    BasicTextField(
+                        value = searchKeywordValue ?: "",
+                        onValueChange = {
+                            onSearchKeywordChange.invoke(it)
+                            Analytics.logSearchRoutes()
+                        },
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            fontSize = 15.sp,
+                            color = if (isSystemInDarkTheme()) Color.White else Color.Black,
+                        ),
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(start = 12.dp)
                             .align(Alignment.CenterStart)
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.search_normal_1),
-                contentDescription = null,
-                tint = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.45f) else Color.Gray,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(8.dp)
-            )
+                    if (searchKeywordValue.isNullOrEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.search_route),
+                            color = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.4f)
+                            else Color.DarkGray.copy(alpha = 0.5f),
+                            maxLines = 1,
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .align(Alignment.CenterStart)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.search_normal_1),
+                    contentDescription = null,
+                    tint = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.45f) else Color.Gray,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }

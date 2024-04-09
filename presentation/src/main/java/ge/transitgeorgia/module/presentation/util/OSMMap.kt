@@ -58,7 +58,7 @@ fun MapView.centerMapBetweenPoints(point1: GeoPoint, point2: GeoPoint, padding: 
 
 fun MapView.centerAndZoomPolyline(polyline: Polyline) {
     post {
-        zoomToBoundingBox(polyline.bounds.increaseByScale(1.5f), true)
+        zoomToBoundingBox(polyline.bounds.increaseByScale(1.5f), false)
     }
 }
 

@@ -35,23 +35,25 @@
         tools:targetApi="31">
         <activity
             android:name=".presentation.schedule.ScheduleActivity"
+            android:configChanges="locale"
             android:exported="false" />
         <activity android:name=".presentation.scanner.QRScannerActivity" />
         <activity
             android:name=".module.presentation.screen.timetable.TimeTableActivity"
             android:exported="false"
+            android:configChanges="locale"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".module.presentation.screen.live_bus.LiveBusActivity"
+            android:configChanges="locale"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".module.presentation.screen.main.MainActivity"
+            android:configChanges="locale"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.TbilisiPublicTransport">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

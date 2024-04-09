@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,6 +72,7 @@ import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
@@ -85,6 +87,8 @@ fun LiveBusScreen(
     val currentActivity = (LocalContext.current as? LiveBusActivity)
     val context = LocalContext.current
 
+    var mapView: MapView? = remember { null }
+    var myLocationOverlay: MyLocationNewOverlay? = remember { null }
     var mapController: IMapController? = remember { null }
     var mapZoom: Double by remember { mutableDoubleStateOf(0.0) }
 
@@ -251,6 +255,7 @@ fun LiveBusScreen(
 
                 AndroidView(
                     update = { map ->
+                        mapView = map
 
                         // Route 1 Polyline
                         val polyline1 = Polyline(map)
@@ -348,10 +353,12 @@ fun LiveBusScreen(
                         if (mapZoom >= 16) map.overlays.addAll(listOf(fwdStops, bwdStops).flatten())
                         if (busMarkerBgs.isNotEmpty()) map.overlays.addAll(busMarkerBgs)
                         map.overlays.addAll(busMarkers)
+                        map.overlays.add(myLocationOverlay)
                     },
                     factory = { c ->
-                        org.osmdroid.views.MapView(c).apply {
-                            this.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
+                        MapView(c).apply {
+                            mapView = this
+                            this.setTileSource(TileSourceFactory.MAPNIK)
                             this.getLocalVisibleRect(android.graphics.Rect())
                             this.setMultiTouchControls(true)
 
@@ -359,9 +366,17 @@ fun LiveBusScreen(
 
                             MyLocationNewOverlay(GpsMyLocationProvider(c), this).apply {
                                 this.enableMyLocation()
-                                this.isDrawAccuracyEnabled = true
+                                this.setDirectionIcon(
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.marker_my_location
+                                    )
+                                        ?.toBitmap(26.dpToPx(), 42.dpToPx())
+                                )
+                                this.setDirectionAnchor(.5f, .5f)
+                                this.isDrawAccuracyEnabled = false
                             }.also { o ->
-                                this.overlays.add(o)
+                                myLocationOverlay = o
                             }
 
                             Polyline(this).apply {
@@ -390,18 +405,19 @@ fun LiveBusScreen(
             Column(modifier = Modifier.align(Alignment.BottomEnd)) {
                 FilledTonalIconButton(
                     onClick = {
+
                         if (!LocationUtil.isLocationTurnedOn(context)) {
                             LocationUtil.requestLocation(currentActivity!!) {
                                 LocationUtil.requestLocation(currentActivity) {}
                             }
-                        }
-
-                        LocationUtil.getLastKnownLocation(context)?.let { l ->
-                            mapController?.animateTo(
-                                GeoPoint(l.latitude, l.longitude),
-                                16.0,
-                                1500
-                            )
+                        } else {
+                            myLocationOverlay?.myLocation?.let { gp ->
+                                mapController?.animateTo(
+                                    gp,
+                                    18.5,
+                                    1500
+                                )
+                            }
                         }
                     },
                     modifier = Modifier

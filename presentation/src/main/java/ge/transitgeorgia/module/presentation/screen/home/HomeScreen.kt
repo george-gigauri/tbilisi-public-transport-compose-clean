@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.home
+package ge.transitgeorgia.module.presentation.screen.home
 
 import android.Manifest
 import android.content.Context
@@ -34,10 +34,10 @@ import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.RouteItem
 import ge.transitgeorgia.module.presentation.screen.bus_stops.ItemBusStop
-import ge.transitgeorgia.module.presentation.screen.home.HomeViewModel
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import ge.transitgeorgia.presentation.home.CitySwitchDropDown
 import org.osmdroid.util.GeoPoint
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -55,7 +55,6 @@ fun HomeScreen(
 
     var isLocationEnabled by rememberSaveable { mutableStateOf(false) }
     var userLocation by rememberSaveable { mutableStateOf(GeoPoint(0.0, 0.0)) }
-
 
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -103,14 +102,13 @@ fun HomeScreen(
     Scaffold(topBar = {
         TopBar(context, viewModel)
     }, modifier = Modifier.fillMaxSize()) {
-        it.calculateBottomPadding()
 
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
+                .padding(top = it.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(54.dp))
             Spacer(modifier = Modifier.height(12.dp))
             if (topRoutes.isNotEmpty()) {
                 FavoriteRoutes(topRoutes)
@@ -256,33 +254,45 @@ private fun Header(text: String, modifier: Modifier = Modifier) {
 fun TopBar(context: Context, viewModel: HomeViewModel) {
     val currentCity by viewModel.city.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .background(colorScheme.surfaceColorAtElevation(3.dp))
-            .padding(horizontal = 16.dp)
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = stringResource(id = R.string.home),
-            color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
-            //     fontFamily = FontFamily(Font(R.font.bpg_nino_mtavruli_bold)),
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+
+        Spacer(
             modifier = Modifier
-                .wrapContentWidth()
-                .align(Alignment.CenterStart)
+                .fillMaxWidth()
+                .height(42.dp)
+                .background(colorScheme.surfaceColorAtElevation(3.dp))
         )
 
-        CitySwitchDropDown(currentCity, {
-            Analytics.logChangeCity(it.id)
-            viewModel.setDefaultCity(it)
-            val intent = Intent(context, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
-            (context as? MainActivity)?.finish()
-            context.startActivity(intent)
-            Runtime.getRuntime().exit(0)
-        }, Modifier.align(Alignment.CenterEnd))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(colorScheme.surfaceColorAtElevation(3.dp))
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.home),
+                color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
+                //     fontFamily = FontFamily(Font(R.font.bpg_nino_mtavruli_bold)),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .align(Alignment.CenterStart)
+            )
+
+            CitySwitchDropDown(currentCity, {
+                Analytics.logChangeCity(it.id)
+                viewModel.setDefaultCity(it)
+                val intent = Intent(context, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
+                (context as? MainActivity)?.finish()
+                context.startActivity(intent)
+                Runtime.getRuntime().exit(0)
+            }, Modifier.align(Alignment.CenterEnd))
+        }
     }
 }

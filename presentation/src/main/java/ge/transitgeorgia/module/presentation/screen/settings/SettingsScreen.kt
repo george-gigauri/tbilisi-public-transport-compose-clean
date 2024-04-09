@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.settings
+package ge.transitgeorgia.module.presentation.screen.settings
 
 import android.content.Context
 import android.content.Intent
@@ -25,8 +25,10 @@ import ge.transitgeorgia.module.common.util.AppLanguage
 import ge.transitgeorgia.module.presentation.BuildConfig
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
-import ge.transitgeorgia.module.presentation.screen.settings.TopBar
 import ge.transitgeorgia.module.presentation.worker.TranslateDataWorker
+import ge.transitgeorgia.presentation.settings.DropDownSetting
+import ge.transitgeorgia.presentation.settings.GoToSetting
+import ge.transitgeorgia.presentation.settings.SettingsViewModel
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
@@ -39,17 +41,17 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     }
 
     Scaffold(topBar = { TopBar() }, bottomBar = { VersionNameBottomBar() }) {
-        it.calculateBottomPadding()
+
         LazyColumn(
-            Modifier.padding(top = 54.dp)
+            Modifier.padding(top = it.calculateTopPadding())
         ) {
             item {
                 DropDownSetting(
                     text = stringResource(id = R.string.app_language),
-                    items = AppLanguage.Language.values().toList(),
-                    selectedValueIndex = AppLanguage.Language.values().indexOf(appLanguage),
+                    items = AppLanguage.Language.entries,
+                    selectedValueIndex = AppLanguage.Language.entries.indexOf(appLanguage),
                     onValueSelected = { index ->
-                        val language = AppLanguage.Language.values()[index]
+                        val language = AppLanguage.Language.entries[index]
                         viewModel.setAppLanguage(language)
                         Analytics.logChangeLanguage(language.name)
 
@@ -57,14 +59,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                             activity?.let(TranslateDataWorker::start)
                         }
 
-                        android.os.Handler().postDelayed({
-                            val intent = Intent(activity, MainActivity::class.java)
-                            intent.flags =
-                                Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            activity?.finish()
-                            activity?.startActivity(intent)
-                            Runtime.getRuntime().exit(0)
-                        }, 750)
+//                        android.os.Handler().postDelayed({
+//                            val intent = Intent(activity, MainActivity::class.java)
+//                            intent.flags =
+//                                Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                            activity?.finish()
+//                            activity?.startActivity(intent)
+//                            Runtime.getRuntime().exit(0)
+//                        }, 750)
                     }
                 )
             }

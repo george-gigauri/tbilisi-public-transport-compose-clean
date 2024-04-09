@@ -22,14 +22,28 @@ object AppLanguage {
         ENG("English", "en", "2443", R.drawable.ic_flag_united_kingdom)
     }
 
+    fun setLocale(context: Context, language: String) {
+        val locale = Locale(language)
+        val config = context.resources.configuration
+        Locale.setDefault(locale)
+        config.setLocale(locale)
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+    }
+
+    fun resetLocale(context: Context) {
+        val config = context.resources.configuration
+        config.setLocale(Locale.getDefault())
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+    }
+
     fun updateLanguage(context: Context, language: String) {
-        val myLocale = Locale(language)
-        val res: Resources = context.resources
-        val dm: DisplayMetrics = res.displayMetrics
-        val conf: Configuration = res.configuration
-        conf.locale = myLocale
-        Locale.setDefault(myLocale)
-        conf.setLayoutDirection(myLocale)
-        res.updateConfiguration(conf, dm)
+        context.resources.apply {
+            val locale = Locale(language)
+            val config = Configuration(configuration)
+            context.createConfigurationContext(configuration)
+            Locale.setDefault(locale)
+            config.setLocale(locale)
+            context.resources.updateConfiguration(config, displayMetrics)
+        }
     }
 }

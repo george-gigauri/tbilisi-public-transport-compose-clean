@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.main
+package ge.transitgeorgia.module.presentation.screen.main
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
@@ -20,17 +20,16 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import ge.transitgeorgia.module.presentation.screen.BusRoutesScreen
 import ge.transitgeorgia.module.presentation.screen.bus_stops.BusStopsScreen
 import ge.transitgeorgia.module.presentation.screen.favorites.FavoritesScreen
-import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.screen.bus_stops.BusStopsMapScreen
-import ge.transitgeorgia.presentation.home.HomeScreen
-import ge.transitgeorgia.presentation.settings.SettingsScreen
+import ge.transitgeorgia.module.presentation.screen.home.HomeScreen
+import ge.transitgeorgia.module.presentation.screen.settings.SettingsScreen
 
 @Composable
 fun BottomNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = MainNavigationScreen.Home.screenName,
-        modifier = Modifier.windowInsetsPadding(WindowInsets(bottom = 54.dp))
+        modifier = Modifier.windowInsetsPadding(WindowInsets(bottom = 56.dp))
     ) {
         composable(MainNavigationScreen.Home.screenName) {
             HomeScreen(navController)

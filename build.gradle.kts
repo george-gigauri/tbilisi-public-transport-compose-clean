@@ -14,9 +14,9 @@ buildscript {
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
         classpath("com.google.gms:google-services:4.4.1")
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
-        classpath("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.22-1.0.17")
+        classpath("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.23-1.0.19")
     }
 }
 
-val appVersionCode: Int by extra { 28 }
-val appVersionName: String by extra { "1.8.8" }
+val appVersionCode: Int by extra { 33 }
+val appVersionName: String by extra { "1.8.12" }

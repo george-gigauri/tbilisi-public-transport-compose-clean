@@ -3,6 +3,8 @@ package ge.transitgeorgia.module.presentation.screen.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,22 +26,34 @@ import ge.transitgeorgia.module.presentation.R
 
 @Composable
 fun TopBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(54.dp)
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-            .padding(horizontal = 16.dp)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = stringResource(id = R.string.settings),
-            color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+
+        Spacer(
             modifier = Modifier
-                .wrapContentWidth()
-                .align(Alignment.CenterStart)
+                .fillMaxWidth()
+                .height(42.dp)
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
         )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.settings),
+                color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .align(Alignment.CenterStart)
+            )
+        }
     }
 }

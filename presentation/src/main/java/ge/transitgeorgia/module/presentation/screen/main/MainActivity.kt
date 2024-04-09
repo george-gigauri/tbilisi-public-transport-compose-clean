@@ -1,17 +1,13 @@
 package ge.transitgeorgia.module.presentation.screen.main
 
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.preference.PreferenceManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -28,22 +24,27 @@ import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.util.QRScanner
+import ge.transitgeorgia.module.common.ext.configureTransparentWindow
 import ge.transitgeorgia.module.common.util.AppLanguage
 import ge.transitgeorgia.module.common.util.LocationUtil
-import ge.transitgeorgia.module.common.util.MyContextWrapper
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.presentation.BuildConfig
 import ge.transitgeorgia.module.presentation.worker.TranslateDataWorker
-import ge.transitgeorgia.presentation.main.MainScreenContent
 import ge.transitgeorgia.presentation.main.MainViewModel
 import ge.transitgeorgia.presentation.main.SelectLanguageDialog
 import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTheme
+import ge.transitgeorgia.ui.theme.TbilisiPublicTransportTranlucentStatusBarTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.osmdroid.config.Configuration
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var dataStore: AppDataStore
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -57,9 +58,11 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val language = runBlocking { AppDataStore(this@MainActivity).language.first() }
-        AppLanguage.updateLanguage(this, language.value)
         super.onCreate(savedInstanceState)
+        configureTransparentWindow()
+        dataStore = AppDataStore(this)
+        val language = runBlocking { dataStore.language.first() }
+        AppLanguage.setLocale(this, language.value)
 
         appUpdateManager = AppUpdateManagerFactory.create(this)
         appUpdateInfoTask = appUpdateManager.appUpdateInfo
@@ -78,9 +81,9 @@ class MainActivity : ComponentActivity() {
             .load(this, PreferenceManager.getDefaultSharedPreferences(this))
 
         setContent {
-            val shouldShowLanguagePrompt by viewModel.shouldPromptLanguageSelector.collectAsState()
+            val shouldShowLanguagePrompt by viewModel.shouldPromptLanguageSelector.collectAsStateWithLifecycle()
 
-            TbilisiPublicTransportTheme {
+            TbilisiPublicTransportTranlucentStatusBarTheme {
                 if (shouldShowLanguagePrompt) {
                     SelectLanguageDialog(
                         onSelect = { lang ->
@@ -91,18 +94,28 @@ class MainActivity : ComponentActivity() {
                                     TranslateDataWorker.start(this@MainActivity)
                                 }
 
-                                Handler().postDelayed({
-                                    val intent = Intent(this@MainActivity, MainActivity::class.java)
-                                    intent.flags =
-                                        Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    finish()
-                                    startActivity(intent)
-                                    Runtime.getRuntime().exit(0)
-                                }, 800)
+                                delay(500)
+                                AppLanguage.updateLanguage(this@MainActivity, lang.value)
+                                delay(500)
+                                recreate()
                             }
                         }
                     )
                 } else MainScreenContent()
+            }
+        }
+    }
+
+
+    private fun listenLanguageUpdate() {
+        val prevLanguage = runBlocking { dataStore.language.first() }
+        lifecycleScope.launch {
+            dataStore.language.collectLatest {
+                if (prevLanguage.value != it.value) {
+                    AppLanguage.updateLanguage(this@MainActivity, it.value)
+                    delay(500)
+                    recreate()
+                }
             }
         }
     }
@@ -146,6 +159,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        listenLanguageUpdate()
         Analytics.logAppLoaded()
         Firebase.inAppMessaging.triggerEvent("whats_new")
     }

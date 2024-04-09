@@ -11,6 +11,7 @@ import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -33,7 +34,9 @@ class MainViewModel @Inject constructor(
     }
 
     private fun checkIsLanguageSelected() = viewModelScope.launch {
-        _shouldPromptLanguageSelector.value = !dataStore.isLanguageSet.first()
+        dataStore.isLanguageSet.collectLatest {
+            _shouldPromptLanguageSelector.value = !it
+        }
     }
 
     fun setLanguage(lang: AppLanguage.Language) = viewModelScope.launch {

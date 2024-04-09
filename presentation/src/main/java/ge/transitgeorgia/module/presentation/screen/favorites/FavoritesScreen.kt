@@ -41,7 +41,12 @@ fun FavoritesScreen(
     val routes by viewModel.routes.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        TabRow(selectedTabIndex = selectedTabIndex) {
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            modifier = Modifier
+                .background(DynamicPrimary)
+                .padding(top = 54.dp)
+        ) {
             TabItem(selectedTabIndex, stringResource(id = R.string.routes), 0) {
                 selectedTabIndex = it
                 Analytics.logViewTopRoutesPage()
