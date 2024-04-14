@@ -34,11 +34,16 @@
     <string name="metro">Subway</string>
     <string name="bus">Bus</string>
     <string name="microbus">Microbus</string>
-    <string name="label_see_more_schedule">...See More</string>
+    <string name="label_see_more_schedule">…See More</string>
     <string name="label_stop_name">Stop Name</string>
     <string name="message_delete_route_from_favorites">Are you sure you want to delete this route from favorites?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="title_ask_add_bus_to_favorites">Top Route 💫</string>
-    <string name="message_ask_add_bus_to_favorites">As it seems, you are using this route regularily 👀 Should we add it to Top Routes for you? Top Routes are shown on the Home page and its easier to access 🤩</string>
+    <string name="message_ask_add_bus_to_favorites">Seems like you are using this route regularly 👀 Should we add it to Top Routes for you? Top Routes are shown on the Home page and its easier to access 🤩</string>
+    <string name="title_background_location_disclosure">Background Location Access</string>
+    <string name="message_background_location_disclosure">This App uses your location data to enable "Notification when bus is approaching" feature and Interactive Maps, even when app is closed or not in use.</string>
+    <string name="deny">Deny</string>
+    <string name="accept">Accept</string>
+    <string name="tutorial_background_location_disclosure">App will use your current location in the background. In order to use this feature, please click "Accept", then select "Allow all the time" and go back to the app.</string>
 </resources>

@@ -12,6 +12,7 @@ import ge.transitgeorgia.module.data.mapper.toDomain
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.util.ErrorType
 import ge.transitgeorgia.module.domain.util.ResultWrapper
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -56,53 +57,56 @@ class ScheduleViewModel @Inject constructor(
             else -> Unit
         }
 
-        val currentDateTime = LocalDateTime.now()
-        val currentTime = currentDateTime.toLocalTime()
-        val currentTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-        val currentHourAndMinute = currentTimeFormatter.format(currentTime)
-        val currentWeekDay = currentDateTime.dayOfWeek
-
-        val currentWeekDaySchedules = scheduleData.value.find {
-            val from = DayOfWeek.valueOf(it.fromDay.uppercase())
-            val to = DayOfWeek.valueOf(it.toDay.uppercase())
-            currentWeekDay >= from && currentWeekDay <= to
-        }?.stops?.map {
-
-            try {
-                val soonest = it.arrivalTimes.filter { hhmm ->
-                    currentHourAndMinute <= hhmm
-                }.minOrNull() ?: "---"
-
-                val converteddatee = LocalDateTime.of(
-                    LocalDate.now(),
-                    LocalTime.of(soonest.split(":")[0].toInt(), soonest.split(":")[1].toInt())
-                ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-                val interval = (converteddatee - System.currentTimeMillis()) / 60 / 1000
-                val isIntervalLessThan30Minutes = interval <= 30
-
-                CurrentTimeStationSchedule(
-                    if (isIntervalLessThan30Minutes) "$interval" else soonest,
-                    it.id,
-                    it.name,
-                    it.arrivalTimes.filter { time -> currentHourAndMinute < time && time != soonest }
-                )
-            } catch (e: Exception) {
-                CurrentTimeStationSchedule(
-                    "---",
-                    it.id,
-                    it.name,
-                    it.arrivalTimes
-                )
-            }
-        }
-
-        data.value = currentWeekDaySchedules.orEmpty()
+        refresh()
         isLoading.emit(false)
     }
 
-    fun refresh() {
-        fetch()
+    fun refresh() = viewModelScope.launch {
+        while (true) {
+            val currentDateTime = LocalDateTime.now()
+            val currentTime = currentDateTime.toLocalTime()
+            val currentTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+            val currentHourAndMinute = currentTimeFormatter.format(currentTime)
+            val currentWeekDay = currentDateTime.dayOfWeek
+
+            val currentWeekDaySchedules = scheduleData.value.find {
+                val from = DayOfWeek.valueOf(it.fromDay.uppercase())
+                val to = DayOfWeek.valueOf(it.toDay.uppercase())
+                currentWeekDay >= from && currentWeekDay <= to
+            }?.stops?.map {
+
+                try {
+                    val soonest = it.arrivalTimes.filter { hhmm ->
+                        currentHourAndMinute <= hhmm
+                    }.minOrNull() ?: "---"
+
+                    val converteddatee = LocalDateTime.of(
+                        LocalDate.now(),
+                        LocalTime.of(soonest.split(":")[0].toInt(), soonest.split(":")[1].toInt())
+                    ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+                    val interval = (converteddatee - System.currentTimeMillis()) / 60 / 1000
+                    val isIntervalLessThan30Minutes = interval <= 30
+
+                    CurrentTimeStationSchedule(
+                        if (isIntervalLessThan30Minutes) "$interval" else soonest,
+                        it.id,
+                        it.name,
+                        it.arrivalTimes.filter { time -> currentHourAndMinute < time && time != soonest }
+                    )
+                } catch (e: Exception) {
+                    CurrentTimeStationSchedule(
+                        "---",
+                        it.id,
+                        it.name,
+                        it.arrivalTimes
+                    )
+                }
+            }
+
+            data.value = currentWeekDaySchedules.orEmpty()
+            delay(10000)
+        }
     }
 
     fun changeDirection() = viewModelScope.launch {

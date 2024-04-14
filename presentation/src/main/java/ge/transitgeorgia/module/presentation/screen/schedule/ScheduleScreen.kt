@@ -44,11 +44,11 @@ import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.model.RouteTransportType
 import ge.transitgeorgia.module.presentation.R
+import ge.transitgeorgia.module.presentation.theme.AppColor
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.module.presentation.theme.Purple40
 import ge.transitgeorgia.module.presentation.util.asMessage
-import ge.transitgeorgia.presentation.schedule.ScheduleTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -192,7 +192,18 @@ private fun StopScheduleItem(
 
         Text(
             text = highlightedArrivalTime,
-            color = DynamicWhite,
+            color = if (schedule.currentScheduledArrivalTime in listOf(
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                )
+            ) {
+                AppColor.POLYLINE_GREEN
+            } else if (schedule.currentScheduledArrivalTime == "0") {
+                AppColor.POLYLINE_RED
+            } else DynamicWhite,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             modifier = Modifier

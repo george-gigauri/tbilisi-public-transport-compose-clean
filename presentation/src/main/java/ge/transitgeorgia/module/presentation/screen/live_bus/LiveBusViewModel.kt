@@ -149,28 +149,28 @@ class LiveBusViewModel @Inject constructor(
             var busesBackward: List<Bus> = emptyList()
 
             when (val b = busesAsync[0]) {
-                is ResultWrapper.Success -> busesForward = b.data.sortedByDescending { it.lng }
+                is ResultWrapper.Success -> busesForward = b.data
                 is ResultWrapper.Error -> error.emit(b.type)
                 else -> Unit
             }
 
             when (val b = busesAsync[1]) {
-                is ResultWrapper.Success -> busesBackward = b.data.sortedByDescending { it.lng }
+                is ResultWrapper.Success -> busesBackward = b.data
                 is ResultWrapper.Error -> error.emit(b.type)
                 else -> Unit
             }
 
-            val bothBuses = listOf(busesForward, busesBackward).flatten().map { b ->
+            val bothBuses = listOf(busesForward, busesBackward).flatten().sortedByDescending {
+                it.lat
+            }.map { b ->
                 b.apply {
                     previousBuses.value.find { pb -> pb.nextStopId == b.nextStopId }?.let { pb ->
-                        if (this.lat != pb.lat && this.lng != pb.lng) {
                             this.bearing = LatLngUtil.calculateBearing(
                                 pb.lat,
                                 pb.lng,
                                 this.lat,
                                 this.lng
                             ).toDouble()
-                        }
                     }
                 }
             }
@@ -189,7 +189,7 @@ class LiveBusViewModel @Inject constructor(
                 }
             }
 
-            delay(if (route1.value.isMicroBus) 30000 else Random.nextLong(5000, 10000))
+            delay(if (route1.value.isMicroBus) 25000 else Random.nextLong(5000, 8000))
         }
     }
 }

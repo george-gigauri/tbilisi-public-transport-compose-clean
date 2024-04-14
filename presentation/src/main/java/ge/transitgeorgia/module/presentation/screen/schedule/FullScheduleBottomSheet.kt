@@ -66,7 +66,7 @@ fun FullScheduleBottomSheet(
                 Text(
                     text = stopName ?: "---",
                     fontSize = 15.sp,
-                    color = DynamicBlack,
+                    color = DynamicWhite,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -82,7 +82,7 @@ fun FullScheduleBottomSheet(
                     } else "$dayFrom - $dayTo",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = DynamicBlack
+                    color = DynamicWhite
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
