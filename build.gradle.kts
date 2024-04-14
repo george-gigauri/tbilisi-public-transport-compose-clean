@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.3.1")
+        classpath("com.android.tools.build:gradle:8.3.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
         classpath("com.google.gms:google-services:4.4.1")
@@ -18,5 +18,5 @@ buildscript {
     }
 }
 
-val appVersionCode: Int by extra { 33 }
-val appVersionName: String by extra { "1.8.12" }
+val appVersionCode: Int by extra { 34 }
+val appVersionName: String by extra { "1.9.0" }

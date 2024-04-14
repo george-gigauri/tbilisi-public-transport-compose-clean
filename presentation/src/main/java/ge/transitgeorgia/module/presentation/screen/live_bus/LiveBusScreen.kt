@@ -42,7 +42,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -63,6 +65,7 @@ import ge.transitgeorgia.presentation.live_bus.LiveBusScheduleNotificationDialog
 import ge.transitgeorgia.presentation.live_bus.LiveBusTopBar
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity
 import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.util.ComposableLifecycle
 import ge.transitgeorgia.module.presentation.util.centerAndZoomPolyline
 import ge.transitgeorgia.module.presentation.util.centerMapBetweenPoints
 import kotlinx.coroutines.launch
@@ -85,9 +88,9 @@ fun LiveBusScreen(
     viewModel: LiveBusViewModel = hiltViewModel()
 ) {
     val currentActivity = (LocalContext.current as? LiveBusActivity)
+    var lifecycleEvent by rememberSaveable { mutableStateOf(Lifecycle.Event.ON_ANY) }
     val context = LocalContext.current
 
-    var mapView: MapView? = remember { null }
     var myLocationOverlay: MyLocationNewOverlay? = remember { null }
     var mapController: IMapController? = remember { null }
     var mapZoom: Double by remember { mutableDoubleStateOf(0.0) }
@@ -103,6 +106,8 @@ fun LiveBusScreen(
 
     var isReminderRunning by rememberSaveable { mutableStateOf(false) }
 
+    var isBackgroundLocationTutorialVisible by rememberSaveable { mutableStateOf(false) }
+
     val notificationsPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
     } else null
@@ -113,6 +118,9 @@ fun LiveBusScreen(
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
     )
+
+    val backgroundLocationPermissionState =
+        rememberPermissionState(permission = Manifest.permission.ACCESS_BACKGROUND_LOCATION)
 
     val infoBottomSheetState = rememberModalBottomSheetState()
     val askFavoriteBottomSheetState = rememberModalBottomSheetState()
@@ -153,6 +161,18 @@ fun LiveBusScreen(
         onDispose { workInfo.removeObserver(observer) }
     }
 
+    if (isBackgroundLocationTutorialVisible) {
+        BackgroundLocationDisclosureSheet(
+            state = rememberModalBottomSheetState(),
+            onAccept = {
+                backgroundLocationPermissionState.launchPermissionRequest()
+                isBackgroundLocationTutorialVisible = false
+            },
+            onDeny = {
+                isBackgroundLocationTutorialVisible = false
+            })
+    }
+
     // Bottom Sheet Ask To Add To Favorites
     if (isAddToFavoritesConsentVisible) {
         AskAddToFavoritesBottomSheet(
@@ -170,6 +190,10 @@ fun LiveBusScreen(
             }
         )
     }
+
+    ComposableLifecycle(
+        onEvent = { _, event -> lifecycleEvent = event }
+    )
 
     // Bottom Sheet of Information
     if (infoBottomSheetState.isVisible) {
@@ -223,7 +247,11 @@ fun LiveBusScreen(
                         BusDistanceReminderWorker.stop(context, route?.number?.toIntOrNull() ?: -1)
                     } else {
                         if (notificationsPermission?.status == PermissionStatus.Granted) {
-                            isNotifyMeDialogVisible = true
+                            if (backgroundLocationPermissionState.status != PermissionStatus.Granted) {
+                                isBackgroundLocationTutorialVisible = true
+                            } else {
+                                isNotifyMeDialogVisible = true
+                            }
                         } else {
                             notificationsPermission?.launchPermissionRequest()
                         }
@@ -255,7 +283,6 @@ fun LiveBusScreen(
 
                 AndroidView(
                     update = { map ->
-                        mapView = map
 
                         // Route 1 Polyline
                         val polyline1 = Polyline(map)
@@ -357,7 +384,6 @@ fun LiveBusScreen(
                     },
                     factory = { c ->
                         MapView(c).apply {
-                            mapView = this
                             this.setTileSource(TileSourceFactory.MAPNIK)
                             this.getLocalVisibleRect(android.graphics.Rect())
                             this.setMultiTouchControls(true)
@@ -405,7 +431,6 @@ fun LiveBusScreen(
             Column(modifier = Modifier.align(Alignment.BottomEnd)) {
                 FilledTonalIconButton(
                     onClick = {
-
                         if (!LocationUtil.isLocationTurnedOn(context)) {
                             LocationUtil.requestLocation(currentActivity!!) {
                                 LocationUtil.requestLocation(currentActivity) {}

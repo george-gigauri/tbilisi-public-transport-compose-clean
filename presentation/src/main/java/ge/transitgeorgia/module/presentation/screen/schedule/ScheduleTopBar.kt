@@ -1,4 +1,4 @@
-package ge.transitgeorgia.presentation.schedule
+package ge.transitgeorgia.module.presentation.screen.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +17,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
+import ge.transitgeorgia.module.presentation.theme.DynamicRed
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 
 @Composable
@@ -61,6 +63,17 @@ fun ScheduleTopBar(
                 color = DynamicWhite,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "LIVE",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(100))
+                    .background(DynamicRed)
+                    .padding(horizontal = 12.dp, vertical = 1.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(

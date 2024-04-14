@@ -3,6 +3,7 @@ package ge.transitgeorgia.module.data.local.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -17,6 +18,7 @@ val Context.appDataStore: DataStore<Preferences> by preferencesDataStore(name = 
 class AppDataStore(private val context: Context) {
 
     private val KEY_LAST_UPDATED = longPreferencesKey("data_last_updated_at")
+    private val KEY_LOCATION_DISCLOSURE = longPreferencesKey("location_disclosure_answered")
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
     private val KEY_DEFAULT_CITY = stringPreferencesKey("default_city")
     private val KEY_UPDATED_CITY = stringPreferencesKey("updated_city")
@@ -24,7 +26,7 @@ class AppDataStore(private val context: Context) {
     // App Language
     val language: Flow<AppLanguage.Language>
         get() = context.appDataStore.data.map {
-            AppLanguage.Language.values().find { l -> l.value == it[KEY_APP_LANGUAGE] }
+            AppLanguage.Language.entries.find { l -> l.value == it[KEY_APP_LANGUAGE] }
                 ?: AppLanguage.Language.GEO
         }
 
@@ -65,11 +67,30 @@ class AppDataStore(private val context: Context) {
     // City
     val city: Flow<SupportedCity>
         get() = context.appDataStore.data.map {
-            SupportedCity.values().find { c -> c.id == it[KEY_DEFAULT_CITY] }
+            SupportedCity.entries.find { c -> c.id == it[KEY_DEFAULT_CITY] }
                 ?: SupportedCity.TBILISI
         }
 
     suspend fun setCity(city: SupportedCity) = context.appDataStore.edit {
         it[KEY_DEFAULT_CITY] = city.id
+    }
+
+    // Location Disclosure
+    val shouldShowLocationDisclosure: Flow<Boolean>
+        get() = context.appDataStore.data.map {
+            it[KEY_LOCATION_DISCLOSURE]?.let { timeMillis ->
+                System.currentTimeMillis() - timeMillis >= 24 * 60 * 60 * 1000
+            } ?: true
+        }
+
+    val isLocationDisclosureAnswered: Flow<Boolean>
+        get() = context.appDataStore.data.map {
+            it[KEY_LOCATION_DISCLOSURE] != null
+        }
+
+    suspend fun setLocationDisclosureAnswered() {
+        context.appDataStore.edit {
+            it[KEY_LOCATION_DISCLOSURE] = System.currentTimeMillis()
+        }
     }
 }

@@ -25,6 +25,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import ge.transitgeorgia.common.analytics.Analytics
@@ -38,9 +39,10 @@ import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.presentation.home.CitySwitchDropDown
+import kotlinx.coroutines.delay
 import org.osmdroid.util.GeoPoint
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -56,10 +58,11 @@ fun HomeScreen(
     var isLocationEnabled by rememberSaveable { mutableStateOf(false) }
     var userLocation by rememberSaveable { mutableStateOf(GeoPoint(0.0, 0.0)) }
 
+    val isLocationDisclosureVisible by viewModel.isLocationDisclosureAnswered.collectAsState()
+
     val locationPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
         ),
         onPermissionsResult = {
             if (it.all { i -> i.value }) {
@@ -93,10 +96,23 @@ fun HomeScreen(
                     viewModel.fetchNearbyStops(userLocation)
                 }
             }
-        } else {
-            locationPermissionState.launchMultiplePermissionRequest()
+        }
+
+        delay(1500)
+        if (notificationsPermission?.status != PermissionStatus.Granted) {
             notificationsPermission?.launchPermissionRequest()
         }
+    }
+
+    if (isLocationDisclosureVisible && !locationPermissionState.allPermissionsGranted) {
+        LocationDisclosureSheet(
+            state = rememberModalBottomSheetState(),
+            onAccept = {
+                locationPermissionState.launchMultiplePermissionRequest()
+            },
+            onCancel = {
+                viewModel.answerLocationDisclosure()
+            })
     }
 
     Scaffold(topBar = {

@@ -30,6 +30,7 @@ class HomeViewModel @Inject constructor(
     val favoriteStops: MutableStateFlow<List<BusStop>> = MutableStateFlow(emptyList())
     val nearbyStops: MutableStateFlow<List<BusStop>> = MutableStateFlow(emptyList())
     val city: MutableStateFlow<SupportedCity> = MutableStateFlow(SupportedCity.TBILISI)
+    val isLocationDisclosureAnswered: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
 
@@ -37,9 +38,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             listOf(
                 launch { listenCityChanges() },
+                launch { listenLocationDisclosureChanges() },
                 launch { fetchTopRoutes() },
                 launch { fetchFavoriteStops() }
             ).joinAll()
+        }
+    }
+
+    private fun listenLocationDisclosureChanges() = viewModelScope.launch {
+        dataStore.shouldShowLocationDisclosure.collectLatest {
+            isLocationDisclosureAnswered.value = it
         }
     }
 
@@ -80,5 +88,9 @@ class HomeViewModel @Inject constructor(
         withContext(Dispatchers.IO) {
             dataStore.setCity(city)
         }
+    }
+
+    fun answerLocationDisclosure() = viewModelScope.launch {
+        dataStore.setLocationDisclosureAnswered()
     }
 }

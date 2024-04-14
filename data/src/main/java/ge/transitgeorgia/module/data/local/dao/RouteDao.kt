@@ -33,10 +33,10 @@ interface RouteDao {
     @Query("SELECT * FROM route")
     fun getAllFlow(): Flow<List<RouteEntity>>
 
-    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
+    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
     suspend fun getTopRoutes(cityId: String = SupportedCity.TBILISI.id): List<RouteEntity>
 
-    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 3 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
+    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
     fun getTopRoutesFlow(cityId: String = SupportedCity.TBILISI.id): Flow<List<RouteEntity>>
 
     @Query("UPDATE route_click_count SET clicks=1 WHERE routeNumber=:routeNumber")
@@ -48,7 +48,7 @@ interface RouteDao {
     @Query("""UPDATE route_click_count SET clicks=:count WHERE routeNumber=:routeNumber AND city=:cityId""")
     suspend fun setClickCount(routeNumber: Int, cityId: String, count: Long)
 
-    @Query("SELECT (COUNT(*) > 0) FROM route r INNER JOIN route_click_count ON number=:routeNumber WHERE clicks >= 3 AND number=:routeNumber AND city=:cityId ORDER BY clicks DESC")
+    @Query("SELECT (COUNT(*) > 0) FROM route r INNER JOIN route_click_count ON number=:routeNumber WHERE clicks >= 10 AND number=:routeNumber AND city=:cityId ORDER BY clicks DESC")
     suspend fun isTop(routeNumber: Int, cityId: String): Boolean
 
     @Query("SELECT (COUNT(*) > 0) FROM route_click_count WHERE routeNumber=:routeNumber AND city=:cityId")
