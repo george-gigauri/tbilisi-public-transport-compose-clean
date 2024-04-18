@@ -36,7 +36,6 @@ fun BackgroundLocationDisclosureSheet(
     onDeny: () -> Unit,
 ) {
 
-
     ModalBottomSheet(
         sheetState = state,
         onDismissRequest = { onDeny() }
@@ -73,11 +72,12 @@ fun BackgroundLocationDisclosureSheet(
                     text = stringResource(id = R.string.deny),
                     color = DynamicGray,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 17.sp,
+                    fontSize = 15.sp,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .clip(RoundedCornerShape(100))
                         .clickable { onDeny() }
+                        .weight(1f)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(onClick = { onAccept() }) {
@@ -85,8 +85,10 @@ fun BackgroundLocationDisclosureSheet(
                         text = stringResource(id = R.string.accept),
                         color = DynamicBlack,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        fontSize = 15.sp,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .weight(1f)
                     )
                 }
             }

@@ -43,6 +43,7 @@ import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.util.ComposableLifecycle
 import ge.transitgeorgia.module.presentation.screen.timetable.TimeTableActivity
+import ge.transitgeorgia.module.presentation.theme.AppColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.osmdroid.api.IMapController
 import org.osmdroid.events.MapListener
@@ -50,6 +51,7 @@ import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay
@@ -112,8 +114,8 @@ fun BusStopsMapScreen(
 
                     val pointStyle = Paint()
                     pointStyle.style = Paint.Style.FILL_AND_STROKE
-                    pointStyle.color = Color.parseColor("#0094ff")
-                    pointStyle.strokeWidth = 10f
+                    pointStyle.color = AppColor.POLYLINE_RED.toArgb()
+                    pointStyle.strokeWidth = 14.dpToPx().toFloat()
 
                     val opt = SimpleFastPointOverlayOptions()
                         .setSymbol(SimpleFastPointOverlayOptions.Shape.CIRCLE)
@@ -122,9 +124,9 @@ fun BusStopsMapScreen(
                         .setPointStyle(pointStyle)
                         .setLabelPolicy(SimpleFastPointOverlayOptions.LabelPolicy.DENSITY_THRESHOLD)
                         .setAlgorithm(SimpleFastPointOverlayOptions.RenderingAlgorithm.MAXIMUM_OPTIMIZATION)
-                        .setRadius(20f)
+                        .setRadius(30f)
                         .setIsClickable(true)
-                        .setCellSize(80)
+                        .setCellSize(150)
                         .setTextStyle(textStyle)
 
                     val sfpo = SimpleFastPointOverlay(pt, opt)
@@ -159,7 +161,7 @@ fun BusStopsMapScreen(
                         this.enableMyLocation()
                         this.setDirectionIcon(
                             ContextCompat.getDrawable(context, R.drawable.marker_my_location)
-                                ?.toBitmap(26.dpToPx(), 42.dpToPx())
+                                ?.toBitmap(26.dpToPx(), 44.dpToPx())
                         )
                         this.setDirectionAnchor(.5f, .5f)
                         this.isDrawAccuracyEnabled = false
