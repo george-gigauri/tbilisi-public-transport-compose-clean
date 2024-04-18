@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,12 +71,14 @@ import ge.transitgeorgia.module.presentation.util.centerAndZoomPolyline
 import ge.transitgeorgia.module.presentation.util.centerMapBetweenPoints
 import kotlinx.coroutines.launch
 import org.osmdroid.api.IMapController
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
@@ -311,7 +314,7 @@ fun LiveBusScreen(
                                     this.icon = ContextCompat.getDrawable(
                                         context,
                                         R.drawable.marker_microbus_bg
-                                    )?.resize(context, 14.dpToPx(), 14.dpToPx())
+                                    )?.resize(context, 16.dpToPx(), 16.dpToPx())
                                     this.position = GeoPoint(bus.lat, bus.lng)
                                     this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                     this.setOnMarkerClickListener { _, _ -> false }
@@ -325,7 +328,7 @@ fun LiveBusScreen(
                             Marker(map).apply {
                                 this.setVisible(true)
                                 this.icon = getBusIcon(context, route1, route2, bus)?.resize(
-                                    context, 8.dpToPx(), 8.dpToPx()
+                                    context, 10.dpToPx(), 10.dpToPx()
                                 )
                                 this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                 this.position = GeoPoint(bus.lat, bus.lng)
@@ -341,7 +344,7 @@ fun LiveBusScreen(
                                 this.icon = ContextCompat.getDrawable(
                                     context,
                                     R.drawable.ic_marker_route_stop_forward
-                                )?.resize(context, 5.dpToPx(), 5.dpToPx())
+                                )?.resize(context, 6.dpToPx(), 6.dpToPx())
                                 this.position = GeoPoint(stop.lat, stop.lng)
                                 this.setOnMarkerClickListener { marker, _ ->
                                     Intent(context, TimeTableActivity::class.java).apply {
@@ -361,7 +364,7 @@ fun LiveBusScreen(
                                 this.icon = ContextCompat.getDrawable(
                                     context,
                                     R.drawable.ic_marker_route_stop_backward
-                                )?.resize(context, 5.dpToPx(), 5.dpToPx())
+                                )?.resize(context, 6.dpToPx(), 6.dpToPx())
                                 this.position = GeoPoint(stop.lat, stop.lng)
                                 this.setOnMarkerClickListener { marker, _ ->
                                     Intent(context, TimeTableActivity::class.java).apply {
@@ -380,7 +383,7 @@ fun LiveBusScreen(
                         if (mapZoom >= 16) map.overlays.addAll(listOf(fwdStops, bwdStops).flatten())
                         if (busMarkerBgs.isNotEmpty()) map.overlays.addAll(busMarkerBgs)
                         map.overlays.addAll(busMarkers)
-                        map.overlays.add(myLocationOverlay)
+                        myLocationOverlay?.let(map.overlays::add)
                     },
                     factory = { c ->
                         MapView(c).apply {
