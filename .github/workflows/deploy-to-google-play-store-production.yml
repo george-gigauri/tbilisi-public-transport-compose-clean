@@ -23,6 +23,7 @@ jobs:
           echo 'STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}' >> local.properties
           echo 'KEY_PASSWORD=${{ secrets.PROJECT_KEY_PASSWORD }}' >> local.properties
           echo 'KEY_ALIAS=${{ secrets.PROJECT_KEY_ALIAS }}' >> local.properties
+          echo 'X_API_KEY=${{ secrets.X_API_KEY }}' >> local.properties
 
       - name: Create Keystore File
         run: touch app/keystore_file.jks
