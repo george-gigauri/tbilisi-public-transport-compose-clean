@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.module.common.other.enums.SupportedCity
-import ge.transitgeorgia.common.other.mapper.toDomain
+import ge.transitgeorgia.module.data.mapper.tbilisi.toDomain
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
-import ge.transitgeorgia.module.data.mapper.toDomain
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.domain.model.Route
 import kotlinx.coroutines.Dispatchers

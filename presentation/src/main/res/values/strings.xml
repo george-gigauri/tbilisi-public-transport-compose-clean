@@ -46,4 +46,7 @@
     <string name="deny">არ ვეთანხმები</string>
     <string name="accept">ვეთანხმები</string>
     <string name="tutorial_background_location_disclosure">აპლიკაცია გამოიყენებს თქვენს ამჟამინდელ ადგილმდებარეობას. ამ ფუნქციით სარგებლობისთვის დააჭირეთ ღილაკს \"ვეთანხმები\", შემდეგ მონიშნეთ \"დაშვება ყოველთვის\" და დაბრუნდით აპლიკაციაში.</string>
+    <string name="title_data_deletion">აპლიკაცია განახლდა</string>
+    <string name="message_data_deletion">აპლიკაციის სრულყოფილი მუშაობისთვის, მიმდინარე განახლების შემდგომ საჭიროა არსებული მონაცემების გასუფთავება. ეს <b>არ</b> წაგიშლით მოწყობილობის მთლიან მეხსიერებას.</string>
+    <string name="btn_clear">გასუფთავება</string>
 </resources>

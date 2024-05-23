@@ -291,7 +291,6 @@ fun TopBar(context: Context, viewModel: HomeViewModel) {
             Text(
                 text = stringResource(id = R.string.home),
                 color = if (isSystemInDarkTheme()) Color.White else Color.DarkGray,
-                //     fontFamily = FontFamily(Font(R.font.bpg_nino_mtavruli_bold)),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),

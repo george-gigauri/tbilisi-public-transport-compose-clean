@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.os.Build
+import android.util.Log
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
@@ -52,6 +53,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.maps.android.PolyUtil
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.dpToPx
@@ -98,10 +100,9 @@ fun LiveBusScreen(
     var mapController: IMapController? = remember { null }
     var mapZoom: Double by remember { mutableDoubleStateOf(0.0) }
 
-    val route by viewModel.route.collectAsStateWithLifecycle()
+    val routeInfo by viewModel.routeInfo.collectAsStateWithLifecycle()
     val route1 by viewModel.route1.collectAsStateWithLifecycle()
     val route2 by viewModel.route2.collectAsStateWithLifecycle()
-    val isCircular by viewModel.isCircular.collectAsStateWithLifecycle()
     val availableBuses by viewModel.availableBuses.collectAsStateWithLifecycle()
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -153,7 +154,7 @@ fun LiveBusScreen(
     // Check if reminder worker is running for current route
     DisposableEffect(key1 = Unit) {
         val workInfo =
-            BusDistanceReminderWorker.getWorkInfo(context, route?.number?.toIntOrNull() ?: 0)
+            BusDistanceReminderWorker.getWorkInfo(context, routeInfo?.number?.toIntOrNull() ?: 0)
         val observer = Observer<List<WorkInfo>> {
             isReminderRunning = it.isNotEmpty() && (it.lastOrNull()?.state in listOf(
                 WorkInfo.State.ENQUEUED,
@@ -203,7 +204,7 @@ fun LiveBusScreen(
         LiveBusInfoBottomSheet(
             infoBottomSheetState,
             GeoPoint(userLocation.latitude, userLocation.longitude),
-            route,
+            routeInfo,
             route1,
             route2,
             availableBuses.filter { it.isForward },
@@ -235,19 +236,22 @@ fun LiveBusScreen(
         topBar = {
             LiveBusTopBar(
                 isReminderRunning = isReminderRunning,
-                routeNumber = route?.number.orEmpty(),
+                routeNumber = routeInfo?.number.orEmpty(),
                 routeColor = viewModel.routeColor,
                 onBackButtonClick = { currentActivity?.finish() },
                 onScheduleClick = {
                     val intent = Intent(context, ScheduleActivity::class.java)
-                    intent.putExtra("route_number", route?.number)
+                    intent.putExtra("route_number", routeInfo?.number)
                     intent.putExtra("route_color", viewModel.routeColor)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                 },
                 onNotifyClick = {
                     if (isReminderRunning) {
-                        BusDistanceReminderWorker.stop(context, route?.number?.toIntOrNull() ?: -1)
+                        BusDistanceReminderWorker.stop(
+                            context,
+                            routeInfo?.number?.toIntOrNull() ?: -1
+                        )
                     } else {
                         if (notificationsPermission?.status == PermissionStatus.Granted) {
                             if (backgroundLocationPermissionState.status != PermissionStatus.Granted) {
@@ -276,38 +280,56 @@ fun LiveBusScreen(
             if (isLoading && errorMessage == null) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (!isLoading && errorMessage != null) {
-                Toast.makeText(context, errorMessage.asMessage(), Toast.LENGTH_SHORT).show()
-                currentActivity?.finish()
-            } else {
-
                 FilledTonalButton(onClick = { }, modifier = Modifier.align(Alignment.Center)) {
                     Text(text = "სცადე თავიდან / Try Again")
                 }
+                Toast.makeText(context, errorMessage.asMessage(), Toast.LENGTH_SHORT).show()
+            } else {
 
                 AndroidView(
                     update = { map ->
 
+                        val points1 = if (route1.polyline.isEmpty()) {
+                            PolyUtil.decode(route1.polylineHash).map { latLng ->
+                                GeoPoint(latLng.latitude, latLng.longitude)
+                            }
+                        } else {
+                            route1.polyline.map { latLng ->
+                                GeoPoint(latLng.latitude, latLng.longitude)
+                            }
+                        }
+
+                        val points2 = if (routeInfo?.isCircular == true) emptyList() else {
+                            if (route2.polyline.isEmpty()) {
+                                if (!route2.polylineHash.isNullOrEmpty()) {
+                                    PolyUtil.decode(route2.polylineHash).map { latLng ->
+                                        GeoPoint(latLng.latitude, latLng.longitude)
+                                    }
+                                } else emptyList()
+                            } else {
+                                route2.polyline.map { latLng ->
+                                    GeoPoint(latLng.latitude, latLng.longitude)
+                                }
+                            }
+                        }
+
                         // Route 1 Polyline
-                        val polyline1 = Polyline(map)
-                        polyline1.color = if (isCircular) {
+                        val polyline1 = Polyline(map, true, false)
+                        polyline1.color = if (routeInfo?.isCircular == true) {
                             AppColor.POLYLINE_BLUE.toArgb()
                         } else AppColor.POLYLINE_GREEN.toArgb()
                         polyline1.width = 14f
                         polyline1.setOnClickListener { polyline, _, eventPos -> false }
-                        polyline1.setPoints(route1.polyline.map { p ->
-                            GeoPoint(p.latitude, p.longitude)
-                        });
+                        polyline1.setPoints(points1);
 
                         // Route 2 Polyline
-                        val polyline2 = Polyline(map)
+                        val polyline2 = Polyline(map, true, false)
                         polyline2.width = 12.5f
                         polyline2.color = AppColor.POLYLINE_RED.toArgb()
                         polyline2.setOnClickListener { polyline, _, eventPos -> false }
-                        polyline2.setPoints(route2.polyline.map { p ->
-                            GeoPoint(p.latitude, p.longitude)
-                        })
+                        polyline2.setPoints(points2)
 
-                        val busMarkerBgs = if (isCircular) {
+                        val busMarkerBgs = if (routeInfo?.isCircular == true) {
                             availableBuses.map { bus ->
                                 Marker(map).apply {
                                     this.setVisible(bus.bearing != null)
@@ -409,9 +431,17 @@ fun LiveBusScreen(
                             }
 
                             Polyline(this).apply {
-                                this.setPoints(route1.polyline.map { l ->
-                                    GeoPoint(l.latitude, l.longitude)
-                                })
+                                this.setPoints(
+                                    if (route1.polyline.isEmpty()) {
+                                        PolyUtil.decode(route1.polylineHash).map { i ->
+                                            GeoPoint(i.latitude, i.longitude)
+                                        }
+                                    } else {
+                                        route1.polyline.map { i ->
+                                            GeoPoint(i.latitude, i.longitude)
+                                        }
+                                    }
+                                )
                             }.also { p ->
                                 this.centerAndZoomPolyline(p)
                             }
@@ -471,7 +501,7 @@ fun getBusIcon(
     bus: Bus
 ): Drawable? {
     return (if (bus.isForward) {
-        if (route2.stops.isEmpty()) {
+        if (route1.isCircular) {
             if (route1.isMicroBus) {
                 ContextCompat.getDrawable(
                     context,

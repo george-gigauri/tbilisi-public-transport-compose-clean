@@ -91,7 +91,7 @@ fun ItemBusStop(
             .fillMaxWidth()
             .clickable {
                 val intent = Intent(context, TimeTableActivity::class.java)
-                intent.putExtra("stop_id", stop.code)
+                intent.putExtra("stop_id", stop.id)
                 intent.putExtra("stop", stop)
                 context.startActivity(intent)
             }

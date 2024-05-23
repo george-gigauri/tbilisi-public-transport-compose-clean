@@ -12,8 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -27,7 +25,6 @@ import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.presentation.favorites.FavoriteStops
-import ge.transitgeorgia.presentation.favorites.FavoritesViewModel
 
 @Composable
 @Preview

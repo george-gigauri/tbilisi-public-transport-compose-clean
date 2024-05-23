@@ -53,7 +53,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.common.service.worker.BusArrivalTimeReminderWorker
-import ge.transitgeorgia.domain.model.ArrivalTime
+import ge.transitgeorgia.module.domain.model.ArrivalTime
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.live_bus.LiveBusActivity
@@ -252,6 +252,7 @@ fun RouteTimeItem(
             .height(IntrinsicSize.Min)
             .clickable {
                 val intent = Intent(context, LiveBusActivity::class.java)
+                intent.putExtra("route_id", item.routeId.toString())
                 intent.putExtra("route_number", item.routeNumber.toString())
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)

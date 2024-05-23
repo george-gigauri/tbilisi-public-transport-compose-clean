@@ -43,7 +43,7 @@ import java.util.*
 fun LiveBusInfoBottomSheet(
     state: SheetState = SheetState(true, SheetValue.Hidden),
     userLocation: GeoPoint = GeoPoint(0.0, 0.0),
-    route: Route? = null,
+    route: RouteInfo? = null,
     route1: RouteInfo = RouteInfo.empty(),
     route2: RouteInfo = RouteInfo.empty(),
     route1Buses: List<Bus> = emptyList(),
@@ -60,10 +60,10 @@ fun LiveBusInfoBottomSheet(
                 .padding(bottom = 56.dp)
         ) {
             if (route1.stops.isNotEmpty())
-                RouteDirectionInfo(Color.Green, route?.lastStation, route?.firstStation)
+                RouteDirectionInfo(Color.Green, route?.backwardHeadSign, route?.forwardHeadSign)
 
             if (route2.stops.isNotEmpty())
-                RouteDirectionInfo(Color.Red, route?.firstStation, route?.lastStation)
+                RouteDirectionInfo(Color.Red, route?.forwardHeadSign, route?.backwardHeadSign)
 
             Spacer(modifier = Modifier.height(24.dp))
             TotalAvailableBusCount(route1Buses, route2Buses)

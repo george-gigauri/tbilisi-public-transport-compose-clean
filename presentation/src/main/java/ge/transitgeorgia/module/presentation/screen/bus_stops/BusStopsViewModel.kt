@@ -5,10 +5,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.module.common.other.enums.SupportedCity
-import ge.transitgeorgia.common.other.mapper.toDomain
-import ge.transitgeorgia.module.data.di.AppModule
+import ge.transitgeorgia.module.data.mapper.tbilisi.toDomain
+import ge.transitgeorgia.module.data.di.qualifier.dispatcher.IODispatcher
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
 import ge.transitgeorgia.module.domain.model.BusStop
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,13 +18,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Named
 
 @HiltViewModel
 class BusStopsViewModel @Inject constructor(
     private val db: AppDatabase,
     private val appDataStore: AppDataStore,
-    @Named(AppModule.Name.DISPATCHER_IO) private val dispatcher: CoroutineDispatcher
+    @IODispatcher private val dispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     init {
