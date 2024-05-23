@@ -129,6 +129,7 @@ fun RouteItem(context: Context, item: Route, modifier: Modifier = Modifier) {
                 if (item.isMetro) {
                     Analytics.logOpenMetroSchedule()
                     val intent = Intent(context, ScheduleActivity::class.java)
+                    intent.putExtra("route_id", item.id)
                     intent.putExtra("route_number", item.number)
                     intent.putExtra("route_color", item.color)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -136,6 +137,7 @@ fun RouteItem(context: Context, item: Route, modifier: Modifier = Modifier) {
                 } else {
                     Analytics.logOpenRouteDetails(item.number.toIntOrNull() ?: -1)
                     val intent = Intent(context, LiveBusActivity::class.java)
+                    intent.putExtra("route_id", item.id)
                     intent.putExtra("route_number", item.number)
                     intent.putExtra("route_color", item.color)
                     context.startActivity(intent)

@@ -12,8 +12,8 @@ import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.util.Translator
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
-import ge.transitgeorgia.module.data.mapper.toDomain
-import ge.transitgeorgia.module.data.mapper.toEntity
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
+import ge.transitgeorgia.module.data.mapper.rustavi.toEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay

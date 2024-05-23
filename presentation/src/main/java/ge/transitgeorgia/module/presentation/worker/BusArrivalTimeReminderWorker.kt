@@ -20,7 +20,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.analytics.Analytics
-import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
 import ge.transitgeorgia.module.domain.util.ResultWrapper
 import ge.transitgeorgia.module.presentation.R

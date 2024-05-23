@@ -1,14 +1,15 @@
 package ge.transitgeorgia.module.presentation.screen.schedule
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.domain.model.CurrentTimeStationSchedule
 import ge.transitgeorgia.domain.model.Schedule
-import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.data.local.db.AppDatabase
-import ge.transitgeorgia.module.data.mapper.toDomain
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.domain.util.ErrorType
 import ge.transitgeorgia.module.domain.util.ResultWrapper
@@ -31,6 +32,7 @@ class ScheduleViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    val routeId: String? get() = savedStateHandle["route_number"]
     val routeNumber: String? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
 
@@ -50,10 +52,17 @@ class ScheduleViewModel @Inject constructor(
         route.value = db.routeDao().getRoute(routeNumber?.toIntOrNull() ?: -1)?.toDomain()
             ?: Route.empty()
 
-        val rw = repository.getSchedule(routeNumber?.toIntOrNull() ?: -1, isForward.value)
+        val rw = repository.getSchedule(route.value.id ?: "", isForward.value)
         when (rw) {
-            is ResultWrapper.Success -> scheduleData.value = rw.data
-            is ResultWrapper.Error -> error.emit(rw.type)
+            is ResultWrapper.Success -> {
+                Log.d("ScheduleViewModel", "fetch: ${rw.data}")
+                scheduleData.value = rw.data
+            }
+
+            is ResultWrapper.Error -> {
+                Log.d("ScheduleViewModel", "fetch: ${rw.type}")
+                error.emit(rw.type)
+            }
             else -> Unit
         }
 

@@ -21,7 +21,7 @@ data class Route(
                 RouteTransportType.BUS,
                 "---",
                 "---",
-                "---"
+                "---",
             )
         }
     }

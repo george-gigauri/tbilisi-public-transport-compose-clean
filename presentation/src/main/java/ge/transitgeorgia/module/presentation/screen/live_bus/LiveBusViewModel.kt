@@ -7,23 +7,29 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
 import ge.transitgeorgia.domain.model.Bus
-import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.domain.model.RouteStop
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.module.common.util.LatLngUtil
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
-import ge.transitgeorgia.module.data.mapper.toDomain
-import ge.transitgeorgia.module.domain.model.Route
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
+import ge.transitgeorgia.module.data.mapper.rustavi.toEntity
 import ge.transitgeorgia.module.domain.model.RouteInfo
 import ge.transitgeorgia.module.domain.util.ErrorType
 import ge.transitgeorgia.module.domain.util.ResultWrapper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -37,26 +43,26 @@ class LiveBusViewModel @Inject constructor(
 
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val error: MutableSharedFlow<ErrorType?> = MutableSharedFlow()
-    val route: MutableStateFlow<Route?> = MutableStateFlow(null)
+    val routeInfo: MutableStateFlow<RouteInfo?> = MutableStateFlow(null)
     val route1: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
     val route2: MutableStateFlow<RouteInfo> = MutableStateFlow(RouteInfo.empty())
+    val stops: MutableStateFlow<List<RouteStop>> = MutableStateFlow(emptyList())
     val isFavoriteRoute: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val shouldShowAddToFavoriteRoutesDialog: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val isCircular: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val previousBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
     val availableBuses: MutableStateFlow<List<Bus>> = MutableStateFlow(emptyList())
 
+    val routeId: String? get() = savedStateHandle["route_id"]
     val routeNumber: String? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
 
     init {
         viewModelScope.launch {
-            getRoute()
-            listOf(
-                async { fetchRoutes() },
-                async { fetchAvailableBuses() },
-                async { increaseRouteVisitNumber() }
-            ).joinAll()
+            isLoading.value = true
+            runBlocking { getRoute() }
+            runBlocking { fetchRoutes() }
+            increaseRouteVisitNumber()
+            fetchAvailableBuses()
         }
     }
 
@@ -75,7 +81,41 @@ class LiveBusViewModel @Inject constructor(
     }
 
     private suspend fun getRoute() {
-        route.value = routeNumber?.toIntOrNull()?.let { db.routeDao().getRoute(it)?.toDomain() }
+        val city = runBlocking { dataStore.city.firstOrNull() } ?: SupportedCity.TBILISI
+        routeInfo.value = routeId?.let {
+            val info = db.routeInfoDao().get(it)
+            if (info != null && !info.isOutdated()) {
+                info.toDomain()
+            } else {
+                if (info?.uid != null) db.routeInfoDao().deleteByUid(info.uid!!)
+                repository.getRouteByBus(routeId ?: "", true).let { r ->
+                    if (r is ResultWrapper.Success) {
+                        if (!r.data.isCircular) {
+                            repository.getRouteByBus(routeId ?: "", false).let { rb ->
+                                if (rb is ResultWrapper.Success) {
+                                    r.data.also { d ->
+                                        rb.data.also { d2 ->
+                                            db.routeInfoDao().insert(
+                                                d.toEntity(
+                                                    city,
+                                                    d2.polyline,
+                                                    d2.polylineHash
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            r.data.also { d ->
+                                db.routeInfoDao().insert(d.toEntity(city))
+                            }
+                        }
+                    }
+                    db.routeInfoDao().get(it)?.toDomain()
+                }
+            }
+        }
     }
 
     private fun increaseRouteVisitNumber() = viewModelScope.launch {
@@ -104,44 +144,44 @@ class LiveBusViewModel @Inject constructor(
     }
 
     private fun fetchRoutes() = viewModelScope.launch {
-        isLoading.value = true
         if (routeNumber.isNullOrEmpty()) {
             throw NullPointerException("Route number is invalid!")
         } else {
-            val routes = awaitAll(
-                async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, true) },
-                async { repository.getRouteByBus(routeNumber?.toIntOrNull()!!, false) }
-            )
+            routeId?.let {
+                db.routeInfoDao().get(it)?.toDomain(true)?.let { r ->
+                    route1.value = r
+                }
 
-            when (val r = routes[0]) {
-                is ResultWrapper.Success -> route1.value = r.data
-                is ResultWrapper.Error -> error.emit(r.type)
-                else -> Unit
-            }
+                db.routeInfoDao().get(it)?.toDomain(false)?.let { r ->
+                    route2.value = r
+                }
 
-            when (val r = routes[1]) {
-                is ResultWrapper.Success -> route2.value = r.data
-                is ResultWrapper.Error -> error.emit(r.type)
-                else -> Unit
+                repository.getBusStopsByBusNumber(routeId ?: "-").let { bs ->
+                    if (bs is ResultWrapper.Success) {
+                        route1.value = route1.value.copy(
+                            stops = bs.data
+                        )
+                    }
+                }
             }
+            isLoading.value = false
         }
-        isCircular.value = (route1.value.stops.isNotEmpty() && route2.value.stops.isEmpty()) ||
-                (route1.value.stops.isEmpty() && route2.value.stops.isNotEmpty())
-        isLoading.value = false
     }
 
     private fun fetchAvailableBuses() = viewModelScope.launch {
-        if (routeNumber.isNullOrEmpty()) throw NullPointerException("Route number is MUST!")
+        if (routeId.isNullOrEmpty()) throw NullPointerException("Route number is MUST!")
 
         while (true) {
             val busesAsync = awaitAll(
                 async {
-                    repository.getBusPositions(routeNumber?.toIntOrNull()!!, true)
+                    repository.getBusPositions(routeId ?: "", true)
                 },
                 async {
-                    if (!isCircular.value) {
-                        repository.getBusPositions(routeNumber?.toIntOrNull()!!, false)
-                    } else ResultWrapper.Success(emptyList())
+                    routeInfo.value?.let {
+                        if (!it.isCircular) {
+                            repository.getBusPositions(routeId ?: "", false)
+                        } else ResultWrapper.Success(emptyList())
+                    } ?: ResultWrapper.Success(emptyList())
                 }
             )
 
@@ -160,20 +200,10 @@ class LiveBusViewModel @Inject constructor(
                 else -> Unit
             }
 
-            val bothBuses = listOf(busesForward, busesBackward).flatten().sortedByDescending {
-                it.lat
-            }.map { b ->
-                b.apply {
-                    previousBuses.value.find { pb -> pb.nextStopId == b.nextStopId }?.let { pb ->
-                            this.bearing = LatLngUtil.calculateBearing(
-                                pb.lat,
-                                pb.lng,
-                                this.lat,
-                                this.lng
-                            ).toDouble()
-                    }
-                }
-            }
+            val bothBuses = listOf(
+                busesForward.map { it.copy(isForward = true) },
+                busesBackward.map { it.copy(isForward = false) },
+            ).flatten()
 
             if (previousBuses.value.isEmpty()) {
                 previousBuses.value = bothBuses
@@ -181,15 +211,9 @@ class LiveBusViewModel @Inject constructor(
 
             previousBuses.value = availableBuses.value
 
-            availableBuses.value = bothBuses.map {
-                it.apply {
-                    this.bearing = it.bearing ?: previousBuses.value.find { ib ->
-                        ib.lat == this.lat && ib.lng == this.lng
-                    }.let { i -> i?.bearing }
-                }
-            }
+            availableBuses.value = bothBuses
 
-            delay(if (route1.value.isMicroBus) 25000 else Random.nextLong(5000, 8000))
+            delay(if (route1.value.isMicroBus) 25000 else Random.nextLong(3000, 10000))
         }
     }
 }

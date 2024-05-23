@@ -23,8 +23,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import ge.transitgeorgia.common.analytics.Analytics
 import ge.transitgeorgia.domain.model.Bus
-import ge.transitgeorgia.domain.repository.ITransportRepository
-import ge.transitgeorgia.module.common.model.LatLngPoint
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
 import ge.transitgeorgia.module.domain.util.ResultWrapper
 import ge.transitgeorgia.module.presentation.R
@@ -47,7 +46,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
 
-        val busNumber = params.inputData.getInt("route_number", -1)
+        val busNumber = params.inputData.getString("route_number") ?: ""
         val userLocation = params.inputData.getDoubleArray("user_lat_lng")?.let {
             GeoPoint(it.first(), it.last())
         }
@@ -67,7 +66,7 @@ class BusDistanceReminderWorker @AssistedInject constructor(
     }
 
     private suspend fun fetch(
-        busNumber: Int,
+        busNumber: String,
         isForward: Boolean,
         location: GeoPoint,
         distance: Int
@@ -152,14 +151,14 @@ class BusDistanceReminderWorker @AssistedInject constructor(
     companion object {
         fun start(
             context: Context,
-            busNumber: Int,
+            busNumber: String,
             userLocation: GeoPoint,
             distance: Int,
             isForward: Boolean
         ) {
             WorkManager.getInstance(context).cancelUniqueWork(busNumber.toString())
             val data = Data.Builder()
-                .putInt("route_number", busNumber)
+                .putString("route_number", busNumber)
                 .putDoubleArray(
                     "user_lat_lng",
                     doubleArrayOf(userLocation.latitude, userLocation.longitude)

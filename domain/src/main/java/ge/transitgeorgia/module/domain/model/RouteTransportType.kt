@@ -15,5 +15,14 @@ enum class RouteTransportType {
                 TransportType.METRO -> METRO
             }
         }
+
+        fun fromV2(t: String): RouteTransportType {
+            return when (t) {
+                "SUBWAY" -> METRO
+                "BUS" -> BUS
+                "MINIBUS" -> MICRO_BUS
+                else -> ALL
+            }
+        }
     }
 }

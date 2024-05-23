@@ -3,10 +3,10 @@ package ge.transitgeorgia.presentation.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.common.other.Const
 import ge.transitgeorgia.module.common.util.AppLanguage
-import ge.transitgeorgia.module.data.di.AppModule
+import ge.transitgeorgia.module.data.di.qualifier.dispatcher.IODispatcher
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +17,12 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Named
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: ITransportRepository,
     private val dataStore: AppDataStore,
-    @Named(AppModule.Name.DISPATCHER_IO) private val ioDispatcher: CoroutineDispatcher
+    @IODispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     private val _shouldPromptLanguageSelector = MutableStateFlow(false)

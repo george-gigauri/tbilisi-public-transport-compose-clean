@@ -18,7 +18,7 @@ enum class SupportedCity(
         "tbilisi",
         R.string.tbilisi,
         Const.TBILISI_BASE_URL,
-        Const.TBILISI_ENG_BASE_URL,
+        Const.TBILISI_BASE_URL,
         41.716537, 44.783333,
         11.5
     ),

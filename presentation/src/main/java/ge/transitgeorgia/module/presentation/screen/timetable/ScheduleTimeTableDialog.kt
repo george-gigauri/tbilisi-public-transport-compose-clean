@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import ge.transitgeorgia.domain.model.ArrivalTime
+import ge.transitgeorgia.module.domain.model.ArrivalTime
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 

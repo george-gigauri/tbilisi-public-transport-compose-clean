@@ -1,16 +1,17 @@
 package ge.transitgeorgia.module.presentation.screen.timetable
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ge.transitgeorgia.common.analytics.Analytics
-import ge.transitgeorgia.common.other.mapper.toDomain
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
-import ge.transitgeorgia.domain.model.ArrivalTime
-import ge.transitgeorgia.domain.repository.ITransportRepository
+import ge.transitgeorgia.module.domain.model.ArrivalTime
+import ge.transitgeorgia.module.domain.repository.ITransportRepository
 import ge.transitgeorgia.module.data.local.datastore.AppDataStore
 import ge.transitgeorgia.module.data.local.db.AppDatabase
+import ge.transitgeorgia.module.data.mapper.rustavi.toDomain
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.domain.util.ErrorType
 import ge.transitgeorgia.module.domain.util.ResultWrapper
@@ -73,8 +74,19 @@ class TimeTableViewModel @Inject constructor(
             isLoading.value = true
             repository.getTimeTable(stopId).let {
                 when (it) {
-                    is ResultWrapper.Success -> data.value = it.data
-                    is ResultWrapper.Error -> error.emit(it.type)
+                    is ResultWrapper.Success -> {
+                        data.value = it.data.map {
+                            val r = db.routeDao().getRoute(it.routeNumber)
+                            it.copy(
+                                routeId = r?.id
+                            )
+                        }
+                    }
+
+                    is ResultWrapper.Error -> {
+                        error.emit(it.type)
+                    }
+
                     else -> Unit
                 }
             }
