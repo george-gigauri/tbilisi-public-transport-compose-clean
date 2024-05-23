@@ -52,6 +52,6 @@ data class RouteInfoEntity(
     }
 
     fun isOutdated(): Boolean {
-        return (System.currentTimeMillis() - addedAt) > (1 * 1 * 60 * 60 * 1000) // 1 hour
+        return (System.currentTimeMillis() - addedAt) > (24 * 1 * 60 * 60 * 1000) // 1 day
     }
 }

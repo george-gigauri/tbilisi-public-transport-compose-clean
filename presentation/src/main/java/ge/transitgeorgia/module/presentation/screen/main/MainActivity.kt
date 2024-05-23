@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -120,7 +121,7 @@ class MainActivity : ComponentActivity() {
                         Column(
                             modifier = Modifier
                                 .background(DynamicPrimary, RoundedCornerShape(16.dp))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
                         ) {
                             Text(
                                 text = stringResource(id = R.string.title_data_deletion),
@@ -133,7 +134,7 @@ class MainActivity : ComponentActivity() {
                             Text(
                                 text = stringResource(id = R.string.message_data_deletion),
                                 color = DynamicWhite,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Normal
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))
@@ -143,7 +144,7 @@ class MainActivity : ComponentActivity() {
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                FilledTonalButton(onClick = {
+                                Button(onClick = {
                                     viewModel.deleteData().invokeOnCompletion {
                                         startActivity(
                                             Intent(
@@ -156,7 +157,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }) {
                                     Text(
-                                        text = stringResource(id = R.string.btn_clear)
+                                        text = stringResource(id = R.string.btn_clear),
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
                             }

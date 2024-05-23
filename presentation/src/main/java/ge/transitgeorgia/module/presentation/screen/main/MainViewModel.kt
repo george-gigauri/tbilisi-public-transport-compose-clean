@@ -45,13 +45,19 @@ class MainViewModel @Inject constructor(
 
     fun deleteData() = viewModelScope.launch {
         withContext(Dispatchers.IO) {
-            dataStore.deleteDataLastUpdatedAt()
-            db.clearAllTables()
+            runBlocking { dataStore.deleteDataLastUpdatedAt() }
+            runBlocking { db.clearAllTables() }
+            dataStore.setRequiresDataDeletion(false)
         }
     }
 
     private fun checkRequiresDataDeletion() = viewModelScope.launch {
-        _isDataDeletionRequired.value = dataStore.requiresDataDeletion.firstOrNull() ?: true
+        _isDataDeletionRequired.value = (dataStore.requiresDataDeletion.firstOrNull() ?: true) &&
+                (
+                        db.routeDao().getAll().isNotEmpty() ||
+                                db.busStopDao().getStops().isNotEmpty() ||
+                                db.routeInfoDao().getAll().isNotEmpty()
+                        )
     }
 
     private fun checkIsLanguageSelected() = viewModelScope.launch {
