@@ -314,7 +314,7 @@ fun LiveBusScreen(
                         }
 
                         // Route 1 Polyline
-                        val polyline1 = Polyline(map, true, true)
+                        val polyline1 = Polyline(map, true, false)
                         polyline1.color = if (routeInfo?.isCircular == true) {
                             AppColor.POLYLINE_BLUE.toArgb()
                         } else AppColor.POLYLINE_GREEN.toArgb()
@@ -323,7 +323,7 @@ fun LiveBusScreen(
                         polyline1.setPoints(points1);
 
                         // Route 2 Polyline
-                        val polyline2 = Polyline(map, true, true)
+                        val polyline2 = Polyline(map, true, false)
                         polyline2.width = 12.5f
                         polyline2.color = AppColor.POLYLINE_RED.toArgb()
                         polyline2.setOnClickListener { polyline, _, eventPos -> false }

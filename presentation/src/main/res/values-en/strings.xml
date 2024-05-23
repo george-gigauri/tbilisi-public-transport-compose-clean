@@ -46,4 +46,7 @@
     <string name="deny">Deny</string>
     <string name="accept">Accept</string>
     <string name="tutorial_background_location_disclosure">App will use your current location in the background. In order to use this feature, please click "Accept", then select "Allow all the time" and go back to the app.</string>
+    <string name="title_data_deletion">App just got updated</string>
+    <string name="message_data_deletion">In order to maintain fully functional features, app requires to clear current app data. This will NOT erase your device.</string>
+    <string name="btn_clear">Clear</string>
 </resources>

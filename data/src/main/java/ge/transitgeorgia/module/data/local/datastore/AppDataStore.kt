@@ -22,6 +22,19 @@ class AppDataStore(private val context: Context) {
     private val KEY_APP_LANGUAGE = stringPreferencesKey("app_language")
     private val KEY_DEFAULT_CITY = stringPreferencesKey("default_city")
     private val KEY_UPDATED_CITY = stringPreferencesKey("updated_city")
+    private val KEY_REQUIRES_DATA_DELETION = booleanPreferencesKey("data_deletion_required")
+
+    // Data Deletion
+    val requiresDataDeletion: Flow<Boolean>
+        get() = context.appDataStore.data.map {
+            it[KEY_REQUIRES_DATA_DELETION] ?: true
+        }
+
+    suspend fun setRequiresDataDeletion(isRequired: Boolean) {
+        context.appDataStore.edit {
+            it[KEY_REQUIRES_DATA_DELETION] = isRequired
+        }
+    }
 
     // App Language
     val language: Flow<AppLanguage.Language>
