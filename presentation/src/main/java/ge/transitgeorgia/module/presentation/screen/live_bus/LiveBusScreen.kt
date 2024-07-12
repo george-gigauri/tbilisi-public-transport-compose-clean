@@ -59,6 +59,7 @@ import ge.transitgeorgia.common.service.worker.BusDistanceReminderWorker
 import ge.transitgeorgia.common.util.dpToPx
 import ge.transitgeorgia.domain.model.Bus
 import ge.transitgeorgia.module.common.util.DrawableUtil.resize
+import ge.transitgeorgia.module.common.util.LatLngUtil
 import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.domain.model.RouteInfo
 import ge.transitgeorgia.module.presentation.R
@@ -82,7 +83,10 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Overlay
 import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.gestures.OneFingerZoomOverlay
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
@@ -329,22 +333,45 @@ fun LiveBusScreen(
                         polyline2.setOnClickListener { polyline, _, eventPos -> false }
                         polyline2.setPoints(points2)
 
-                        val busMarkerBgs = if (routeInfo?.isCircular == true) {
-                            availableBuses.map { bus ->
-                                Marker(map).apply {
-                                    this.setVisible(bus.bearing != null)
-                                    this.icon = ContextCompat.getDrawable(
-                                        context,
-                                        R.drawable.marker_microbus_bg
-                                    )?.resize(context, 16.dpToPx(), 16.dpToPx())
-                                    this.position = GeoPoint(bus.lat, bus.lng)
-                                    this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                                    this.setOnMarkerClickListener { _, _ -> false }
-                                    this.rotation = bus.bearing?.toFloat() ?: 0f
-                                    this.snippet = "BUS_BG"
+                        val busMarkerBgs = availableBuses.map { bus ->
+                            Marker(map).apply {
+                                if (bus.bearing == null) {
+                                    if (routeInfo?.isCircular == false) {
+                                        if (bus.isForward) {
+                                            this.rotation = LatLngUtil.calculateBearing(
+                                                bus.lat,
+                                                bus.lng,
+                                                route1.stops.firstOrNull()?.lat ?: 0.0,
+                                                route1.stops.firstOrNull()?.lng ?: 0.0,
+                                            )
+                                        } else {
+                                            this.rotation = LatLngUtil.calculateBearing(
+                                                bus.lat,
+                                                bus.lng,
+                                                route2.stops.firstOrNull()?.lat ?: 0.0,
+                                                route2.stops.firstOrNull()?.lng ?: 0.0,
+                                            )
+                                        }
+                                        this.setVisible(true)
+                                    } else {
+                                        this.setVisible(false)
+                                    }
+                                } else {
+                                    this.rotation = 0 - (bus.bearing?.toFloat() ?: 0f)
                                 }
+
+                                this.icon =
+                                    getBusIconBackground(context, route1, route2, bus)?.resize(
+                                        context,
+                                        25.dpToPx(),
+                                        25.dpToPx()
+                                    )
+                                this.position = GeoPoint(bus.lat, bus.lng)
+                                this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                                this.setOnMarkerClickListener { _, _ -> false }
+                                this.snippet = "BUS_BG"
                             }
-                        } else emptyList()
+                        }
 
                         val busMarkers = availableBuses.map { bus ->
                             Marker(map).apply {
@@ -368,6 +395,7 @@ fun LiveBusScreen(
                                     R.drawable.ic_marker_route_stop_forward
                                 )?.resize(context, 6.dpToPx(), 6.dpToPx())
                                 this.position = GeoPoint(stop.lat, stop.lng)
+                                this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                 this.setOnMarkerClickListener { marker, _ ->
                                     Intent(context, TimeTableActivity::class.java).apply {
                                         this.putExtra("stop_id", marker.id)
@@ -388,6 +416,7 @@ fun LiveBusScreen(
                                     R.drawable.ic_marker_route_stop_backward
                                 )?.resize(context, 6.dpToPx(), 6.dpToPx())
                                 this.position = GeoPoint(stop.lat, stop.lng)
+                                this.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                 this.setOnMarkerClickListener { marker, _ ->
                                     Intent(context, TimeTableActivity::class.java).apply {
                                         this.putExtra("stop_id", marker.id)
@@ -400,12 +429,16 @@ fun LiveBusScreen(
                             }
                         }
 
-                        map.overlays.clear()
+                        map.overlays.map { o ->
+                            if (!(o is MyLocationNewOverlay || o is OneFingerZoomOverlay || o is RotationGestureOverlay)) {
+                                map.overlays.remove(o)
+                            }
+                        }
+
                         map.overlays.addAll(listOf(polyline1, polyline2))
                         if (mapZoom >= 16) map.overlays.addAll(listOf(fwdStops, bwdStops).flatten())
                         if (busMarkerBgs.isNotEmpty()) map.overlays.addAll(busMarkerBgs)
                         map.overlays.addAll(busMarkers)
-                        myLocationOverlay?.let(map.overlays::add)
                     },
                     factory = { c ->
                         MapView(c).apply {
@@ -415,16 +448,17 @@ fun LiveBusScreen(
 
                             mapController = this.controller
 
-                            MyLocationNewOverlay(GpsMyLocationProvider(c), this).apply {
+                            this.overlays.add(OneFingerZoomOverlay())
+                            this.overlays.add(RotationGestureOverlay(this))
+                            MyLocationNewOverlay(GpsMyLocationProvider(this.context), this).apply {
                                 this.enableMyLocation()
                                 this.setDirectionIcon(
                                     ContextCompat.getDrawable(
                                         context,
                                         R.drawable.marker_my_location
-                                    )
-                                        ?.toBitmap(26.dpToPx(), 42.dpToPx())
+                                    )?.toBitmap(26.dpToPx(), 42.dpToPx())
                                 )
-                                this.setDirectionAnchor(.5f, .5f)
+                                this.setDirectionAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                                 this.isDrawAccuracyEnabled = false
                             }.also { o ->
                                 myLocationOverlay = o
@@ -510,7 +544,7 @@ fun getBusIcon(
             } else {
                 ContextCompat.getDrawable(
                     context,
-                    R.drawable.marker_bus
+                    R.drawable.ic_marker_bus
                 )
             }
         } else {
@@ -521,6 +555,37 @@ fun getBusIcon(
         }
     } else ContextCompat.getDrawable(
         context,
-        R.drawable.ic_marker_bus_backwards
+        R.drawable.ic_marker_bus_backward
+    ))
+}
+
+fun getBusIconBackground(
+    context: Context,
+    route1: RouteInfo,
+    route2: RouteInfo,
+    bus: Bus
+): Drawable? {
+    return (if (bus.isForward) {
+        if (route1.isCircular) {
+            if (route1.isMicroBus) {
+                ContextCompat.getDrawable(
+                    context,
+                    R.drawable.ic_bus_marker_bg
+                )
+            } else {
+                ContextCompat.getDrawable(
+                    context,
+                    R.drawable.ic_bus_marker_bg
+                )
+            }
+        } else {
+            ContextCompat.getDrawable(
+                context,
+                R.drawable.ic_marker_bus_forward_bg
+            )
+        }
+    } else ContextCompat.getDrawable(
+        context,
+        R.drawable.ic_marker_bus_backward_bg
     ))
 }

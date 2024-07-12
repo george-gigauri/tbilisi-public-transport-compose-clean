@@ -18,6 +18,7 @@ import ge.transitgeorgia.module.data.remote.api.TbilisiTransportApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -58,6 +59,7 @@ object NetworkModule {
                     val request = chain.request().newBuilder()
                     if (city == SupportedCity.TBILISI) {
                         request.addHeader("X-api-key", BuildConfig.X_API_KEY)
+
                         request.url(
                             chain.request().url.newBuilder()
                                 .addQueryParameter("locale", locale.value)

@@ -65,28 +65,36 @@ class TbilisiTransportRepository @Inject constructor(
     override suspend fun getBusStopsByBusNumber(routeId: String): ResultWrapper<List<RouteStop>> =
         withContext(dispatcher) {
             return@withContext try {
-                val forward = api.getRouteStops(routeId, true).map {
-                    it.toDomain()
-                }.map { s: BusStop ->
-                    RouteStop(
-                        s.id,
-                        s.name,
-                        true,
-                        s.lat,
-                        s.lng
-                    )
+                val forward = try {
+                    api.getRouteStops(routeId, true).map {
+                        it.toDomain()
+                    }.map { s: BusStop ->
+                        RouteStop(
+                            s.id,
+                            s.name,
+                            true,
+                            s.lat,
+                            s.lng
+                        )
+                    }
+                } catch (e: Exception) {
+                    emptyList()
                 }
 
-                val backward = api.getRouteStops(routeId, false).map {
-                    it.toDomain()
-                }.map { s: BusStop ->
-                    RouteStop(
-                        s.id,
-                        s.name,
-                        false,
-                        s.lat,
-                        s.lng
-                    )
+                val backward = try {
+                    api.getRouteStops(routeId, false).map {
+                        it.toDomain()
+                    }.map { s: BusStop ->
+                        RouteStop(
+                            s.id,
+                            s.name,
+                            false,
+                            s.lat,
+                            s.lng
+                        )
+                    }
+                } catch (e: Exception) {
+                    emptyList()
                 }
 
                 ResultWrapper.Success(
