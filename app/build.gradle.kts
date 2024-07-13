@@ -76,7 +76,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.11"
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -86,8 +86,8 @@ android {
 dependencies {
     testImplementation("junit:junit:4.13.2")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.compose.runtime:runtime:1.6.4")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.compose.runtime:runtime:1.6.8")
     api(project(path = ":presentation"))
     api(project(path = ":domain"))
     api(project(path = ":common"))

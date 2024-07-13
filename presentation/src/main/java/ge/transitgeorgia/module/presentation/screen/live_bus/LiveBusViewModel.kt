@@ -127,19 +127,21 @@ class LiveBusViewModel @Inject constructor(
                         null,
                         it,
                         1,
+                        0,
                         city.id
                     )
                 )
             }
             db.routeDao().getClickCount(it, city.id).let { clicks ->
                 isFavoriteRoute.value = clicks >= 10
-                delay(1500)
+                delay(1000)
                 shouldShowAddToFavoriteRoutesDialog.value =
                     ((clicks % 5L) == 0L) && !isFavoriteRoute.value
             }
             if (!isFavoriteRoute.value) {
                 db.routeDao().increaseClickCount(it, city.id)
             }
+            db.routeDao().increaseSecondaryClickCount(it, city.id)
         }
     }
 

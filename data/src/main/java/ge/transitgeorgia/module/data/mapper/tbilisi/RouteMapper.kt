@@ -1,8 +1,6 @@
 package ge.transitgeorgia.module.data.mapper.tbilisi
 
-import ge.transitgeorgia.data.local.entity.RouteEntity
 import ge.transitgeorgia.domain.model.RouteStop
-import ge.transitgeorgia.module.common.model.LatLngPoint
 import ge.transitgeorgia.module.data.remote.dto.tbilisi.RouteDto
 import ge.transitgeorgia.module.data.remote.dto.tbilisi.RouteInfoDto
 import ge.transitgeorgia.module.data.remote.dto.tbilisi.RouteStopDto

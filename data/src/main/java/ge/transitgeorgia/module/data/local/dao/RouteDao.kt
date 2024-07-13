@@ -3,7 +3,7 @@ package ge.transitgeorgia.module.data.local.dao
 import androidx.room.*
 import ge.transitgeorgia.module.common.other.enums.SupportedCity
 import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
-import ge.transitgeorgia.data.local.entity.RouteEntity
+import ge.transitgeorgia.module.data.local.entity.RouteEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -33,10 +33,10 @@ interface RouteDao {
     @Query("SELECT * FROM route")
     fun getAllFlow(): Flow<List<RouteEntity>>
 
-    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
+    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY secondaryClicks DESC")
     suspend fun getTopRoutes(cityId: String = SupportedCity.TBILISI.id): List<RouteEntity>
 
-    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY clicks DESC")
+    @Query("SELECT r.* FROM route r INNER JOIN route_click_count ON number=routeNumber WHERE clicks >= 10 AND city=:cityId GROUP BY number ORDER BY secondaryClicks DESC")
     fun getTopRoutesFlow(cityId: String = SupportedCity.TBILISI.id): Flow<List<RouteEntity>>
 
     @Query("UPDATE route_click_count SET clicks=1 WHERE routeNumber=:routeNumber")
@@ -56,6 +56,12 @@ interface RouteDao {
 
     @Query("UPDATE route_click_count SET clicks=(clicks + 1) WHERE routeNumber=:routeNumber AND city=:cityId")
     suspend fun increaseClickCount(routeNumber: Int, cityId: String = SupportedCity.TBILISI.id)
+
+    @Query("UPDATE route_click_count SET secondaryClicks=(secondaryClicks + 1) WHERE routeNumber=:routeNumber AND city=:cityId")
+    suspend fun increaseSecondaryClickCount(
+        routeNumber: Int,
+        cityId: String = SupportedCity.TBILISI.id
+    )
 
     @Query("SELECT r.clicks FROM route_click_count r WHERE routeNumber=:routeNumber AND city=:cityId")
     suspend fun getClickCount(routeNumber: Int, cityId: String = SupportedCity.TBILISI.id): Long

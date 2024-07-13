@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import ge.transitgeorgia.data.local.entity.BusStopEntity
 import ge.transitgeorgia.data.local.entity.FavoriteStopEntity
 import ge.transitgeorgia.module.data.local.entity.RouteClicksEntity
-import ge.transitgeorgia.data.local.entity.RouteEntity
+import ge.transitgeorgia.module.data.local.entity.RouteEntity
 import ge.transitgeorgia.module.data.local.dao.BusStopDao
 import ge.transitgeorgia.module.data.local.dao.RouteDao
 import ge.transitgeorgia.module.data.local.dao.RouteInfoDao
@@ -20,11 +20,12 @@ import ge.transitgeorgia.module.data.local.entity.RouteInfoEntity
         FavoriteStopEntity::class,
         RouteInfoEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
+        AutoMigration(3, 4),
     ]
 )
 abstract class AppDatabase : RoomDatabase() {

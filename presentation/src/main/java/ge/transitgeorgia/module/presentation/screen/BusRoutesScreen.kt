@@ -49,6 +49,7 @@ fun BusRoutesScreen(
     val context: Context = LocalContext.current
 
     LaunchedEffect(key1 = Unit) {
+        viewModel.searchRoute("")
         Analytics.logOpenRoutesPage()
     }
 

@@ -100,6 +100,7 @@ class MainActivity : ComponentActivity() {
 
         Configuration.getInstance()
             .load(this, PreferenceManager.getDefaultSharedPreferences(this))
+        Configuration.getInstance().userAgentValue = "ge.transitgeorgia"
 
         setContent {
             val shouldShowLanguagePrompt by viewModel.shouldPromptLanguageSelector.collectAsStateWithLifecycle()

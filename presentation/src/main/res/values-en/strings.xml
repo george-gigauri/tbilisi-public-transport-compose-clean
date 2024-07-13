@@ -49,4 +49,5 @@
     <string name="title_data_deletion">App just got updated</string>
     <string name="message_data_deletion">In order to maintain fully functional features, app requires to clear current app data. This will NOT erase your device.</string>
     <string name="btn_clear">Clear</string>
+    <string name="btn_open">გახსნა</string>
 </resources>

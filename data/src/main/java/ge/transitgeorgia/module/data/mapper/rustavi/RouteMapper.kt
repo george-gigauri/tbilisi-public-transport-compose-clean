@@ -1,6 +1,6 @@
 package ge.transitgeorgia.module.data.mapper.rustavi
 
-import ge.transitgeorgia.data.local.entity.RouteEntity
+import ge.transitgeorgia.module.data.local.entity.RouteEntity
 import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteDto
 import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteInfoDto
 import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteStopDto

@@ -429,8 +429,8 @@ fun LiveBusScreen(
                             }
                         }
 
-                        map.overlays.map { o ->
-                            if (!(o is MyLocationNewOverlay || o is OneFingerZoomOverlay || o is RotationGestureOverlay)) {
+                        map.overlays.forEach { o ->
+                            if (!(o is OneFingerZoomOverlay || o is RotationGestureOverlay)) {
                                 map.overlays.remove(o)
                             }
                         }
@@ -439,6 +439,20 @@ fun LiveBusScreen(
                         if (mapZoom >= 16) map.overlays.addAll(listOf(fwdStops, bwdStops).flatten())
                         if (busMarkerBgs.isNotEmpty()) map.overlays.addAll(busMarkerBgs)
                         map.overlays.addAll(busMarkers)
+
+                        MyLocationNewOverlay(GpsMyLocationProvider(context), map).apply {
+                            this.enableMyLocation()
+                            this.setDirectionIcon(
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.marker_my_location
+                                )?.toBitmap(26.dpToPx(), 42.dpToPx())
+                            )
+                            this.setDirectionAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                            this.isDrawAccuracyEnabled = false
+                        }.also { o ->
+                            myLocationOverlay = o
+                        }
                     },
                     factory = { c ->
                         MapView(c).apply {
@@ -448,21 +462,8 @@ fun LiveBusScreen(
 
                             mapController = this.controller
 
-                            this.overlays.add(OneFingerZoomOverlay())
                             this.overlays.add(RotationGestureOverlay(this))
-                            MyLocationNewOverlay(GpsMyLocationProvider(this.context), this).apply {
-                                this.enableMyLocation()
-                                this.setDirectionIcon(
-                                    ContextCompat.getDrawable(
-                                        context,
-                                        R.drawable.marker_my_location
-                                    )?.toBitmap(26.dpToPx(), 42.dpToPx())
-                                )
-                                this.setDirectionAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                                this.isDrawAccuracyEnabled = false
-                            }.also { o ->
-                                myLocationOverlay = o
-                            }
+                            this.overlays.add(OneFingerZoomOverlay())
 
                             Polyline(this).apply {
                                 this.setPoints(
@@ -478,6 +479,20 @@ fun LiveBusScreen(
                                 )
                             }.also { p ->
                                 this.centerAndZoomPolyline(p)
+                            }
+
+                            MyLocationNewOverlay(GpsMyLocationProvider(context), this).apply {
+                                this.enableMyLocation()
+                                this.setDirectionIcon(
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.marker_my_location
+                                    )?.toBitmap(26.dpToPx(), 42.dpToPx())
+                                )
+                                this.setDirectionAnchor(.5f, .5f)
+                                this.isDrawAccuracyEnabled = true
+                            }.also { o ->
+                                myLocationOverlay = o
                             }
 
                             addMapListener(object : MapListener {
@@ -506,8 +521,8 @@ fun LiveBusScreen(
                             myLocationOverlay?.myLocation?.let { gp ->
                                 mapController?.animateTo(
                                     gp,
-                                    18.5,
-                                    1500
+                                    17.0,
+                                    1000
                                 )
                             }
                         }

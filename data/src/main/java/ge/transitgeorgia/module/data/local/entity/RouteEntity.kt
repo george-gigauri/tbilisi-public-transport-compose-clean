@@ -1,4 +1,4 @@
-package ge.transitgeorgia.data.local.entity
+package ge.transitgeorgia.module.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -14,5 +14,5 @@ data class RouteEntity(
     val type: RouteTransportType,
     var longName: String,
     var firstStation: String,
-    var lastStation: String
+    var lastStation: String,
 )
