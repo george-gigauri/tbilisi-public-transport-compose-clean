@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -96,8 +97,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 fun LiveBusScreen(
     viewModel: LiveBusViewModel = hiltViewModel()
 ) {
-    val currentActivity = (LocalContext.current as? LiveBusActivity)
-    var lifecycleEvent by rememberSaveable { mutableStateOf(Lifecycle.Event.ON_ANY) }
+    val currentActivity = (LocalActivity.current as LiveBusActivity)
     val context = LocalContext.current
 
     var myLocationOverlay: MyLocationNewOverlay? = remember { null }
@@ -199,10 +199,6 @@ fun LiveBusScreen(
         )
     }
 
-    ComposableLifecycle(
-        onEvent = { _, event -> lifecycleEvent = event }
-    )
-
     // Bottom Sheet of Information
     if (infoBottomSheetState.isVisible) {
         LiveBusInfoBottomSheet(
@@ -242,7 +238,7 @@ fun LiveBusScreen(
                 isReminderRunning = isReminderRunning,
                 routeNumber = routeInfo?.number.orEmpty(),
                 routeColor = viewModel.routeColor,
-                onBackButtonClick = { currentActivity?.finish() },
+                onBackButtonClick = { currentActivity.finish() },
                 onScheduleClick = {
                     val intent = Intent(context, ScheduleActivity::class.java)
                     intent.putExtra("route_number", routeInfo?.number)
@@ -276,15 +272,17 @@ fun LiveBusScreen(
             )
         }
     ) {
+        it.calculateTopPadding()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = it.calculateTopPadding())
         ) {
             if (isLoading && errorMessage == null) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (!isLoading && errorMessage != null) {
-                FilledTonalButton(onClick = { }, modifier = Modifier.align(Alignment.Center)) {
+                FilledTonalButton(onClick = {
+                    viewModel.retry()
+                }, modifier = Modifier.align(Alignment.Center)) {
                     Text(text = "სცადე თავიდან / Try Again")
                 }
                 Toast.makeText(context, errorMessage.asMessage(), Toast.LENGTH_SHORT).show()

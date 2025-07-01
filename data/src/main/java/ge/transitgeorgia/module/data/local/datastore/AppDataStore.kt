@@ -65,16 +65,22 @@ class AppDataStore(private val context: Context) {
             it[KEY_UPDATED_CITY] ?: SupportedCity.TBILISI.id
         }
 
-    suspend fun setLastUpdatedCityId(city: SupportedCity) = context.appDataStore.edit {
-        it[KEY_UPDATED_CITY] = city.id
+    suspend fun setLastUpdatedCityId(city: SupportedCity) {
+        context.appDataStore.edit {
+            it[KEY_UPDATED_CITY] = city.id
+        }
     }
 
-    suspend fun setDataLastUpdatedAt(timeMillis: Long) = context.appDataStore.edit {
-        it[KEY_LAST_UPDATED] = timeMillis
+    suspend fun setDataLastUpdatedAt(timeMillis: Long) {
+        context.appDataStore.edit {
+            it[KEY_LAST_UPDATED] = timeMillis
+        }
     }
 
-    suspend fun deleteDataLastUpdatedAt() = context.appDataStore.edit {
-        it.remove(KEY_LAST_UPDATED)
+    suspend fun deleteDataLastUpdatedAt() {
+        context.appDataStore.edit {
+            it.remove(KEY_LAST_UPDATED)
+        }
     }
 
     // City
@@ -84,8 +90,10 @@ class AppDataStore(private val context: Context) {
                 ?: SupportedCity.TBILISI
         }
 
-    suspend fun setCity(city: SupportedCity) = context.appDataStore.edit {
-        it[KEY_DEFAULT_CITY] = city.id
+    suspend fun setCity(city: SupportedCity) {
+        context.appDataStore.edit {
+            it[KEY_DEFAULT_CITY] = city.id
+        }
     }
 
     // Location Disclosure

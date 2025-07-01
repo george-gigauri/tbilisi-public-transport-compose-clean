@@ -10,6 +10,7 @@ plugins {
     id("com.google.firebase.crashlytics")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
 }
 
 fun getSecretKeys(): Properties {
@@ -21,7 +22,7 @@ fun getSecretKeys(): Properties {
 
 android {
     namespace = "ge.transitgeorgia"
-    compileSdk = 34
+    compileSdk = 36
 
     signingConfigs {
         create("release") {
@@ -38,8 +39,8 @@ android {
 
         applicationId = "ge.transitgeorgia"
         minSdk = 21
-        targetSdk = 34
-        buildToolsVersion = "34.0.0"
+        targetSdk = 36
+        buildToolsVersion = "35.0.0"
         versionCode = appVersionCode
         versionName = appVersionName
 
@@ -74,7 +75,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     packaging {
         resources {
@@ -85,20 +86,20 @@ android {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.compose.runtime:runtime:1.6.8")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.compose.runtime:runtime:1.8.3")
     api(project(path = ":presentation"))
     api(project(path = ":domain"))
     api(project(path = ":common"))
     api(project(path = ":data"))
 
     // Dependency Injection (Dagger Hilt)
-    implementation("com.google.dagger:hilt-android:2.50")
-    ksp("com.google.dagger:hilt-compiler:2.50")
+    implementation("com.google.dagger:hilt-android:2.56.2")
+    ksp("com.google.dagger:hilt-compiler:2.56.2")
 
     // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.2")
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 }

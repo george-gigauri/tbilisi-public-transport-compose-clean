@@ -61,7 +61,7 @@ object NetworkModule {
                         request.addHeader("X-api-key", BuildConfig.X_API_KEY)
 
                         request.url(
-                            chain.request().url().newBuilder()
+                            chain.request().url.newBuilder()
                                 .addQueryParameter("locale", locale.value)
                                 .build()
                         )

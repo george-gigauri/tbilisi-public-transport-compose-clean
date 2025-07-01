@@ -66,6 +66,13 @@ class LiveBusViewModel @Inject constructor(
         }
     }
 
+    fun retry() = viewModelScope.launch {
+        isLoading.value = true
+        runBlocking { getRoute() }
+        runBlocking { fetchRoutes() }
+        fetchAvailableBuses()
+    }
+
     fun addToFavoriteRoutes() = viewModelScope.launch {
         routeNumber?.toIntOrNull()?.let {
             val city = dataStore.city.first()

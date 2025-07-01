@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,15 +39,18 @@ import java.util.Locale
 fun FullScheduleBottomSheet(
     stopName: String? = "M/S Akhmeteli Theatre",
     schedule: List<Schedule> = emptyList(),
-    state: SheetState = SheetState(false, SheetValue.PartiallyExpanded),
+    state: SheetState = SheetState(
+        false,
+        LocalDensity.current,
+        SheetValue.PartiallyExpanded
+    ),
     onCancel: () -> Unit = { }
 ) {
 
     ModalBottomSheet(
         containerColor = DynamicPrimary,
         sheetState = state,
-        onDismissRequest = { onCancel.invoke() },
-        windowInsets = WindowInsets.safeContent
+        onDismissRequest = { onCancel.invoke() }
     ) {
 
         Column(
@@ -74,8 +78,10 @@ fun FullScheduleBottomSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             schedule.map { s ->
-                val dayFrom = DayOfWeek.valueOf(s.fromDay).getDisplayName(TextStyle.FULL, Locale.getDefault())
-                val dayTo = DayOfWeek.valueOf(s.toDay).getDisplayName(TextStyle.FULL, Locale.getDefault())
+                val dayFrom =
+                    DayOfWeek.valueOf(s.fromDay).getDisplayName(TextStyle.FULL, Locale.getDefault())
+                val dayTo =
+                    DayOfWeek.valueOf(s.toDay).getDisplayName(TextStyle.FULL, Locale.getDefault())
                 Text(
                     text = if (dayFrom == dayTo) {
                         dayFrom

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -40,14 +42,18 @@ fun LiveBusTopBar(
     val systemUi = rememberSystemUiController()
     val statusBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
     val iconColor = MaterialTheme.colorScheme.secondary
-    systemUi.setStatusBarColor(statusBarColor)
+    //  systemUi.setStatusBarColor(statusBarColor)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .statusBarsPadding()
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+            .clip(RoundedCornerShape(16.dp))
             .fillMaxWidth()
-            .height(54.dp)
             .background(statusBarColor)
+            .padding(horizontal = 2.dp, vertical = 2.dp)
     ) {
         Spacer(modifier = Modifier.width(2.dp))
         Icon(
@@ -55,9 +61,9 @@ fun LiveBusTopBar(
             contentDescription = null,
             tint = iconColor,
             modifier = Modifier
-                .size(54.dp)
+                .size(56.dp)
                 .clickable { onBackButtonClick() }
-                .padding(8.dp)
+                .padding(6.dp)
         )
 
         Text(
@@ -71,7 +77,7 @@ fun LiveBusTopBar(
                     Color(android.graphics.Color.parseColor(routeColor)),
                     RoundedCornerShape(8.dp)
                 )
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -82,10 +88,10 @@ fun LiveBusTopBar(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier
-                .height(50.dp)
-                .width(52.dp)
+                .height(52.dp)
+                .width(54.dp)
                 .clickable { onScheduleClick.invoke() }
-                .padding(8.dp)
+                .padding(6.dp)
                 .background(iconColor, RoundedCornerShape(8.dp))
                 .padding(6.dp)
         )
@@ -99,10 +105,10 @@ fun LiveBusTopBar(
                 MaterialTheme.colorScheme.primaryContainer
             },
             modifier = Modifier
-                .height(50.dp)
-                .width(52.dp)
+                .height(52.dp)
+                .width(54.dp)
                 .clickable { onNotifyClick.invoke() }
-                .padding(8.dp)
+                .padding(6.dp)
                 .background(iconColor, RoundedCornerShape(8.dp))
                 .padding(6.dp)
         )
@@ -112,10 +118,10 @@ fun LiveBusTopBar(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier
-                .height(50.dp)
-                .width(52.dp)
+                .height(52.dp)
+                .width(54.dp)
                 .clickable { onInfoClick.invoke() }
-                .padding(8.dp)
+                .padding(6.dp)
                 .background(iconColor, RoundedCornerShape(8.dp))
                 .padding(6.dp)
                 .rotate(180f)

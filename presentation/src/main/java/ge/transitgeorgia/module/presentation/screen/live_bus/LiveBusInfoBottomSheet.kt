@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -41,7 +42,11 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LiveBusInfoBottomSheet(
-    state: SheetState = SheetState(true, SheetValue.Hidden),
+    state: SheetState = SheetState(
+        true,
+        LocalDensity.current,
+        SheetValue.Hidden
+    ),
     userLocation: GeoPoint = GeoPoint(0.0, 0.0),
     route: RouteInfo? = null,
     route1: RouteInfo = RouteInfo.empty(),

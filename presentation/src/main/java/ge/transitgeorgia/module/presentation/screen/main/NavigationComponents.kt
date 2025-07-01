@@ -63,9 +63,7 @@ fun BottomNavigation(navController: NavHostController) {
     val backstackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backstackEntry?.destination
 
-    NavigationBar(
-        modifier = Modifier.height(54.dp),
-    ) {
+    NavigationBar() {
         MainNavigationScreen.all().forEach {
             val isSelected = it.screenName == currentDestination?.route
             val icon = painterResource(id = if (isSelected) it.iconResFilled else it.iconResOutline)
