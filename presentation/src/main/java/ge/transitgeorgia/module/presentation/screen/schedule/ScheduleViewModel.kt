@@ -32,7 +32,7 @@ class ScheduleViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val routeId: String? get() = savedStateHandle["route_number"]
+    val routeId: String? get() = savedStateHandle["route_id"]
     val routeNumber: String? get() = savedStateHandle["route_number"]
     val routeColor: String get() = savedStateHandle["route_color"] ?: "#000000"
 
@@ -49,10 +49,10 @@ class ScheduleViewModel @Inject constructor(
 
     private fun fetch() = viewModelScope.launch {
         isLoading.value = true
-        route.value = db.routeDao().getRoute(routeNumber?.toIntOrNull() ?: -1)?.toDomain()
+        route.value = db.routeDao().getRouteById(routeId ?: "")?.toDomain()
             ?: Route.empty()
 
-        val rw = repository.getSchedule(route.value.id ?: "", isForward.value)
+        val rw = repository.getSchedule(routeId ?: "-", isForward.value)
         when (rw) {
             is ResultWrapper.Success -> {
                 Log.d("ScheduleViewModel", "fetch: ${rw.data}")
@@ -63,6 +63,7 @@ class ScheduleViewModel @Inject constructor(
                 Log.d("ScheduleViewModel", "fetch: ${rw.type}")
                 error.emit(rw.type)
             }
+
             else -> Unit
         }
 

@@ -24,7 +24,8 @@ class BusRoutesViewModel @Inject constructor(
 
     val searchKeyword: MutableStateFlow<String?> = MutableStateFlow(null)
     val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val transportType: MutableStateFlow<RouteTransportType> = MutableStateFlow(RouteTransportType.ALL)
+    val transportType = MutableStateFlow(RouteTransportType.ALL)
+    private val dataIntact: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val data: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val routes: MutableStateFlow<List<Route>> = MutableStateFlow(emptyList())
     val error: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -43,6 +44,7 @@ class BusRoutesViewModel @Inject constructor(
             try {
                 db.routeDao().getAllFlow().collectLatest {
                     val result = it.map { it.toDomain() }
+                    dataIntact.value = result
                     data.value = result
                     routes.value = result
                     error.value = null
@@ -75,9 +77,9 @@ class BusRoutesViewModel @Inject constructor(
     fun setTransportType(type: RouteTransportType) {
         this.transportType.value = type
         if (type == RouteTransportType.ALL) {
-            fetchRoutes()
+            this.routes.value = dataIntact.value
         } else {
-            routes.value = data.value.filter { it.type == type }.filter { routes.value.contains(it) }
+            this.routes.value = dataIntact.value.filter { it.type == type }
         }
     }
 }

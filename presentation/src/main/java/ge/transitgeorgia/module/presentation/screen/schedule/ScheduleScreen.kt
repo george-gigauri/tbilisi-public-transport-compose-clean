@@ -69,7 +69,10 @@ fun ScheduleScreen(
     Scaffold(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                ScheduleTopBar(if (isMetro) route.id else route.number, viewModel.routeColor) {
+                ScheduleTopBar(
+                    if (isMetro) route.number else route.number,
+                    viewModel.routeColor
+                ) {
                     onFinishActivity()
                 }
 
@@ -122,14 +125,14 @@ fun ScheduleScreen(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(text = error.asMessage() ?: "Unknown Error Occurred.")
+                    Text(text = error.asMessage())
                     Spacer(modifier = Modifier.height(8.dp))
                     FilledTonalButton(onClick = { viewModel.refresh() }) {
                         Text(text = "თავიდან ცდა")
                     }
                 }
             }
-        } else if (isLoading) {
+        } else {
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }

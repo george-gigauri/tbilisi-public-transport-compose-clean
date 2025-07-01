@@ -16,10 +16,10 @@ fun RouteDto.toDomain(): Route {
         else -> 1
     }
 
-    val type = when (this.color) {
+    val type = when (this.color?.lowercase()) {
         "ff505b" -> RouteTransportType.METRO
-        "117a65" -> RouteTransportType.BUS
-        "1f618d" -> RouteTransportType.MICRO_BUS
+        "00b38b" -> RouteTransportType.BUS
+        "0033b4" -> RouteTransportType.MICRO_BUS
         else -> RouteTransportType.fromV2(this.mode ?: "BUS")
     }
 
@@ -35,19 +35,28 @@ fun RouteDto.toDomain(): Route {
 }
 
 fun RouteInfoDto.toDomain(): RouteInfo {
+    val isMetro = this.mode == "SUBWAY"
+    val _shortName = if (isMetro) {
+        when (this.id.lowercase()) {
+            "1:Metro_Metro_1" -> "Metro I"
+            "1:Metro_Metro_2" -> "Metro II"
+            else -> "1"
+        }
+    } else this.shortName
+
     return RouteInfo(
         id,
         "#${this.color}",
-        this.shortName,
+        _shortName,
         this.longName,
         headSigns?.forwardSign ?: "*",
         headSigns?.backwardSign ?: "*",
         emptyList(),
         null,
         emptyList(),
-        true,
-        color == "ff505b",
-        color == "1f618d",
+        color.lowercase() == "00b38b",
+        color.lowercase() == "ff505b",
+        color.lowercase() == "0033b4",
         isCircular
     )
 }

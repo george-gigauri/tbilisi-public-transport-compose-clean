@@ -16,22 +16,22 @@ import ge.transitgeorgia.module.domain.model.RouteTransportType
 fun RouteDto.toDomain(): Route {
     val isMetro = this.type == TransportType.METRO
     val metroLine = when (this.id.lowercase()) {
-        "metro_1" -> 1
-        "metro_2" -> 2
-        else -> 1
+        "metro_1" -> "I"
+        "metro_2" -> "II"
+        else -> "-"
     }
 
-    val type = when (this.color) {
+    val type = when (this.color?.lowercase()) {
         "ff505b" -> RouteTransportType.METRO
-        "117a65" -> RouteTransportType.BUS
-        "1f618d" -> RouteTransportType.MICRO_BUS
+        "00b38b" -> RouteTransportType.BUS
+        "0033b4" -> RouteTransportType.MICRO_BUS
         else -> RouteTransportType.fromTransportType(this.type)
     }
 
     return Route(
         this.id,
         if (isMetro) "#FF4433" else if (this.color != null) "#${this.color}" else "#04BF6E",
-        if (isMetro) metroLine.toString() else this.number,
+        if (isMetro) metroLine else this.number,
         type,
         if (isMetro) this.number else this.longName ?: "--- - ---",
         this.startStop ?: "",
@@ -42,8 +42,8 @@ fun RouteDto.toDomain(): Route {
 fun Route.toEntity(): RouteEntity {
     val type = when (this.color.lowercase()) {
         "#ff505b" -> RouteTransportType.METRO
-        "#117a65" -> RouteTransportType.BUS
-        "#1f618d" -> RouteTransportType.MICRO_BUS
+        "#00b38b" -> RouteTransportType.BUS
+        "#0033b4" -> RouteTransportType.MICRO_BUS
         else -> this.type
     }
 
@@ -65,10 +65,20 @@ fun RouteEntity.toDomain(): Route {
 }
 
 fun RouteInfoDto.toDomain(): RouteInfo {
+
+    val isMetro = this.toDomain().isMetro
+    val _shortName = if (isMetro) {
+        when (this.id.lowercase()) {
+            "1:Metro_Metro_1" -> "Metro I"
+            "1:Metro_Metro_2" -> "Metro II"
+            else -> "1"
+        }
+    } else this.routeNumber
+
     return RouteInfo(
         id,
         "#${this.color}",
-        this.routeNumber,
+        _shortName,
         this.title,
         this.title.split(" - ").firstOrNull() ?: "*",
         this.title.split(" - ").lastOrNull() ?: "*",
@@ -80,9 +90,9 @@ fun RouteInfoDto.toDomain(): RouteInfo {
         } else emptyList(),
         null,
         this.stops.map { it.toDomain() },
-        true,
-        color == "ff505b",
-        color == "1f618d",
+        color.lowercase() == "00b38b",
+        color.lowercase() == "ff505b",
+        color.lowercase() == "0033b4",
         false
     )
 }
@@ -92,9 +102,18 @@ fun RouteInfo.toEntity(
     polyline2: List<LatLngPoint> = emptyList(),
     polyline2Hash: String? = null
 ): RouteInfoEntity {
+    val isMetro = this.isMetro
+    val _shortName = if (isMetro) {
+        when (this.id.lowercase()) {
+            "1:Metro_Metro_1" -> "Metro I"
+            "1:Metro_Metro_2" -> "Metro II"
+            else -> "1"
+        }
+    } else this.number
+
     return RouteInfoEntity(
         this.id,
-        this.number,
+        _shortName,
         this.longName,
         this.color,
         when {
@@ -125,9 +144,9 @@ fun RouteInfoEntity.toDomain(isForward: Boolean = true): RouteInfo {
         polylineList,
         if (polylineList.isEmpty()) if (isForward) forwardPolyline else backwardPolyline else null,
         emptyList(),
-        true,
-        color == "ff505b",
-        color == "1f618d",
+        color.lowercase() == "00b38b",
+        color.lowercase() == "ff505b",
+        color.lowercase() == "0033b4",
         isCircular
     )
 }

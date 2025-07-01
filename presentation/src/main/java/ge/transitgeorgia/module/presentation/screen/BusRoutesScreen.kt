@@ -3,11 +3,13 @@ package ge.transitgeorgia.module.presentation.screen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -37,6 +39,7 @@ import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.module.presentation.util.string
 import ge.transitgeorgia.presentation.schedule.ScheduleActivity
+import androidx.core.graphics.toColorInt
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -60,26 +63,31 @@ fun BusRoutesScreen(
             ) { viewModel.searchRoute(it) }
         }
     ) {
-        Box(modifier = Modifier.padding(top = it.calculateTopPadding())) {
+        Box(
+            modifier = Modifier.padding(
+                top = it.calculateTopPadding(),
+                bottom = it.calculateBottomPadding()
+            )
+        ) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-//                item {
-//                    LazyRow(
-//                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-//                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-//                    ) {
-//                        items(RouteTransportType.values()) {
-//                            TransportCategory(
-//                                category = it,
-//                                isSelected = transportType == it,
-//                                onSelect = { rtt ->
-//                                    viewModel.setTransportType(rtt)
-//                                })
-//                        }
-//                    }
-//                }
+                item {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    ) {
+                        items(RouteTransportType.entries.toTypedArray()) {
+                            TransportCategory(
+                                category = it,
+                                isSelected = transportType == it,
+                                onSelect = { rtt ->
+                                    viewModel.setTransportType(rtt)
+                                })
+                        }
+                    }
+                }
 
                 items(routes) { item ->
                     Box(
@@ -89,6 +97,10 @@ fun BusRoutesScreen(
                     ) {
                         RouteItem(context, item)
                     }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(76.dp))
                 }
             }
         }
@@ -149,11 +161,11 @@ fun RouteItem(context: Context, item: Route, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = if (item.isMetro) "M" else "#${item.number}",
+            text = if (item.isMetro) "M" else item.number,
             modifier = Modifier
                 .widthIn(min = 65.dp)
                 .background(
-                    Color(android.graphics.Color.parseColor(item.color)),
+                    Color(item.color.toColorInt()),
                     RoundedCornerShape(8.dp)
                 )
                 .padding(vertical = 8.dp, horizontal = 12.dp),

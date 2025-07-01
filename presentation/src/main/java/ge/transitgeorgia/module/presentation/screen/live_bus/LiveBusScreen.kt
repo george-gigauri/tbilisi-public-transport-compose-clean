@@ -241,6 +241,7 @@ fun LiveBusScreen(
                 onBackButtonClick = { currentActivity.finish() },
                 onScheduleClick = {
                     val intent = Intent(context, ScheduleActivity::class.java)
+                    intent.putExtra("route_id", routeInfo?.id)
                     intent.putExtra("route_number", routeInfo?.number)
                     intent.putExtra("route_color", viewModel.routeColor)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
