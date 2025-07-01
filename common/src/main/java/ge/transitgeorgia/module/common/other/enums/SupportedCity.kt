@@ -22,12 +22,12 @@ enum class SupportedCity(
         41.716537, 44.783333,
         11.5
     ),
-    RUSTAVI(
-        "rustavi",
-        R.string.rustavi,
-        Const.RUSTAVI_BASE_URL,
-        Const.RUSTAVI_ENG_BASE_URL,
-        41.557080, 44.995190,
-        11.2
-    ),
+//    RUSTAVI(
+//        "rustavi",
+//        R.string.rustavi,
+//        Const.RUSTAVI_BASE_URL,
+//        Const.RUSTAVI_ENG_BASE_URL,
+//        41.557080, 44.995190,
+//        11.2
+//    ),
 }

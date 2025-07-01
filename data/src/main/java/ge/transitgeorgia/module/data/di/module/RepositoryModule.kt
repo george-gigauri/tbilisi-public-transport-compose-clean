@@ -23,9 +23,10 @@ object RepositoryModule {
         rustavi: RustaviTransportRepository,
     ): ITransportRepository {
         val city = runBlocking { dataStore.city.firstOrNull() }
-        return if (city == SupportedCity.RUSTAVI) {
-            rustavi
-        } else tbilisi
+        return tbilisi
+//        if (city == SupportedCity.RUSTAVI) {
+//            rustavi
+//        } else tbilisi
     }
 
 }

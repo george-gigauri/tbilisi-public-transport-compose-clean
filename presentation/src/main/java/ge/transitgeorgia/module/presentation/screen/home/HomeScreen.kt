@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -29,16 +30,19 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import ge.transitgeorgia.common.analytics.Analytics
+import ge.transitgeorgia.common.util.QRScanner
 import ge.transitgeorgia.module.common.util.LocationUtil
 import ge.transitgeorgia.module.domain.model.BusStop
 import ge.transitgeorgia.module.domain.model.Route
 import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.screen.RouteItem
 import ge.transitgeorgia.module.presentation.screen.bus_stops.ItemBusStop
+import ge.transitgeorgia.module.presentation.screen.bus_stops.processBarcode
 import ge.transitgeorgia.module.presentation.screen.main.MainActivity
 import ge.transitgeorgia.module.presentation.screen.main.MainNavigationScreen
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
 import ge.transitgeorgia.presentation.home.CitySwitchDropDown
+import ge.transitgeorgia.presentation.scanner.QRScannerActivity
 import kotlinx.coroutines.delay
 import org.osmdroid.util.GeoPoint
 
@@ -171,7 +175,7 @@ fun NearbyStops(
     isLocationEnabled: Boolean,
     userLocation: GeoPoint,
 ) {
-    val activity = (LocalContext.current as? MainActivity)
+    val activity = (LocalActivity.current as MainActivity)
 
     Column(
         modifier = Modifier
@@ -281,7 +285,8 @@ fun TopBar(context: Context, viewModel: HomeViewModel) {
                 .background(colorScheme.surfaceColorAtElevation(3.dp))
         )
 
-        Box(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
@@ -296,18 +301,42 @@ fun TopBar(context: Context, viewModel: HomeViewModel) {
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 modifier = Modifier
                     .wrapContentWidth()
-                    .align(Alignment.CenterStart)
             )
 
-            CitySwitchDropDown(currentCity, {
-                Analytics.logChangeCity(it.id)
-                viewModel.setDefaultCity(it)
-                val intent = Intent(context, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
-                (context as? MainActivity)?.finish()
-                context.startActivity(intent)
-                Runtime.getRuntime().exit(0)
-            }, Modifier.align(Alignment.CenterEnd))
+            Spacer(modifier = Modifier.weight(1f))
+
+            IconButton(
+                onClick = {
+                    Analytics.logClickQrScanner()
+                    QRScanner.start(onSuccess = {
+                        processBarcode(context, it)
+                        Analytics.logOpenGoogleQrScanner()
+                    }, onError = {
+                        val intent = Intent(context, QRScannerActivity::class.java)
+                        context.startActivity(intent)
+                    })
+                },
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_scan_barcode),
+                    contentDescription = null,
+                    tint = if (isSystemInDarkTheme()) Color.LightGray.copy(alpha = 0.55f) else Color.DarkGray,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(8.dp)
+                )
+            }
+
+//            CitySwitchDropDown(currentCity, {
+//                Analytics.logChangeCity(it.id)
+//                viewModel.setDefaultCity(it)
+//                val intent = Intent(context, MainActivity::class.java)
+//                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK xor Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                (context as? MainActivity)?.finish()
+//                context.startActivity(intent)
+//                Runtime.getRuntime().exit(0)
+//            }, Modifier.align(Alignment.CenterEnd))
         }
     }
 }

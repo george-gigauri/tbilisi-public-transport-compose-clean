@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,7 +74,7 @@ fun TimeTableScreen(
 
     val arrivalTimes by viewModel.data.collectAsStateWithLifecycle()
     val stopInfo by viewModel.stop.collectAsStateWithLifecycle()
-    val currentActivity = (LocalContext.current as? TimeTableActivity)
+    val currentActivity = (LocalActivity.current as TimeTableActivity)
     val context = LocalContext.current
 
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
@@ -101,7 +102,7 @@ fun TimeTableScreen(
     }
 
     BackHandler {
-        currentActivity?.finish()
+        currentActivity.finish()
     }
 
     if (isNotifyMeDialogVisible) {
@@ -118,7 +119,7 @@ fun TimeTableScreen(
             TopBar(
                 isReminderRunning = isReminderRunning,
                 isFavorite = isFavorite,
-                onBack = { currentActivity?.finish() },
+                onBack = { currentActivity.finish() },
                 onNotify = {
                     if (isReminderRunning) {
                         BusArrivalTimeReminderWorker.stop(context, viewModel.stopId)
@@ -139,7 +140,7 @@ fun TimeTableScreen(
         SwipeRefresh(
             state = rememberSwipeRefreshState(isRefreshing = isLoading && shouldShowLoading),
             onRefresh = { viewModel.onSwipeToRefresh() },
-            modifier = Modifier.padding(top = 54.dp)
+            modifier = Modifier.padding(top = it.calculateTopPadding())
         ) {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Spacer(modifier = Modifier.height(12.dp))

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import ge.transitgeorgia.module.presentation.R
 import ge.transitgeorgia.module.presentation.theme.DynamicPrimary
 import ge.transitgeorgia.module.presentation.theme.DynamicRed
 import ge.transitgeorgia.module.presentation.theme.DynamicWhite
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun ScheduleTopBar(
@@ -47,6 +50,7 @@ fun ScheduleTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(DynamicPrimary)
+            .statusBarsPadding()
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -84,7 +88,7 @@ fun ScheduleTopBar(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .background(
-                        Color(android.graphics.Color.parseColor(routeColor)),
+                        Color(routeColor.toColorInt()),
                         RoundedCornerShape(8.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 4.dp)

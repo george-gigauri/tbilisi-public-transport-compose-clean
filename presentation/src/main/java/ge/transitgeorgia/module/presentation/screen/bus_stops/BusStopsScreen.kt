@@ -126,7 +126,7 @@ fun ItemBusStop(
     }
 }
 
-private fun processBarcode(c: Context, b: Barcode) {
+fun processBarcode(c: Context, b: Barcode) {
     when (b.valueType) {
         Barcode.TYPE_SMS -> processSMSBarcode(c, b)
     }

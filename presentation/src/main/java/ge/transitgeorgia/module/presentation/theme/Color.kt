@@ -19,7 +19,7 @@ val DynamicBlack: Color
     @Composable get() = if (!isSystemInDarkTheme()) Color.White else Color.Black
 
 val DynamicRed: Color
-    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFCA0040) else Color(0xFFFF0051)
+    @Composable get() = if (isSystemInDarkTheme()) Color(0xFFFF0000) else Color(0xFFFF0051)
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)

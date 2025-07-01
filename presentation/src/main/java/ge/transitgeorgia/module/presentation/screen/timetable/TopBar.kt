@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -33,9 +34,9 @@ fun TopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp)
-            .background(DynamicPrimary),
-        verticalAlignment = Alignment.CenterVertically
+            .background(DynamicPrimary)
+            .statusBarsPadding(),
+        verticalAlignment = Alignment.Bottom
     ) {
         Spacer(modifier = Modifier.width(4.dp))
         Icon(
@@ -43,7 +44,7 @@ fun TopBar(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
-                .size(54.dp)
+                .size(56.dp)
                 .clickable { onBack.invoke() }
                 .padding(8.dp)
         )
@@ -59,8 +60,8 @@ fun TopBar(
                 MaterialTheme.colorScheme.primaryContainer
             },
             modifier = Modifier
-                .height(48.dp)
-                .width(50.dp)
+                .height(50.dp)
+                .width(52.dp)
                 .clickable { onNotify.invoke() }
                 .padding(8.dp)
                 .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(8.dp))
@@ -76,8 +77,8 @@ fun TopBar(
                 MaterialTheme.colorScheme.primaryContainer
             },
             modifier = Modifier
-                .height(48.dp)
-                .width(50.dp)
+                .height(50.dp)
+                .width(52.dp)
                 .clickable { onFavorites.invoke() }
                 .padding(8.dp)
                 .background(MaterialTheme.colorScheme.secondary, RoundedCornerShape(8.dp))

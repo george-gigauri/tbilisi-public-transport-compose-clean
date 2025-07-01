@@ -1,56 +1,55 @@
-package ge.transitgeorgia.data.remote.api
+package ge.transitgeorgia.module.data.remote.api
 
-import ge.transitgeorgia.module.data.remote.dto.rustavi.BusStopDto
-import ge.transitgeorgia.module.data.remote.dto.rustavi.BusesResponseDto
-import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteInfoDto
-import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteResponse
-import ge.transitgeorgia.module.data.remote.dto.rustavi.RouteStopsResponse
-import ge.transitgeorgia.module.data.remote.dto.rustavi.ScheduleResponseDto
-import ge.transitgeorgia.module.data.remote.dto.rustavi.TimeTableResponse
-import retrofit2.Response
+import ge.transitgeorgia.module.data.remote.dto.tbilisi.ArrivalTimeDto
+import ge.transitgeorgia.module.data.remote.dto.tbilisi.BusPositionDto
+import ge.transitgeorgia.module.data.remote.dto.tbilisi.RouteDto
+import ge.transitgeorgia.module.data.remote.dto.tbilisi.RoutePolylineDto
 import retrofit2.http.GET
-import retrofit2.http.Headers
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RustaviTransportApi {
 
-    @GET("routers/ttc/routes")
-    @Headers("Content-Type: application/json", "Accept: application/json")
+    @GET("routes")
     suspend fun getRoutes(
-        @Query("type") type: Int? = null,
-    ): Response<RouteResponse>
+        @Query("modes") from: String = "BUS,SUBWAY",
+    ): List<RouteDto>
 
-    @GET("routers/ttc/routeInfo")
-    suspend fun getBusInfo(
-        @Query("routeNumber") number: Int,
-        @Query("type") type: String = "bus",
-        @Query("forward") forward: Int = 0
-    ): Response<RouteInfoDto>
+    @GET("routes/{id}")
+    suspend fun getRouteInfo(
+        @Path("id") id: String
+    ): ge.transitgeorgia.module.data.remote.dto.tbilisi.RouteInfoDto
 
-    @GET("routers/ttc/index/stops")
-    suspend fun getBusStops(): Response<List<BusStopDto>>
+    @GET("routes/{id}/stops")
+    suspend fun getRouteStops(
+        @Path("id") id: String,
+        @Query("forward") isForward: Boolean
+    ): List<ge.transitgeorgia.module.data.remote.dto.tbilisi.BusStopDto>
 
-    @GET("routeStops")
-    suspend fun getRouteByBusNumber(
-        @Query("routeNumber") number: Int,
-        @Query("forward") forward: Int = 0
-    ): Response<RouteStopsResponse>
+    @GET("routes/{id}/polyline")
+    suspend fun getRoutePolyline(
+        @Path("id") id: String,
+        @Query("forward") isForward: Boolean
+    ): RoutePolylineDto
 
-    @GET("routers/ttc/buses")
+    @GET("routes/{id}/positions")
     suspend fun getBusPositions(
-        @Query("routeNumber") number: Int,
-        @Query("forward") forward: Int = 0
-    ): Response<BusesResponseDto>
+        @Path("id") id: String,
+        @Query("forward") isForward: Boolean
+    ): List<BusPositionDto>
 
-    @GET("routers/ttc/stopArrivalTimes")
-    suspend fun getTimeTableInformation(
-        @Query("stopId") stopId: String
-    ): Response<TimeTableResponse>
+    @GET("stops")
+    suspend fun getAllStops(): List<ge.transitgeorgia.module.data.remote.dto.tbilisi.BusStopDto>
 
-    @GET("routers/ttc/routeSchedule")
+    @GET("stops/{id}/arrival-times")
+    suspend fun getBusStopTimetable(
+        @Path("id") id: String,
+        @Query("ignoreScheduledArrivalTimes") ignoreSchedule: Boolean = true
+    ): List<ArrivalTimeDto>
+
+    @GET("routes/{id}/schedule")
     suspend fun getSchedule(
-        @Query("routeNumber") routeNumber: Int,
-        @Query("forward") forward: Int = 1,
-        @Query("type") type: Int = 3
-    ): Response<ScheduleResponseDto>
+        @Path("id") id: String,
+        @Query("forward") isForward: Boolean
+    ): ge.transitgeorgia.module.data.remote.dto.tbilisi.ScheduleResponseDto
 }
